@@ -1,3 +1,8 @@
+#include <Arduino.h>
+
+void setup();
+void loop();
+#line 1 "src/sketch.ino"
 char dataString[5] = {0};
 int a = 0;
 
@@ -10,14 +15,11 @@ void loop(){
   if(Serial.available() > 0){
     Serial.readBytes(dataString, 5);
     char command[] = {dataString[0], dataString[1], dataString[2]};
-    Serial.println(strlen(dataString));
     int num1 = dataString[3] - '0';
     int num2 = dataString[4] - '0';
-    Serial.println(num1);
     Serial.println("ack");
     String str(command);
-    Serial.println(strlen(command));
-    Serial.println(str);
+    
     if(str == "add"){
       Serial.println(num1 + num2);
     }
@@ -27,5 +29,6 @@ void loop(){
   //sprintf(dataString, "%02X", a);
   //Serial.println(dataString);
  
+  Serial.println("acky");
   delay(1000); 
 }
