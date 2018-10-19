@@ -32,7 +32,7 @@ void setup() {
 void loop() {
   // establish variables for duration of the ping, and the distance result
   // in inches and centimeters:
-  long duration, inches, cm;
+  long duration, inches, cm, spd;
 
   // The PING))) is triggered by a HIGH pulse of 2 or more microseconds.
   // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
@@ -52,14 +52,22 @@ void loop() {
   // convert the time into a distance
   inches = microsecondsToInches(duration);
   cm = microsecondsToCentimeters(duration);
+  spd = speedOfSound(inches, duration);
 
+  Serial.print(duration);
+  Serial.print("microseconds, ");
   Serial.print(inches);
   Serial.print("in, ");
   Serial.print(cm);
-  Serial.print("cm");
+  Serial.print("cm, ");
+  Serial.print(spd);
+  Serial.print("m/s");
   Serial.println();
 
-  delay(100);
+  delay(1500);
+}
+long speedOfSound(long inches, long microseconds) {
+  return (inches*25400/microseconds); // 1 inch/microsecond = 25400 m/s // not actual speed 
 }
 
 long microsecondsToInches(long microseconds) {
@@ -68,12 +76,12 @@ long microsecondsToInches(long microseconds) {
   // This gives the distance travelled by the ping, outbound and return,
   // so we divide by 2 to get the distance of the obstacle.
   // See: http://www.parallax.com/dl/docs/prod/acc/28015-PING-v1.3.pdf
-  return microseconds / 74 / 2;
+  return (microseconds / 73.746) / 2;
 }
 
 long microsecondsToCentimeters(long microseconds) {
   // The speed of sound is 340 m/s or 29 microseconds per centimeter.
   // The ping travels out and back, so to find the distance of the object we
   // take half of the distance travelled.
-  return microseconds / 29 / 2;
+  return (microseconds / 29) / 2;
 }
