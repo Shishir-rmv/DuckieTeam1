@@ -1,8 +1,13 @@
-/* Encoder Library - Basic Example
- * http://www.pjrc.com/teensy/td_libs_Encoder.html
- *
- * This example code is in the public domain.
- */
+//   Unit of position is pulses, unit of distance is mm
+
+//    Change these two numbers to the pins connected to your encoder.
+//   Best Performance: both pins have interrupt capability
+//   Good Performance: only the first pin has interrupt capability
+//   Low Performance:  neither pin has interrupt capability
+
+// M1 is Right, M2 is left
+// Interrupt 3,dig 9 for right, interrupt 2,dig 8 for left
+
 
 #include <Encoder.h>
 #include "DualMC33926MotorShield.h"
@@ -12,6 +17,10 @@
 
 DualMC33926MotorShield md;
 int runspeed = 400;
+int runspeed_L = 400;
+int runspeed_R = 400;
+double travel_distance = 1000;
+double travel_position_L = (1000*travel_distance)/WHEEL_CIRCUMFERENCE;
 void stopIfFault()
 {
   if (md.getFault())
@@ -20,40 +29,56 @@ void stopIfFault()
     while(1);
   }
 }
-// Change these two numbers to the pins connected to your encoder.
-//   Best Performance: both pins have interrupt capability
-//   Good Performance: only the first pin has interrupt capability
-//   Low Performance:  neither pin has interrupt capability
-Encoder myEnc(2, 3);
-//   avoid using pins with LEDs attached
+
+Encoder myEnc_L(2, 3);
+Encoder myEnc_R(8, 9);
 
 void setup() {
   Serial.begin(9600);
   Serial.println("Basic Encoder Test:");
   md.init();
-  md.setM2Speed(runspeed);
-  
-  
+  md.setM2Speed(runspeed_L);
+  md.setM1Speed(runspeed_R);
 }
-float prevmillis=0;
-long oldPosition  = -999;
-double distance = 0;
-void loop() {
-    
-    stopIfFault();
-    long newPosition = myEnc.read();
-    if (newPosition != oldPosition) { 
-      oldPosition = newPosition;
 
-      double duration = ( micros() - prevmillis ); // Time difference between revolution in microsecond
-      double rpm = (60000000/duration)/PPR; // rpm = (1/ time millis)*1000*1000*60;
-      Serial.println(newPosition);    
-      Serial.println(rpm);
-      prevmillis = micros();
-      distance += WHEEL_CIRCUMFERENCE/PPR;
-      Serial.println(distance);
+double prevmillis_L = micros();
+double prevmillis_R = micros();
+long oldPosition_L  = -999;
+long oldPosition_R  = -999;
+double distance_R = 0;
+double distance_L = 0;
+double distance = 0;
+long update_rate = PPR*5; //every 5 revolutions
+
+void loop() {    
+  stopIfFault();
+  long newPosition_L = myEnc_L.read();
+  long newPosition_R = myEnc_R.read();
+  if (newPosition_L != oldPosition_L) { 
+    oldPosition_L = newPosition_L;
+    if (oldPosition_L%update_rate==0 && oldposition_L!=0){
+      double duration_L = ( micros() - prevmillis_L); // Time difference between revolution in microsecond
+      double rpm_L = update_rate*(60000000/duration_L)/PPR; // rpm = (1/ time millis)*1000*1000*60;
+      distance_L += update_rate*WHEEL_CIRCUMFERENCE/PPR;
+      prevmillis_L = micros();
+      Serial.println(newPosition_L);    
+      Serial.println(rpm_L);   
+      Serial.println(distance_L);
     }
-    if (oldPosition%200==0 && oldPosition!=0){
+  }
+  if (newPosition_R != oldPosition_R && oldPosition_R!=0) { 
+    oldPosition_R = newPosition_R;
+    if (oldPosition_R%update_rate==0){
+      double duration_R = ( micros() - prevmillis_R); // Time difference between revolution in microsecond
+      double rpm_R = (60000000/duration_R)/PPR; // rpm = (1/ time millis)*1000*1000*60;
+      distance_R += WHEEL_CIRCUMFERENCE/PPR;
+      prevmillis_R = micros();
+      Serial.println(newPosition_R);    
+      Serial.println(rpm_R);   
+      Serial.println(distance_R);
+    }
+  }
+  if (oldPosition_L%200==0 && oldPosition_L!=0){
       md.setM2Speed(0);
       //Serial.println((micros()-prevmillis));
       //if ((micros()-prevmillis)>2000000){
