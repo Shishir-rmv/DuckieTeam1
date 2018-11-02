@@ -1,3 +1,4 @@
+#include <EnableInterrupt.h>
 #include <Encoder.h>
 #include "DualMC33926MotorShield.h"
 
@@ -5,6 +6,7 @@
 #define L_ENC_B 5 //check that pins mathc up with right sensors and encoder init
 #define R_ENC_A 6
 #define R_ENC_B 7
+#define PING_PIN 8
 
 #define ENC_PORT PIND
 
@@ -22,6 +24,7 @@ double l_s; //left distance changed
 double r_s; //right distance changed
 double delta_x;
 double heading;
+double ping_duration;
 char dataString[5] = {0};
 
 // M1 is Right, M2 is left
@@ -34,7 +37,7 @@ enum string_code {
    motor,
    irSensor,
    ping,
-   stop,
+   stopp,
    none
 };
 
@@ -42,22 +45,32 @@ string_code hashit (String inString) {
    if (inString == "mtr") return motor;
    if (inString == "irr") return irSensor;
    if (inString == "png") return ping;
-   if (inString == "stp") return stop;
+   if (inString == "stp") return stopp;
    if (inString == "none") return none;
 }
-
 
 void setup() {
   // put your setup code here, to run once:
 
   pinMode(L_ENC_A, INPUT);
   digitalWrite(L_ENC_A, HIGH);
-  
   pinMode(L_ENC_B, INPUT);
   digitalWrite(L_ENC_B, HIGH);
 
-  md.init();
+  enableInterrupt(L_ENC_A, encoder, RISING);
+  enableInterrupt(L_ENC_B, encoder, RISING);
+  
+  pinMode(R_ENC_A, INPUT);
+  digitalWrite(R_ENC_A, HIGH);
+  pinMode(R_ENC_B, INPUT);
+  digitalWrite(R_ENC_B, HIGH);
 
+  enableInterrupt(R_ENC_A, encoder, RISING);
+  enableInterrupt(R_ENC_B, encoder, RISING);
+  
+  md.init();
+  md.setM1Speed(0);
+  md.setM2Speed(0);
   Serial.begin(9600);
   Serial.println("Start");
 
@@ -65,17 +78,17 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  String *pi_comm[3];
-
- // stopIfFault();
+stopIfFault();
 String opStr;
-unsigned int arg1;
-unsigned int arg2;
+static unsigned int arg1 = 0;
+static unsigned int arg2 = 0;
   if(Serial.available()){
     String input = Serial.readString();
     Serial.print("input: "+input);
+    
     opStr = input.substring(0,3);
     Serial.print(opStr);
+    
     arg1 = input.substring(3,7).toInt();
     arg2 = input.substring(7,11).toInt();
   }
@@ -87,13 +100,31 @@ unsigned int arg2;
   switch(hashit(opStr)){
     case none :
       break;
-    case motor:
+      
+    case motor :
       Serial.println("motor");
       Serial.println(arg1);
       Serial.println(arg2);
+
       md.setM1Speed(arg1);
       md.setM2Speed(arg2);
       break;
+      
+    case ping :
+      pingStart();
+      
+      Serial.print("ping duration: ");
+      Serial.println(ping_duration);
+      break;
+      
+    case stopp :
+      Stop();
+      break;
+      
+    case irSensor :
+      encoder();
+      break;
+      
     default:
       break;
   } 
@@ -101,7 +132,7 @@ unsigned int arg2;
 }
 
 
-int encoder() {
+void encoder() {
   long r_enc = myEnc_R.read();
   long l_enc = myEnc_L.read();    
   r_s = r_enc*WHEEL_CIRCUMFERENCE/PPR;   
@@ -122,7 +153,27 @@ int encoder() {
   y += delta_x*sin(theta);
 }
 
+void pingStart() {
 
+  pinMode(PING_PIN, OUTPUT);
+  digitalWrite(PING_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(PING_PIN, HIGH);
+  delayMicroseconds(5);
+  digitalWrite(PING_PIN, LOW);
+
+  pinMode(PING_PIN, INPUT);
+  ping_duration = pulseIn(PING_PIN, HIGH);
+}
+
+void Stop() {
+  md.setM1Speed(0);
+  md.setM2Speed(0);
+  Serial.println("STOPPED!!!!");
+  Serial.println("Send input to continue");
+while(!Serial.available()){
+  }
+}
 void stopIfFault()
 {
   if (md.getFault())
