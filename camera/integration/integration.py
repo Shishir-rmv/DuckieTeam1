@@ -43,13 +43,14 @@ def computeLines():
 if __name__ == '__main__':
 	sumTime = 0
 	num = 10
+	camera = PiCamera()
 	for x in range (num):
 		start = datetime.now()
 		camera.capture('test.jpg')
 		computeLines()
 		duration = datetime.now()- start
 		sumTime += duration.total_seconds()
-		print("run %d took %d seconds" % ((x+1), duration))
+		print("run %d took %s seconds" % ((x+1), str(duration)))
 	print("The average time per cycle was %d seconds" % sumTime/num)
 
 	# plt.figure()
