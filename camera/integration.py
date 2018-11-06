@@ -26,7 +26,7 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=3):
 	return img
 
 def computeLines():
-	image = mpimg.imread('test.jpg')
+	image = mpimg.imread('road0.jpg')
 	height, width, temp = image.shape
 	region_of_interest_vert = [(0, height), (width/2,height/2), (width, height)]
 
