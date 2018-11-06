@@ -43,6 +43,7 @@ def computeLines():
 if __name__ == '__main__':
 	sumTime = 0
 	num = 10
+	camera = PiCamera()
 	for x in range (num):
 		start = datetime.now()
 		camera.capture('test.jpg')
