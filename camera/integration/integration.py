@@ -3,8 +3,7 @@ import matplotlib.image as mpimg
 from picamera import PiCamera
 from datetime import datetime
 import numpy as np
-import cv2, math, time
-
+import cv2, math
 
 def region_of_interest(img, vertices):
 	mask = np.zeros_like(img)
@@ -43,6 +42,7 @@ def computeLines():
 if __name__ == '__main__':
 	sumTime = 0
 	num = 10
+	camera = PiCamera()
 	for x in range (num):
 		start = datetime.now()
 		camera.capture('test.jpg')
