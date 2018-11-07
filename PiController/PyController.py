@@ -5,7 +5,7 @@ from datetime import datetime
 #global variables
 port = "/dev/ttyACM0"
 rate = 9600
-s1 = serial.Serial(port, rate, timeout=1)
+s1 = serial.Serial(port, rate, timeout=10)
 motorL = 0 # motor speeds
 motorR = 0
 pingD = 0 #ping distance
@@ -43,10 +43,10 @@ def getEncoder():
 	if (not result):
 		print ("No result received from Arduino on getEncoder call")
 	else:
-		# for debugging
-		print("from encodere call: %s", str(qe))
 		result = (s1.readline()).decode("utf-8")
 		qe = result.split(' ')
+		# for debugging
+		print("from encoder call: %s" % str(result))
 		L_ENC_DIST = qe[0]
 		R_ENC_DIST = qe[1]
 		ENC_DELTA_THETA = qe[2]
@@ -181,4 +181,6 @@ def runTracker():
 if __name__ == '__main__':
 
 	#runController()
+
+	s1.readline()
 	runTracker()
