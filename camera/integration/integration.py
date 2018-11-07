@@ -3,8 +3,7 @@ import matplotlib.image as mpimg
 from picamera import PiCamera
 from datetime import datetime
 import numpy as np
-import cv2, math, time
-
+import cv2, math
 
 def region_of_interest(img, vertices):
 	mask = np.zeros_like(img)

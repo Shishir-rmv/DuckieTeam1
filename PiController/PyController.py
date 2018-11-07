@@ -7,9 +7,17 @@ s1 = serial.Serial(port, rate, timeout=0)
 motorL = 0 # motor speeds
 motorR = 0
 pingD = 0 #ping distance
-qeL = 0 # ir counts
-qeR = 0
 timeoutSecs = 1
+L_ENC_DIST = 0 # change in wheel distances and associated angle change
+R_ENC_DIST = 0
+ENC_DELTA_THETA = 0
+ARD_THETA = 0 #arduinos coordinates and direction
+ARD_X = 0
+ARD_Y = 0
+THETA = 0
+X = 0
+Y = 0
+
 #below variables only needed if pi doing QE distance calculations
 PPR = 8
 WHEEL_BASE = 137 #current approximation in mm, chassis constant
@@ -28,14 +36,24 @@ def vision(distLeft, distRight, angle, go):
 def getEncoder():
 	send = 'irr'
 	s1.write(send.encode())
-	response = (s1.readline(timeout=timeoutSecs)).decode("utf-8")
+	result = s1.readline(timeout=timeoutSecs).decode("utf-8")
 
 	if (!response):
 		print ("No result received from Arduino on getEncoder call")
-	else
-		qe = response.split(' ')
-		qeL = qe[0]
-		qeR = qe[1]
+	else:
+		result = (s1.readline(timeout=timeoutSecs)).decode("utf-8")
+		qe = result.split(' ')
+		L_ENC_DIST = qe[0]
+		R_ENC_DIST = qe[1]
+		ENC_DELTA_THETA = qe[2]
+		ARD_THETA = qe[3]					
+		ARD_X = qe[4]
+		ARD_Y = qe[5]
+
+
+def updateArd():
+	send = 'upd' + str(int(THETA))+str(int(X))+str(int(Y)) 
+	s1.write(send.encode())
 
 
 #get ping distance
