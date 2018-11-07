@@ -1,5 +1,5 @@
 from multiprocessing import Process, Value
-import serial, time
+import serial, datetime
 
 #global variables
 rate = 9600
@@ -138,6 +138,22 @@ def runController():
 
 
 def runTracker():
+	print("PyTracer starting")
+
+	# open the serial port to the Arduino
+	s1.flushInput()
+
+	# Do controller stuff
+	response = ""
+
+	count = 0
+	running = True
+
+	if s1.isOpen():
+		s1.flush()
+		print("PyController starting")
+		
+		while (running):
 
 
 # main method

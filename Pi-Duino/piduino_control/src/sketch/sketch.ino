@@ -2,7 +2,7 @@
 #include <Encoder.h>
 #include "DualMC33926MotorShield.h"
 
-#define L_ENC_A 4 //change to actual used pins
+#define L_ENC_A 4 //change to actual used pins. A is front wheel. B is back 
 #define L_ENC_B 5 //check that pins mathc up with right sensors and encoder init
 #define R_ENC_A 6
 #define R_ENC_B 7
@@ -29,8 +29,8 @@ char dataString[5] = {0};
 
 // M1 is Right, M2 is left
 // Interrupt 3,dig 6 for right, interrupt 2,dig 5 for left
-Encoder myEnc_L(4,5);
-Encoder myEnc_R(6,7);
+Encoder myEnc_L(2,5);
+Encoder myEnc_R(3,6);
 
 
 enum string_code {
@@ -38,6 +38,7 @@ enum string_code {
    irSensor,
    ping,
    stopp,
+   update,
    none
 };
 
@@ -46,6 +47,7 @@ string_code hashit (String inString) {
    if (inString == "irr") return irSensor;
    if (inString == "png") return ping;
    if (inString == "stp") return stopp;
+   if (inString == "upd") return update;
    if (inString == "none") return none;
 }
 
@@ -67,6 +69,15 @@ void setup() {
 
   enableInterrupt(R_ENC_A, encoder, RISING);
   enableInterrupt(R_ENC_B, encoder, RISING);
+
+  pinMode(PING_PIN, OUTPUT);
+  digitalWrite(PING_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(PING_PIN, HIGH);
+  delayMicroseconds(5);
+  digitalWrite(PING_PIN, LOW);
+
+  pinMode(PING_PIN, INPUT);
   
   md.init();
   md.setM1Speed(0);
@@ -78,19 +89,20 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-stopIfFault();
+//stopIfFault();
 String opStr;
 static unsigned int arg1 = 0;
 static unsigned int arg2 = 0;
   if(Serial.available()){
     String input = Serial.readString();
-    Serial.print("input: "+input);
+    // Serial.print("input: "+input);
     
     opStr = input.substring(0,3);
-    Serial.print(opStr);
+    // Serial.println(opStr);
     
-    arg1 = input.substring(3,7).toInt();
-    arg2 = input.substring(7,11).toInt();
+    arg1 = input.substring(3,7).toFloat();
+    arg2 = input.substring(7,11).toFloat();
+    arg3 = input.substring(11,15).toFloat();
   }
 
   else{
@@ -102,19 +114,16 @@ static unsigned int arg2 = 0;
       break;
       
     case motor :
-      Serial.println("motor");
-      Serial.println(arg1);
-      Serial.println(arg2);
-
-      md.setM1Speed(arg1);
-      md.setM2Speed(arg2);
+      // Serial.println("motor");
+      // Serial.println(arg1);
+      // Serial.println(arg2);
+      md.setM1Speed((int)arg1);
+      md.setM2Speed((int)arg2);
       break;
       
     case ping :
-      pingStart();
-      
-      Serial.print("ping duration: ");
-      Serial.println(ping_duration);
+      // Serial.print("ping duration: ");
+      ping();
       break;
       
     case stopp :
@@ -124,6 +133,11 @@ static unsigned int arg2 = 0;
     case irSensor :
       encoder();
       break;
+
+    case update :
+    theta = arg1;
+    x = arg2;
+    y = arg3;
       
     default:
       break;
@@ -138,11 +152,6 @@ void encoder() {
   r_s = r_enc*WHEEL_CIRCUMFERENCE/PPR;   
   l_s = l_enc*WHEEL_CIRCUMFERENCE/PPR;
   
-  Serial.print("change in s(r): ");
-  Serial.println(r_s);
-  Serial.print("change in s(l): ");
-  Serial.println(l_s);
-
   //update the change in avg position and current heading
   delta_x = (l_s + r_s)/2;
   heading = atan2((r_s-l_s)/2, WHEEL_BASE/2);
@@ -151,34 +160,29 @@ void encoder() {
   theta += heading;
   x += delta_x*cos(theta);
   y += delta_x*sin(theta);
+ 
+  String ret = "";
+  ret = l_s + " " + r_s + " " + heading + " " + theta + " " + x + " " + y; 
+  Serial.println(ret);
 }
 
-void pingStart() {
-
-  pinMode(PING_PIN, OUTPUT);
-  digitalWrite(PING_PIN, LOW);
-  delayMicroseconds(2);
-  digitalWrite(PING_PIN, HIGH);
-  delayMicroseconds(5);
-  digitalWrite(PING_PIN, LOW);
-
-  pinMode(PING_PIN, INPUT);
+void ping() {
   ping_duration = pulseIn(PING_PIN, HIGH);
+  Serial.println(ping_duration);
 }
 
 void Stop() {
   md.setM1Speed(0);
   md.setM2Speed(0);
-  Serial.println("STOPPED!!!!");
-  Serial.println("Send input to continue");
-while(!Serial.available()){
-  }
 }
+
 void stopIfFault()
 {
   if (md.getFault())
   {
     Serial.println("fault");
+      md.setM1Speed(0);
+      md.setM2Speed(0);
     while(1);
   }
 }
