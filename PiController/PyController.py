@@ -30,6 +30,7 @@ WHEEL_CIRCUMFERENCE = 219.9115
 def vision(distLeft, distRight, angle, go):
     while (go):
     	# Do Dmitry stuff
+    	pass
 
 
 #function to grab encoder data 
