@@ -9,7 +9,6 @@ s1 = serial.Serial(port, rate, timeout=1)
 motorL = 0 # motor speeds
 motorR = 0
 pingD = 0 #ping distance
-timeoutSecs = 1
 L_ENC_DIST = 0 # change in wheel distances and associated angle change
 R_ENC_DIST = 0
 ENC_DELTA_THETA = 0
