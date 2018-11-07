@@ -97,9 +97,9 @@ def runController():
 	go = ('b', True)
 
 	# define and start the computer vision process
-    p = Process(target=vision, args=(distLeft, distRight, angle, go))
-    p.start()
-    # _____________________________________________________________________________________
+	p = Process(target=vision, args=(distLeft, distRight, angle, go))
+	p.start()
+	# _____________________________________________________________________________________
 
 	# open the serial port to the Arduino
 	s1.flushInput()
@@ -135,8 +135,8 @@ def runController():
 	setMotors(0,0)
 	s1.close()
 	# once we're all done, send the kill switch to the inner vision loop and join the vision process
-    go.value = False
-    p.join()
+	go.value = False
+	p.join()
 
 
 def runTracker():
@@ -170,7 +170,7 @@ def runTracker():
 		#dump data to file
 		print("dumping (%d) records to a JSON in the Logs folder" % len(records))
 		with open(../Logs/'tracer_%s.json' % str(datetime.now()), 'w') as fp:
-    		json.dump({"records" : records}, fp)
+			json.dump({"records" : records}, fp)
 
 
 
