@@ -114,7 +114,7 @@ def runController():
 		s1.flush()
 		print("PyController starting")
 		
-		while (running):
+		# while (running):
 			#check distance to lines on either side & angle in lane
 			#compute wheel speed adjustments based off of current speed and required corrections
 			#set wheels to corrected speed
@@ -169,7 +169,7 @@ def runTracker():
 
 		#dump data to file
 		print("dumping (%d) records to a JSON in the Logs folder" % len(records))
-		with open(../Logs/'tracer_%s.json' % str(datetime.now()), 'w') as fp:
+		with open('../Logs/tracer_%s.json' % str(datetime.now()), 'w') as fp:
 			json.dump({"records" : records}, fp)
 
 
