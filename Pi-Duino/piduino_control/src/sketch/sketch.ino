@@ -74,7 +74,7 @@ void setup() {
   md.setM1Speed(0);
   md.setM2Speed(0);
   Serial.begin(9600);
-  Serial.println("Start");
+  // Serial.println("Start");
 
 }
 
