@@ -1,6 +1,7 @@
 #include <EnableInterrupt.h>
 #include <Encoder.h>
 #include "DualMC33926MotorShield.h"
+#include "types.h"
 
 #define L_ENC_A 4 //change to actual used pins. A is front wheel. B is back
 #define L_ENC_B 5 //check that pins mathc up with right sensors and encoder init
@@ -31,16 +32,6 @@ char dataString[5] = {0};
 // Interrupt 3,dig 6 for right, interrupt 2,dig 5 for left
 Encoder myEnc_L(2,5);
 Encoder myEnc_R(3,6);
-
-
-enum str_code {
-   motor,
-   irSensor,
-   png,
-   stopp,
-   update,
-   none
-};
 
 str_code hashit (String inString) {
    if (inString == "mtr") return motor;
