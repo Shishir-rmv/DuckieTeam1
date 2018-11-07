@@ -2,7 +2,7 @@
 #include <Encoder.h>
 #include "DualMC33926MotorShield.h"
 
-#define L_ENC_A 4 //change to actual used pins. A is front wheel. B is back 
+#define L_ENC_A 4 //change to actual used pins. A is front wheel. B is back
 #define L_ENC_B 5 //check that pins mathc up with right sensors and encoder init
 #define R_ENC_A 6
 #define R_ENC_B 7
@@ -33,19 +33,19 @@ Encoder myEnc_L(2,5);
 Encoder myEnc_R(3,6);
 
 
-enum string_code {
+enum str_code {
    motor,
    irSensor,
-   ping,
+   png,
    stopp,
    update,
    none
 };
 
-string_code hashit (String inString) {
+str_code hashit (String inString) {
    if (inString == "mtr") return motor;
    if (inString == "irr") return irSensor;
-   if (inString == "png") return ping;
+   if (inString == "png") return png;
    if (inString == "stp") return stopp;
    if (inString == "upd") return update;
    if (inString == "none") return none;
@@ -61,7 +61,7 @@ void setup() {
 
   enableInterrupt(L_ENC_A, encoder, RISING);
   enableInterrupt(L_ENC_B, encoder, RISING);
-  
+
   pinMode(R_ENC_A, INPUT);
   digitalWrite(R_ENC_A, HIGH);
   pinMode(R_ENC_B, INPUT);
@@ -78,7 +78,7 @@ void setup() {
   digitalWrite(PING_PIN, LOW);
 
   pinMode(PING_PIN, INPUT);
-  
+
   md.init();
   md.setM1Speed(0);
   md.setM2Speed(0);
@@ -93,13 +93,14 @@ void loop() {
 String opStr;
 static unsigned int arg1 = 0;
 static unsigned int arg2 = 0;
+static unsigned int arg3 = 0;
   if(Serial.available()){
     String input = Serial.readString();
     // Serial.print("input: "+input);
-    
+
     opStr = input.substring(0,3);
     // Serial.println(opStr);
-    
+
     arg1 = input.substring(3,7).toFloat();
     arg2 = input.substring(7,11).toFloat();
     arg3 = input.substring(11,15).toFloat();
@@ -112,7 +113,7 @@ static unsigned int arg2 = 0;
   switch(hashit(opStr)){
     case none :
       break;
-      
+
     case motor :
       // Serial.println("motor");
       // Serial.println(arg1);
@@ -120,16 +121,16 @@ static unsigned int arg2 = 0;
       md.setM1Speed((int)arg1);
       md.setM2Speed((int)arg2);
       break;
-      
-    case ping :
+
+    case png :
       // Serial.print("ping duration: ");
       ping();
       break;
-      
+
     case stopp :
       Stop();
       break;
-      
+
     case irSensor :
       encoder();
       break;
@@ -138,31 +139,31 @@ static unsigned int arg2 = 0;
     theta = arg1;
     x = arg2;
     y = arg3;
-      
+
     default:
       break;
-  } 
+  }
 
 }
 
 
 void encoder() {
   long r_enc = myEnc_R.read();
-  long l_enc = myEnc_L.read();    
-  r_s = r_enc*WHEEL_CIRCUMFERENCE/PPR;   
+  long l_enc = myEnc_L.read();
+  r_s = r_enc*WHEEL_CIRCUMFERENCE/PPR;
   l_s = l_enc*WHEEL_CIRCUMFERENCE/PPR;
-  
+
   //update the change in avg position and current heading
   delta_x = (l_s + r_s)/2;
   heading = atan2((r_s-l_s)/2, WHEEL_BASE/2);
-  
+
   //update overall global positioning
   theta += heading;
   x += delta_x*cos(theta);
   y += delta_x*sin(theta);
- 
+
   String ret = "";
-  ret = l_s + " " + r_s + " " + heading + " " + theta + " " + x + " " + y; 
+  ret = String(l_s) + " " + String(r_s) + " " + String(heading) + " " + String(theta) + " " + String(x) + " " + String(y);
   Serial.println(ret);
 }
 
@@ -196,7 +197,7 @@ void stopIfFault()
 //   static uint8_t enc_val = 0;
 
 //   enc_val <<= 2; //preserve old value
-//   enc_val |= new_val; //add new value to last 2 LSB 
+//   enc_val |= new_val; //add new value to last 2 LSB
 
 //   return (enc_states[(enc_val & 0x0f)]); //get state and remove old values
 // }
