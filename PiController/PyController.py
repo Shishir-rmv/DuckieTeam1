@@ -5,11 +5,10 @@ from datetime import datetime
 #global variables
 port = "/dev/ttyACM0"
 rate = 9600
-s1 = serial.Serial(port, rate, timeout=0)
+s1 = serial.Serial(port, rate, timeout=1)
 motorL = 0 # motor speeds
 motorR = 0
 pingD = 0 #ping distance
-timeoutSecs = 1
 L_ENC_DIST = 0 # change in wheel distances and associated angle change
 R_ENC_DIST = 0
 ENC_DELTA_THETA = 0
@@ -39,7 +38,7 @@ def vision(distLeft, distRight, angle, go):
 def getEncoder():
 	send = 'irr'
 	s1.write(send.encode())
-	result = s1.readline(timeout=timeoutSecs).decode("utf-8")
+	result = s1.readline().decode("utf-8")
 
 	if (not result):
 		print ("No result received from Arduino on getEncoder call")
@@ -63,7 +62,7 @@ def updateArd():
 def getPing():
 	send = 'png'
 	s1.write(send.encode())
-	response = s1.readline(timeout=timeoutSecs).decode("utf-8")
+	response = s1.readline().decode("utf-8")
 
 	if (not response):
 		print ("No result received from Arduino on getPing call")
