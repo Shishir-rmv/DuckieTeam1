@@ -1,5 +1,5 @@
 from multiprocessing import Process, Value
-import serial
+import serial, json
 from datetime import datetime
 
 #global variables
@@ -43,7 +43,7 @@ def getEncoder():
 	if (not result):
 		print ("No result received from Arduino on getEncoder call")
 	else:
-		result = (s1.readline()).decode("utf-8")
+		#result = (s1.readline()).decode("utf-8")
 		qe = result.split(' ')
 		# for debugging
 		print("from encoder call: %s" % str(result))
@@ -171,7 +171,7 @@ def runTracker():
 
 		#dump data to file
 		print("dumping (%d) records to a JSON in the Logs folder" % len(records))
-		with open('../Logs/tracer_%s.json' % str(datetime.now()), 'w') as fp:
+		with open('..\Logs\tracer_%s.json' % str(datetime.now()), 'w') as fp:
 			json.dump({"records" : records}, fp)
 
 
