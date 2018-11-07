@@ -65,9 +65,9 @@ def getPing():
 	response = s1.readline(timeout=timeoutSecs).decode("utf-8")
 
 	if (not response):
-	    print ("No result received from Arduino on getPing call")
-        else:
-	    pingD = response
+		print ("No result received from Arduino on getPing call")
+	else:
+		pingD = response
 
 
 #stop motors
