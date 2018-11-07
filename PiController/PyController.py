@@ -40,7 +40,7 @@ def getEncoder():
 	s1.write(send.encode())
 	result = s1.readline(timeout=timeoutSecs).decode("utf-8")
 
-	if (!result):
+	if (not result):
 		print ("No result received from Arduino on getEncoder call")
 	else:
 		result = (s1.readline(timeout=timeoutSecs)).decode("utf-8")
@@ -64,10 +64,10 @@ def getPing():
 	s1.write(send.encode())
 	response = s1.readline(timeout=timeoutSecs).decode("utf-8")
 
-	if (!response):
-		print ("No result received from Arduino on getPing call")
-	else
-		pingD = response
+	if (not response):
+	    print ("No result received from Arduino on getPing call")
+        else:
+	    pingD = response
 
 
 #stop motors
