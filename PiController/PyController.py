@@ -43,6 +43,8 @@ def getEncoder():
 	if (not result):
 		print ("No result received from Arduino on getEncoder call")
 	else:
+                # for debugging
+                print("from encodere call: %s", str(qe))
 		result = (s1.readline()).decode("utf-8")
 		qe = result.split(' ')
 		L_ENC_DIST = qe[0]
