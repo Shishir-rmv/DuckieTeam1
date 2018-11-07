@@ -3,6 +3,7 @@ import serial
 from datetime import datetime
 
 #global variables
+port = "/dev/ttyACM0"
 rate = 9600
 s1 = serial.Serial(port, rate, timeout=0)
 motorL = 0 # motor speeds
