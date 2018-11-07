@@ -5,7 +5,7 @@ from datetime import datetime
 #global variables
 port = "/dev/ttyACM0"
 rate = 9600
-s1 = serial.Serial(port, rate, timeout=0)
+s1 = serial.Serial(port, rate, timeout=1)
 motorL = 0 # motor speeds
 motorR = 0
 pingD = 0 #ping distance
@@ -39,12 +39,12 @@ def vision(distLeft, distRight, angle, go):
 def getEncoder():
 	send = 'irr'
 	s1.write(send.encode())
-	result = s1.readline(timeout=timeoutSecs).decode("utf-8")
+	result = s1.readline().decode("utf-8")
 
 	if (not result):
 		print ("No result received from Arduino on getEncoder call")
 	else:
-		result = (s1.readline(timeout=timeoutSecs)).decode("utf-8")
+		result = (s1.readline()).decode("utf-8")
 		qe = result.split(' ')
 		L_ENC_DIST = qe[0]
 		R_ENC_DIST = qe[1]
@@ -63,7 +63,7 @@ def updateArd():
 def getPing():
 	send = 'png'
 	s1.write(send.encode())
-	response = s1.readline(timeout=timeoutSecs).decode("utf-8")
+	response = s1.readline().decode("utf-8")
 
 	if (not response):
 		print ("No result received from Arduino on getPing call")
@@ -165,7 +165,7 @@ def runTracker():
 			getEncoder()
 
 			# store it in the array
-			records += ((datetime.now() - start).total_Seconds(), {"L_ENC_DIST" : L_ENC_DIST, "R_ENC_DIST" : R_ENC_DIST, 
+			records += ((datetime.now() - start).total_seconds(), {"L_ENC_DIST" : L_ENC_DIST, "R_ENC_DIST" : R_ENC_DIST, 
 				"ENC_DELTA_THETA" : ENC_DELTA_THETA, "ARD_THETA" : ARD_THETA, "ARD_X" : ARD_X, "ARD_Y" : ARD_Y})
 
 		#dump data to file
