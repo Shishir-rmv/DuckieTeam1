@@ -1,5 +1,6 @@
 from multiprocessing import Process, Value
-import serial, datetime
+import serial
+from datetime import datetime
 
 #global variables
 rate = 9600
@@ -148,12 +149,29 @@ def runTracker():
 
 	count = 0
 	running = True
+	stopAt = 10
+	records = []
 
 	if s1.isOpen():
 		s1.flush()
 		print("PyController starting")
+		start = datetime.now()
 		
-		while (running):
+		# while we're still within our window of execution
+		while ((datetime.now() - start).total_seconds() < stopAt):
+			# get data from arduino
+			getEncoder()
+
+			# store it in the array
+			records += ((datetime.now() - start).total_Seconds(), {"L_ENC_DIST" : L_ENC_DIST, "R_ENC_DIST" : R_ENC_DIST, 
+				"ENC_DELTA_THETA" : ENC_DELTA_THETA, "ARD_THETA" : ARD_THETA, "ARD_X" : ARD_X, "ARD_Y" : ARD_Y})
+
+		#dump data to file
+		print("dumping (%d) records to a JSON in the Logs folder" % len(records))
+		with open(../Logs/'tracer_%s.json' % str(datetime.now()), 'w') as fp:
+    		json.dump({"records" : records}, fp)
+
+
 
 
 # main method
