@@ -40,7 +40,7 @@ def getEncoder():
 	s1.write(send.encode())
 	result = s1.readline(timeout=timeoutSecs).decode("utf-8")
 
-	if (!response):
+	if (!result):
 		print ("No result received from Arduino on getEncoder call")
 	else:
 		result = (s1.readline(timeout=timeoutSecs)).decode("utf-8")
