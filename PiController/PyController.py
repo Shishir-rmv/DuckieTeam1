@@ -13,12 +13,16 @@ motorR = 0
 pingD = 0
 L_ENC_DIST = 0  # change in wheel distances and associated angle change
 R_ENC_DIST = 0
+SPEED = 0
+last_time = 0
+
 
 ENC_DELTA_THETA = 0
 ENC_DELTA_X = 0
 
 THETA = 0
 X = 0
+last_X = 0
 Y = 0
 
 #below variables only needed if pi doing QE distance calculations
@@ -59,12 +63,14 @@ def getEncoder():
 
  		#update the change in avg position and current heading
 		ENC_DELTA_X = (L_ENC_DIST + R_ENC_DIST)/2;
-		ENC_DELTA_THETA = atan2((R_ENC_DIST-L_ENC_DIST)/2, WHEEL_BASE/2);
+		ENC_DELTA_THETA = math.atan2((R_ENC_DIST-L_ENC_DIST)/2, WHEEL_BASE/2);
 
  		#update overall global positioning
 		THETA += ENC_DELTA_THETA;
-		X += ENC_DELTA_X*cos(THETA);
-		Y += ENC_DELTA_X*sin(THETA);
+		X += ENC_DELTA_X*math.cos(THETA);
+		Y += ENC_DELTA_X*math.sin(THETA);
+
+
 
 #get ping distance
 def getPing():
@@ -127,6 +133,7 @@ def runController():
 			#compute wheel speed adjustments based off of current speed and required corrections
 			#set wheels to corrected speed
 			#consider sleeping until a timeDelta has passed?
+	#output = Kp*(goal-X)-Kd*SPEED
 
 		s1.readline()
 		for x in range(10):
@@ -168,9 +175,10 @@ def runTracker():
 		while ((datetime.now() - start).total_seconds() < stopAt):
 			# get data from arduino
 			getEncoder()
+			speed()
 
 			# store it in the array
-			records[float((datetime.now() - start).total_seconds())] = {"L_ENC_DIST" : L_ENC_DIST, "R_ENC_DIST" : R_ENC_DIST, 
+			records[float((datetime.now() - start).total_seconds())] = {"L_ENC_DIST" : L_ENC_DIST, "R_ENC_DIST" : R_ENC_DIST, "SPEED" : SPEED,
 				"ENC_DELTA_THETA" : ENC_DELTA_THETA, "ARD_THETA" : ARD_THETA, "ARD_X" : ARD_X, "ARD_Y" : ARD_Y}
 
 		#dump data to file
@@ -181,6 +189,14 @@ def runTracker():
 	# once finished
 	setMotors(0,0)
 	s1.close()
+
+def speed():
+	time = datetime.now()
+
+	SPEED = (X - last_X)/((time - last_time).total_seconds())
+
+	last_time = time
+	last_X = X
 
 
 def runManual():

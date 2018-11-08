@@ -12,9 +12,9 @@
 #define ENC_PORT PIND
 
 
-#define WHEEL_BASE 137 //current approximation in mm, chassis constant
-#define WHEEL_CIRCUMFERENCE 219.9115 //circumference = 2*pi*r, r = 35mm, pi = 3.14
-#define PPR 8 //pulses per revolution is = to # of lines per revoluion aka number of white segments which is half of the total segments, this is assumig 32 segments
+// #define WHEEL_BASE 137 //current approximation in mm, chassis constant
+// #define WHEEL_CIRCUMFERENCE 219.9115 //circumference = 2*pi*r, r = 35mm, pi = 3.14
+// #define PPR 8 //pulses per revolution is = to # of lines per revoluion aka number of white segments which is half of the total segments, this is assumig 32 segments
 
 // set all global position variables to 0
 DualMC33926MotorShield md;
@@ -50,16 +50,16 @@ void setup() {
   pinMode(L_ENC_B, INPUT);
   digitalWrite(L_ENC_B, HIGH);
 
-  enableInterrupt(L_ENC_A, encoder, RISING);
-  enableInterrupt(L_ENC_B, encoder, RISING);
+  enableInterrupt(L_ENC_A, encoder, CHANGE);
+  enableInterrupt(L_ENC_B, encoder, CHANGE);
 
   pinMode(R_ENC_A, INPUT);
   digitalWrite(R_ENC_A, HIGH);
   pinMode(R_ENC_B, INPUT);
   digitalWrite(R_ENC_B, HIGH);
 
-  enableInterrupt(R_ENC_A, encoder, RISING);
-  enableInterrupt(R_ENC_B, encoder, RISING);
+  enableInterrupt(R_ENC_A, encoder, CHANGE);
+  enableInterrupt(R_ENC_B, encoder, CHANGE);
 
   pinMode(PING_PIN, OUTPUT);
   digitalWrite(PING_PIN, LOW);
