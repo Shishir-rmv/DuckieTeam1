@@ -1,27 +1,30 @@
 from multiprocessing import Process, Value
-import serial, json
+import serial, json, math
 from datetime import datetime
 
 #global variables
+
 port = "/dev/ttyACM0"
 rate = 9600
 s1 = serial.Serial(port, rate, timeout=10)
-motorL = 0 # motor speeds
+motorL = 0  # motor speeds
 motorR = 0
-pingD = 0 #ping distance
-L_ENC_DIST = 0 # change in wheel distances and associated angle change
+#ping distance
+pingD = 0
+L_ENC_DIST = 0  # change in wheel distances and associated angle change
 R_ENC_DIST = 0
+
 ENC_DELTA_THETA = 0
-ARD_THETA = 0 #arduinos coordinates and direction
-ARD_X = 0
-ARD_Y = 0
+ENC_DELTA_X = 0
+
 THETA = 0
 X = 0
 Y = 0
 
 #below variables only needed if pi doing QE distance calculations
 PPR = 8
-WHEEL_BASE = 137 #current approximation in mm, chassis constant
+#current approximation in mm, chassis constant
+WHEEL_BASE = 137   
 WHEEL_CIRCUMFERENCE = 219.9115
 
 
@@ -35,6 +38,7 @@ def vision(distLeft, distRight, angle, go):
 
 #function to grab encoder data 
 #have to decide if the arduino will return just increments or already calculate the distance per wheel and theta itself
+
 def getEncoder():
 	send = 'irr'
 	s1.write(send.encode())
@@ -47,18 +51,20 @@ def getEncoder():
 		qe = result.split(' ')
 		# for debugging
 		print("from encoder call: %s" % str(result))
-		L_ENC_DIST = qe[0]
-		R_ENC_DIST = qe[1]
-		ENC_DELTA_THETA = qe[2]
-		ARD_THETA = qe[3]					
-		ARD_X = qe[4]
-		ARD_Y = qe[5]
+		l_enc = qe[0]
+		r_enc = qe[1]
 
+		L_ENC_DIST = l_enc * WHEEL_CIRCUMFERENCE/PPR
+		R_ENC_DIST = r_enc * WHEEL_CIRCUMFERENCE/PPR
 
-def updateArd():
-	send = 'upd' + str(int(THETA))+str(int(X))+str(int(Y)) 
-	s1.write(send.encode())
+ 		#update the change in avg position and current heading
+		ENC_DELTA_X = (L_ENC_DIST + R_ENC_DIST)/2;
+		ENC_DELTA_THETA = atan2((R_ENC_DIST-L_ENC_DIST)/2, WHEEL_BASE/2);
 
+ 		#update overall global positioning
+		THETA += ENC_DELTA_THETA;
+		X += ENC_DELTA_X*cos(THETA);
+		Y += ENC_DELTA_X*sin(THETA);
 
 #get ping distance
 def getPing():
