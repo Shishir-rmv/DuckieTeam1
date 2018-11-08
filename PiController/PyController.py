@@ -14,7 +14,7 @@ pingD = 0
 L_ENC_DIST = 0  # change in wheel distances and associated angle change
 R_ENC_DIST = 0
 SPEED = 0
-last_time = 0
+last_time = datetime.now()
 
 
 ENC_DELTA_THETA = 0
@@ -44,32 +44,37 @@ def vision(distLeft, distRight, angle, go):
 #have to decide if the arduino will return just increments or already calculate the distance per wheel and theta itself
 
 def getEncoder():
-	send = 'irr'
-	s1.write(send.encode())
-	result = s1.readline().decode("utf-8")
+    global THETA
+    global X
+    global Y
+    l_enc = 0
+    r_enc = 0
+    send = 'irr'
+    s1.write(send.encode())
+    result = s1.readline().decode("utf-8")
+    print(result)
 
-	if (not result):
-		print ("No result received from Arduino on getEncoder call")
-	else:
-		#result = (s1.readline()).decode("utf-8")
-		qe = result.split(' ')
-		# for debugging
-		print("from encoder call: %s" % str(result))
-		l_enc = qe[0]
-		r_enc = qe[1]
+    if (not result):
+        print ("No result received from Arduino on getEncoder call")
+    else:
+    	#result = (s1.readline()).decode("utf-8")
+        qe = result.split(',')
+    	# for debugging
+        print("from encoder call: %s" % str(result))
+        if(len(qe) >= 2):
+            l_enc = int(qe[0])
+            r_enc = int(qe[1])
+        L_ENC_DIST = l_enc * WHEEL_CIRCUMFERENCE/PPR
+        R_ENC_DIST = r_enc * WHEEL_CIRCUMFERENCE/PPR
 
-		L_ENC_DIST = l_enc * WHEEL_CIRCUMFERENCE/PPR
-		R_ENC_DIST = r_enc * WHEEL_CIRCUMFERENCE/PPR
+    	#update the change in avg position and current heading
+        ENC_DELTA_X = (L_ENC_DIST + R_ENC_DIST)/2
+        ENC_DELTA_THETA = math.atan2((R_ENC_DIST-L_ENC_DIST)/2, WHEEL_BASE/2)
 
- 		#update the change in avg position and current heading
-		ENC_DELTA_X = (L_ENC_DIST + R_ENC_DIST)/2;
-		ENC_DELTA_THETA = math.atan2((R_ENC_DIST-L_ENC_DIST)/2, WHEEL_BASE/2);
-
- 		#update overall global positioning
-		THETA += ENC_DELTA_THETA;
-		X += ENC_DELTA_X*math.cos(THETA);
-		Y += ENC_DELTA_X*math.sin(THETA);
-
+    	#update overall global positioning
+        THETA += ENC_DELTA_THETA
+        X += ENC_DELTA_X*math.cos(THETA)
+        Y += ENC_DELTA_X*math.sin(THETA)
 
 
 #get ping distance
@@ -155,7 +160,13 @@ def runController():
 
 
 def runTracker():
-	print("PyTracer starting")
+        global X
+        global Y
+        global ENC_DELTA_THETA
+        global SPEED
+        global L_ENC_DIST
+        global R_ENC_DIST
+        print("PyTracer starting")
 	# open the serial port to the Arduino
 	s1.flushInput()
 
@@ -164,7 +175,7 @@ def runTracker():
 
 	count = 0
 	running = True
-	stopAt = 10
+	stopAt = 20
 	records = {}
 
 	if s1.isOpen():
@@ -179,7 +190,8 @@ def runTracker():
 
 			# store it in the array
 			records[float((datetime.now() - start).total_seconds())] = {"L_ENC_DIST" : L_ENC_DIST, "R_ENC_DIST" : R_ENC_DIST, "SPEED" : SPEED,
-				"ENC_DELTA_THETA" : ENC_DELTA_THETA, "ARD_THETA" : ARD_THETA, "ARD_X" : ARD_X, "ARD_Y" : ARD_Y}
+                                "ENC_DELTA_THETA" : ENC_DELTA_THETA, "x" : X, "Y" : Y}
+                        #"ARD_THETA" : ARD_THETA, "ARD_X" : ARD_X, "ARD_Y" : ARD_Y}
 
 		#dump data to file
 		print("dumping (%d) records to a JSON in the Logs folder" % len(records))
@@ -191,12 +203,14 @@ def runTracker():
 	s1.close()
 
 def speed():
-	time = datetime.now()
-
-	SPEED = (X - last_X)/((time - last_time).total_seconds())
-
-	last_time = time
-	last_X = X
+    global last_time
+    global last_X
+    time = datetime.now()
+    
+    SPEED = (X - last_X)/((time - last_time).total_seconds())
+    
+    last_time = time
+    last_X = X
 
 
 def runManual():
