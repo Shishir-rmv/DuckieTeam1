@@ -171,7 +171,7 @@ def runTracker():
 
 		#dump data to file
 		print("dumping (%d) records to a JSON in the Logs folder" % len(records))
-		with open('..\Logs\tracer_%s.json' % str(datetime.now()), 'w') as fp:
+		with open('../Logs/tracer_%s.json' % str(datetime.now()), 'w') as fp:
 			json.dump({"records" : records}, fp)
 
 
