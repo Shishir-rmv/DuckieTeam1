@@ -166,8 +166,8 @@ def runTracker():
 			getEncoder()
 
 			# store it in the array
-			records += ((datetime.now() - start).total_seconds(), {"L_ENC_DIST" : L_ENC_DIST, "R_ENC_DIST" : R_ENC_DIST, 
-				"ENC_DELTA_THETA" : ENC_DELTA_THETA, "ARD_THETA" : ARD_THETA, "ARD_X" : ARD_X, "ARD_Y" : ARD_Y})
+			records += (((datetime.now() - start).total_seconds(), {"L_ENC_DIST" : L_ENC_DIST, "R_ENC_DIST" : R_ENC_DIST, 
+				"ENC_DELTA_THETA" : ENC_DELTA_THETA, "ARD_THETA" : ARD_THETA, "ARD_X" : ARD_X, "ARD_Y" : ARD_Y}))
 
 		#dump data to file
 		print("dumping (%d) records to a JSON in the Logs folder" % len(records))
