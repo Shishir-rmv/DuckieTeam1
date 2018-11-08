@@ -3,11 +3,19 @@
 #include "DualMC33926MotorShield.h"
 #include "types.h"
 
+<<<<<<< HEAD
 #define L_ENC_A 4 //change to actual used pins. A is front wheel. B is back
 #define L_ENC_B 6 //check that pins mathc up with right sensors and encoder init
 #define R_ENC_A 5
 #define R_ENC_B 7
 #define PING_PIN 3
+=======
+#define L_ENC_A 5 //change to actual used pins. A is front wheel. B is back
+#define L_ENC_B 4 //check that pins mathc up with right sensors and encoder init
+#define R_ENC_A 7
+#define R_ENC_B 6
+#define PING_PIN 8
+>>>>>>> 7b3dfe5955a6c9ef1b2a32f2bed5e08adaa615ec
 
 #define ENC_PORT PIND
 
@@ -30,8 +38,13 @@ char dataString[5] = {0};
 
 // M1 is Right, M2 is left
 // Interrupt 3,dig 6 for right, interrupt 2,dig 5 for left
+<<<<<<< HEAD
 Encoder myEnc_L(L_ENC_A,L_ENC_B);
 Encoder myEnc_R(R_ENC_A,R_ENC_B);
+=======
+//Encoder myEnc_L(L_ENC_A,L_ENC_B);
+//Encoder myEnc_R(R_ENC_A,R_ENC_B);
+>>>>>>> 7b3dfe5955a6c9ef1b2a32f2bed5e08adaa615ec
 
 str_code hashit (String inString) {
    if (inString == "mtr") return motor;
@@ -132,8 +145,9 @@ static unsigned int arg2 = 0;
 
 
 void encoder() {
-  long l_enc = myEnc_L.read();
-  long r_enc = myEnc_R.read();
+  long l_enc = read_encoderL((ENC_PORT & 0b00110000) >> 4); 
+  long r_enc = read_encoderR((ENC_PORT & 0b11000000) >> 6);
+
   // r_s = r_enc*WHEEL_CIRCUMFERENCE/PPR;
   // l_s = l_enc*WHEEL_CIRCUMFERENCE/PPR;
 
@@ -146,7 +160,11 @@ void encoder() {
   // x += delta_x*cos(theta);
   // y += delta_x*sin(theta);
 
+<<<<<<< HEAD
   String ret = "";
+=======
+  String ret = " ";
+>>>>>>> 7b3dfe5955a6c9ef1b2a32f2bed5e08adaa615ec
   ret = String(l_enc) + "," + String(r_enc);
   Serial.println(ret);
 }
@@ -173,15 +191,31 @@ void stopIfFault()
 }
 
 
+int8_t read_encoderL(int8_t new_val)
+{
+  //defines array that describes moving states of the QE for CW & CCW motion
+  static int8_t enc_statesL[] = {0,-1,1,0,1,0,0,-1,-1,0,0,1,0,1,-1,0};
+  static uint8_t enc_valL = 0;
+  static uint8_t stateL = 0;
 
-// int8_t read_encoder(int8_t new_val)
-// {
-//   //defines array that describes moving states of the QE for CW & CCW motion
-//   static int8_t enc_states[] = {0,-1,1,0,1,0,0,-1,-1,0,0,1,0,1,-1,0};
-//   static uint8_t enc_val = 0;
+  enc_valL <<= 2; //preserve old value
+  enc_valL |= new_val; //add new value to last 2 LSB 
+  stateL = enc_valL & 0b1111;
 
-//   enc_val <<= 2; //preserve old value
-//   enc_val |= new_val; //add new value to last 2 LSB
+  return (enc_statesL[stateL]); //get state and remove old values
+}
 
-//   return (enc_states[(enc_val & 0x0f)]); //get state and remove old values
-// }
+int8_t read_encoderR(int8_t new_val)
+{
+  //defines array that describes moving states of the QE for CW & CCW motion
+  static int8_t enc_statesR[] = {0,-1,1,0,1,0,0,-1,-1,0,0,1,0,1,-1,0};
+  static uint8_t enc_valR = 0;
+  static uint8_t stateR = 0;
+
+  enc_valR <<= 2; //preserve old value
+  enc_valR |= new_val; //add new value to last 2 LSB 
+  stateR = enc_valR & 0b1111;
+  Serial.println(stateR, BIN);
+
+  return (enc_statesR[stateR]); //get state and remove old values
+}

@@ -1,0 +1,37 @@
+{
+    "0": {
+        "desc": "Starting line, right lane of long stretch (0,0)",
+        "act": "laneFollow",
+        "next": [
+            1
+        ]
+    },
+    "1": {
+        "desc": "Start right turn",
+        "act": "shortArcR",
+        "next": [
+            2
+        ]
+    },
+    "2": {
+        "desc": "Lane follow after right turn",
+        "act": "laneFollow",
+        "next": [
+            3
+        ]
+    },
+    "3": {
+        "desc": "Stopping point",
+        "act": "stop",
+        "next": [
+            -1
+        ]
+    },
+    "-1": {
+        "desc": "stop",
+        "act": "stop",
+        "next": [
+            -1
+        ]
+    }
+}
