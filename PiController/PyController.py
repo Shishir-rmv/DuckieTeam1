@@ -96,8 +96,8 @@ def stop():
 
 
 #set motor speed
-def setMotors(motorSpeedL, motorspeedR):
-    send = 'mtr' + str(motorSpeedL) + str(motorspeedR)
+def setMotors(motorSpeedL, motorSpeedR):
+    send = 'mtr' + str(motorSpeedL) + str(motorSpeedR)
     s1.write(send.encode())
 
     #update the global variables once they're written to serial
@@ -160,13 +160,13 @@ def runController():
 
 
 def runTracker():
-        global X
-        global Y
-        global ENC_DELTA_THETA
-        global SPEED
-        global L_ENC_DIST
-        global R_ENC_DIST
-        print("PyTracer starting")
+    global X
+    global Y
+    global ENC_DELTA_THETA
+    global SPEED
+    global L_ENC_DIST
+    global R_ENC_DIST
+    print("PyTracer starting")
     # open the serial port to the Arduino
     s1.flushInput()
 

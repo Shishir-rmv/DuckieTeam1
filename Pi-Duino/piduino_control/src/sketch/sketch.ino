@@ -4,10 +4,10 @@
 #include "types.h"
 
 #define L_ENC_A 4 //change to actual used pins. A is front wheel. B is back
-#define L_ENC_B 5 //check that pins mathc up with right sensors and encoder init
-#define R_ENC_A 6
+#define L_ENC_B 6 //check that pins mathc up with right sensors and encoder init
+#define R_ENC_A 5
 #define R_ENC_B 7
-#define PING_PIN 8
+#define PING_PIN 3
 
 #define ENC_PORT PIND
 
@@ -30,8 +30,8 @@ char dataString[5] = {0};
 
 // M1 is Right, M2 is left
 // Interrupt 3,dig 6 for right, interrupt 2,dig 5 for left
-Encoder myEnc_L(2,5);
-Encoder myEnc_R(3,6);
+Encoder myEnc_L(L_ENC_A,L_ENC_B);
+Encoder myEnc_R(R_ENC_A,R_ENC_B);
 
 str_code hashit (String inString) {
    if (inString == "mtr") return motor;
@@ -45,21 +45,21 @@ str_code hashit (String inString) {
 void setup() {
   // put your setup code here, to run once:
 
-  pinMode(L_ENC_A, INPUT);
-  digitalWrite(L_ENC_A, HIGH);
-  pinMode(L_ENC_B, INPUT);
-  digitalWrite(L_ENC_B, HIGH);
+  //pinMode(L_ENC_A, INPUT);
+  //digitalWrite(L_ENC_A, HIGH);
+  //pinMode(L_ENC_B, INPUT);
+  //digitalWrite(L_ENC_B, HIGH);
 
-  enableInterrupt(L_ENC_A, encoder, CHANGE);
-  enableInterrupt(L_ENC_B, encoder, CHANGE);
+  //enableInterrupt(L_ENC_A, encoder, CHANGE);
+  //enableInterrupt(L_ENC_B, encoder, CHANGE);
 
-  pinMode(R_ENC_A, INPUT);
-  digitalWrite(R_ENC_A, HIGH);
-  pinMode(R_ENC_B, INPUT);
-  digitalWrite(R_ENC_B, HIGH);
+  //pinMode(R_ENC_A, INPUT);
+  //digitalWrite(R_ENC_A, HIGH);
+  //pinMode(R_ENC_B, INPUT);
+  //digitalWrite(R_ENC_B, HIGH);
 
-  enableInterrupt(R_ENC_A, encoder, CHANGE);
-  enableInterrupt(R_ENC_B, encoder, CHANGE);
+  //enableInterrupt(R_ENC_A, encoder, CHANGE);
+  //enableInterrupt(R_ENC_B, encoder, CHANGE);
 
   pinMode(PING_PIN, OUTPUT);
   digitalWrite(PING_PIN, LOW);
@@ -147,7 +147,7 @@ void encoder() {
   // y += delta_x*sin(theta);
 
   String ret = "";
-  ret = String(l_enc) + " " + String(r_enc);
+  ret = String(l_enc) + "," + String(r_enc);
   Serial.println(ret);
 }
 
