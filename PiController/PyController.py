@@ -103,6 +103,7 @@ def runController():
 	p.start()
 	# _____________________________________________________________________________________
 
+	print("PyController starting")
 	# open the serial port to the Arduino
 	s1.flushInput()
 
@@ -114,7 +115,6 @@ def runController():
 
 	if s1.isOpen():
 		s1.flush()
-		print("PyController starting")
 		
 		# while (running):
 			#check distance to lines on either side & angle in lane
@@ -143,7 +143,6 @@ def runController():
 
 def runTracker():
 	print("PyTracer starting")
-
 	# open the serial port to the Arduino
 	s1.flushInput()
 
@@ -157,7 +156,6 @@ def runTracker():
 
 	if s1.isOpen():
 		s1.flush()
-		print("PyController starting")
 		start = datetime.now()
 		
 		# while we're still within our window of execution
@@ -166,7 +164,7 @@ def runTracker():
 			getEncoder()
 
 			# store it in the array
-			records[(datetime.now() - start).total_seconds()] =  {"L_ENC_DIST" : L_ENC_DIST, "R_ENC_DIST" : R_ENC_DIST, 
+			records[float((datetime.now() - start).total_seconds())] = {"L_ENC_DIST" : L_ENC_DIST, "R_ENC_DIST" : R_ENC_DIST, 
 				"ENC_DELTA_THETA" : ENC_DELTA_THETA, "ARD_THETA" : ARD_THETA, "ARD_X" : ARD_X, "ARD_Y" : ARD_Y}
 
 		#dump data to file
@@ -174,13 +172,38 @@ def runTracker():
 		with open('../Logs/tracer_%s.json' % str(datetime.now()), 'w') as fp:
 			json.dump(records, fp, indent=4)
 
+	# once finished
+	setMotors(0,0)
+	s1.close()
 
 
+def runManual():
+	print("Manual controller starting")
+	print("beware, no error checking involved")
+	# open the serial port to the Arduino
+	s1.flushInput()
+
+	if s1.isOpen():
+		s1.flush()
+		cmd = ""
+		
+		# while we're still within our window of execution
+		while (cmd != "999"):
+			cmd = input('Enter Pi command:')
+			
+			# encode and send the command
+			s1.write(cmd.encode())
+
+			# receive and print the response
+			response = s1.readline().decode("utf-8")
+
+	# once finished
+	setMotors(0,0)
+	s1.close()
 
 # main method
 if __name__ == '__main__':
 
 	#runController()
-
-	s1.readline()
 	runTracker()
+	# runManual
