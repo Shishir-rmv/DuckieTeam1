@@ -3,7 +3,6 @@
 #include "DualMC33926MotorShield.h"
 #include "types.h"
 
-
 #define L_ENC_A 12 //change to actual used pins. A is front wheel. B is back
 #define L_ENC_B 13 //check that pins mathc up with right sensors and encoder init
 #define R_ENC_A 5
@@ -49,19 +48,23 @@ void setup() {
   // put your setup code here, to run once:
 
   pinMode(L_ENC_A, INPUT);
-  digitalWrite(L_ENC_A, HIGH);
-  pinMode(L_ENC_B, INPUT);
-  digitalWrite(L_ENC_B, HIGH);
+  digitalWrite(L_ENC_A, LOW);
 
   enableInterrupt(L_ENC_A, encoder, CHANGE);
+
+  pinMode(L_ENC_B, INPUT);
+  //digitalWrite(L_ENC_B, LOW);
+  
   enableInterrupt(L_ENC_B, encoder, CHANGE);
 
   pinMode(R_ENC_A, INPUT);
-  digitalWrite(R_ENC_A, HIGH);
-  pinMode(R_ENC_B, INPUT);
-  digitalWrite(R_ENC_B, HIGH);
-
+  //digitalWrite(R_ENC_A, HIGH);
+  
   enableInterrupt(R_ENC_A, encoder, CHANGE);
+
+  pinMode(R_ENC_B, INPUT);
+  //digitalWrite(R_ENC_B, HIGH);
+  
   enableInterrupt(R_ENC_B, encoder, CHANGE);
 
   pinMode(PING_PIN, OUTPUT);
@@ -124,7 +127,7 @@ static unsigned int arg2 = 0;
       break;
 
     case irSensor :
-      encoder();
+      getEnc();
       break;
 
     default:
@@ -142,38 +145,37 @@ void encoder() {
   // Serial.println((ENC_PORT2 & 0b110000) >> 4, BIN);
   // Serial.println((ENC_PORT & 0b1100000) >> 5, BIN);
 
-  r_s = r_enc*WHEEL_CIRCUMFERENCE/PPR;
-  l_s = l_enc*WHEEL_CIRCUMFERENCE/PPR;
+  //r_s = r_enc*WHEEL_CIRCUMFERENCE/PPR;
+  //l_s = l_enc*WHEEL_CIRCUMFERENCE/PPR;
 
   l_count += l_enc;
   r_count += r_enc;
   // //update the change in avg position and current heading
-   delta_x = (l_s + r_s)/2;
-   heading = atan2((r_s-l_s)/2, WHEEL_BASE/2);
+  // delta_x = (l_s + r_s)/2;
+  // heading = atan2((r_s-l_s)/2, WHEEL_BASE/2);
 
-   //update overall global positioning
-   theta += heading;
-   x += delta_x;//*cos(theta);
-   y += delta_x;//*sin(theta);
+  //  //update overall global positioning
+  // theta += heading;
+  // x += delta_x;//*cos(theta);
+  // y += delta_x;//*sin(theta);
 
-
-  String ret = "";
-
-  ret = "l_enc: " + String(l_enc) + " r_enc: " + String(r_enc);
-  Serial.println(ret);
-
-  ret = "l_count: " + String(l_count) + " r_count: " + String(r_count);
-  Serial.println(ret);
-
-  ret = "l_S: " + String(l_s) + " r_s: " + String(r_s);
-  Serial.println(ret);
-
-  ret = "delta x: " + String(delta_x) + " heading: " + String(heading);
-  Serial.println(ret);
-
-  ret = "x: " + String(x) + " y: " + String(y) + " theta: " + String(theta);
-  Serial.println(ret);
-  Serial.println();
+  // String ret = " ";
+  // ret = "l_enc: " + String(l_enc) + " r_enc: " + String(r_enc);
+  // Serial.println(ret);
+  // ret = "l_count: " + String(l_count) + " r_count: " + String(r_count);
+  // Serial.println(ret);
+  // ret = "l_S: " + String(l_s) + " r_s: " + String(r_s);
+  // Serial.println(ret);
+  // ret = "delta x: " + String(delta_x) + " heading: " + String(heading);
+  // Serial.println(ret);
+  // ret = "x: " + String(x) + " y: " + String(y) + " theta: " + String(theta);
+  // Serial.println(ret);
+  // Serial.println();
+}
+void getEnc() {
+  Serial.println(String(l_count)+","+String(r_count));
+  l_count = 0;
+  r_count = 0;
 }
 
 void ping() {
