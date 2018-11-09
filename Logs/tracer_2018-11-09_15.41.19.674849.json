@@ -1,0 +1,162 @@
+{
+    "12.147024": {
+        "Y": 165.3547850160947,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": -208.1443135076793
+    },
+    "17.221786": {
+        "Y": 604.0056403076154,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": -213.88426695099585
+    },
+    "8.094796": {
+        "Y": 0.0,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": -82.4668125
+    },
+    "19.253009": {
+        "Y": 753.1139821465663,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": -233.96816714675145
+    },
+    "1.012292": {
+        "Y": 0.0,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": 0.0
+    },
+    "9.110073": {
+        "Y": 0.0,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": -164.933625
+    },
+    "5.059342": {
+        "Y": 0.0,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": 0.0
+    },
+    "11.134085": {
+        "Y": 69.23623179507325,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": -203.92123803306782
+    },
+    "13.16257": {
+        "Y": 247.7421163483988,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": -211.76409248591773
+    },
+    "6.071284": {
+        "Y": 0.0,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": 0.0
+    },
+    "3.035819": {
+        "Y": 0.0,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": 0.0
+    },
+    "7.083079": {
+        "Y": 0.0,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": 0.0
+    },
+    "14.178458": {
+        "Y": 315.649980644551,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": -201.21504052716145
+    },
+    "10.122312": {
+        "Y": 29.2036254910852,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": -194.0427653025575
+    },
+    "20.265948": {
+        "Y": 833.1791947545423,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": -253.72511260777208
+    },
+    "15.193951": {
+        "Y": 411.76853386557246,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": -205.43811600177293
+    },
+    "18.237041": {
+        "Y": 686.3929716399196,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": -217.50404592923425
+    },
+    "2.024092": {
+        "Y": 0.0,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": 0.0
+    },
+    "16.209518": {
+        "Y": 521.6183089753113,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": -210.26448797275745
+    },
+    "4.047552": {
+        "Y": 0.0,
+        "L_ENC_DIST": 0,
+        "SPEED": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": 0.0
+    }
+}
