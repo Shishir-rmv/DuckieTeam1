@@ -1,20 +1,20 @@
 #include <EnableInterrupt.h>
-#include <Encoder.h>
+//#include <Encoder.h>
 #include "DualMC33926MotorShield.h"
 #include "types.h"
 
-#define L_ENC_A 5 //change to actual used pins. A is front wheel. B is back
-#define L_ENC_B 4 //check that pins mathc up with right sensors and encoder init
-#define R_ENC_A 7
+#define L_ENC_A 12 //change to actual used pins. A is front wheel. B is back
+#define L_ENC_B 13 //check that pins mathc up with right sensors and encoder init
+#define R_ENC_A 5
 #define R_ENC_B 6
 #define PING_PIN 8
 
 #define ENC_PORT PIND
+#define ENC_PORT2 PINB
 
-
-// #define WHEEL_BASE 137 //current approximation in mm, chassis constant
-// #define WHEEL_CIRCUMFERENCE 219.9115 //circumference = 2*pi*r, r = 35mm, pi = 3.14
-// #define PPR 8 //pulses per revolution is = to # of lines per revoluion aka number of white segments which is half of the total segments, this is assumig 32 segments
+ #define WHEEL_BASE 137 //current approximation in mm, chassis constant
+ #define WHEEL_CIRCUMFERENCE 219.9115 //circumference = 2*pi*r, r = 35mm, pi = 3.14
+ #define PPR 32 //pulses per revolution is = to # of lines per revoluion aka number of white segments which is half of the total segments, this is assumig 32 segments
 
 // set all global position variables to 0
 DualMC33926MotorShield md;
@@ -23,6 +23,8 @@ double x = 0;
 double y = 0;
 double l_s; //left distance changed
 double r_s; //right distance changed
+double l_count;
+double r_count;
 double delta_x;
 double heading;
 double ping_duration;
@@ -46,19 +48,23 @@ void setup() {
   // put your setup code here, to run once:
 
   pinMode(L_ENC_A, INPUT);
-  digitalWrite(L_ENC_A, HIGH);
-  pinMode(L_ENC_B, INPUT);
-  digitalWrite(L_ENC_B, HIGH);
+  digitalWrite(L_ENC_A, LOW);
 
   enableInterrupt(L_ENC_A, encoder, CHANGE);
+
+  pinMode(L_ENC_B, INPUT);
+  //digitalWrite(L_ENC_B, LOW);
+  
   enableInterrupt(L_ENC_B, encoder, CHANGE);
 
   pinMode(R_ENC_A, INPUT);
-  digitalWrite(R_ENC_A, HIGH);
-  pinMode(R_ENC_B, INPUT);
-  digitalWrite(R_ENC_B, HIGH);
-
+  //digitalWrite(R_ENC_A, HIGH);
+  
   enableInterrupt(R_ENC_A, encoder, CHANGE);
+
+  pinMode(R_ENC_B, INPUT);
+  //digitalWrite(R_ENC_B, HIGH);
+  
   enableInterrupt(R_ENC_B, encoder, CHANGE);
 
   pinMode(PING_PIN, OUTPUT);
@@ -132,24 +138,39 @@ static unsigned int arg2 = 0;
 
 
 void encoder() {
-  long l_enc = read_encoderL((ENC_PORT & 0b00110000) >> 4); 
-  long r_enc = read_encoderR((ENC_PORT & 0b11000000) >> 6);
+  long l_enc = read_encoderL((ENC_PORT2 & 0b110000) >> 4); 
+  long r_enc = read_encoderR((ENC_PORT & 0b1100000) >> 5);
+  // Serial.println(ENC_PORT2, BIN);
+  // Serial.println(ENC_PORT, BIN);
+  // Serial.println((ENC_PORT2 & 0b110000) >> 4, BIN);
+  // Serial.println((ENC_PORT & 0b1100000) >> 5, BIN);
 
-  // r_s = r_enc*WHEEL_CIRCUMFERENCE/PPR;
-  // l_s = l_enc*WHEEL_CIRCUMFERENCE/PPR;
+  r_s = r_enc*WHEEL_CIRCUMFERENCE/PPR;
+  l_s = l_enc*WHEEL_CIRCUMFERENCE/PPR;
 
+  l_count += l_enc;
+  r_count += r_enc;
   // //update the change in avg position and current heading
-  // delta_x = (l_s + r_s)/2;
-  // heading = atan2((r_s-l_s)/2, WHEEL_BASE/2);
+   delta_x = (l_s + r_s)/2;
+   heading = atan2((r_s-l_s)/2, WHEEL_BASE/2);
 
-  // //update overall global positioning
-  // theta += heading;
-  // x += delta_x*cos(theta);
-  // y += delta_x*sin(theta);
+   //update overall global positioning
+   theta += heading;
+   x += delta_x;//*cos(theta);
+   y += delta_x;//*sin(theta);
 
   String ret = " ";
-  ret = String(l_enc) + "," + String(r_enc);
+  ret = "l_enc: " + String(l_enc) + " r_enc: " + String(r_enc);
   Serial.println(ret);
+  ret = "l_count: " + String(l_count) + " r_count: " + String(r_count);
+  Serial.println(ret);
+  ret = "l_S: " + String(l_s) + " r_s: " + String(r_s);
+  Serial.println(ret);
+  ret = "delta x: " + String(delta_x) + " heading: " + String(heading);
+  Serial.println(ret);
+  ret = "x: " + String(x) + " y: " + String(y) + " theta: " + String(theta);
+  Serial.println(ret);
+  Serial.println();
 }
 
 void ping() {
@@ -198,7 +219,7 @@ int8_t read_encoderR(int8_t new_val)
   enc_valR <<= 2; //preserve old value
   enc_valR |= new_val; //add new value to last 2 LSB 
   stateR = enc_valR & 0b1111;
-  Serial.println(stateR, BIN);
+ // Serial.println(stateR, BIN);
 
   return (enc_statesR[stateR]); //get state and remove old values
 }
