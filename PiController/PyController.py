@@ -1,6 +1,8 @@
 from multiprocessing import Process, Value
-import serial, json, math, threading
+import serial, json, math, threading, picamera
 from datetime import datetime
+from PIL import Image, ImageDraw, ImageFilter
+import numpy as np
 
 #global variables
 
@@ -38,16 +40,12 @@ WHEEL_BASE = 137
 WHEEL_CIRCUMFERENCE = 219.9115
 
 
-import picamera
-from PIL import Image, ImageDraw, ImageFilter
-import numpy as np
-
-
 # this will be the process that we split off for Dmitry to do computer vision work in
-# we sue shared memory to make passing information back and fourth
-def vision(go):
+# we use shared memory to make passing information back and fourth
+def vision(see, x1, y1, x2, y2, outSlope):
 	with picamera.PiCamera() as camera:
     stream = io.BytesIO()
+
     for foo in camera.capture_continuous(stream, format='jpeg'):
         # Truncate the stream to the current position (in case
         # prior iterations output a longer image)
@@ -95,8 +93,17 @@ def vision(go):
             end_y -= 1
                 
         slope = (inner_y2 - inner_y1)/(inner_x2 - inner_y1)
-        print(inner_x1, inner_y1, inner_x2, inner_y2, slope)
-        if (go):
+
+        #set variables (in shared memory)
+        x1.value = inner_x1
+        y1.value = inner_y1
+        x2.value = inner_x2
+        y2.value = inner_y2
+        outSlope.value = slope
+
+        # print(inner_x1, inner_y1, inner_x2, inner_y2, slope)
+        #break out if we sent the killswitch elsewhere
+        if (see.value):
             break
 
 #function to grab encoder data 
@@ -248,21 +255,21 @@ def starter():
     input("Press Enter to start")
     move = True
 
-def stopper():
-
 
 def runController(mapNum):
     # Define and split off the computer vision subprocess _________________________________
     # define doubles
-    distLeft = Value('d', -9.99)
-    distRight = Value('d', -9.99)
-    angle = Value('d', 0.0)
+    x1 = Value('d', -9.99)
+    y1 = Value('d', -9.99)
+    x2 = Value('d', -9.99)
+    y2 = Value('d', -9.99)
+    slope = Value('d', 0.0)
     
     # define boolean to act as an off switch
     see = ('b', True)
 
     # define and start the computer vision process
-    vision = Process(target=vision, args=(see))
+    vision = Process(target=vision, args=(see, x1, x2, y1, y2, slope))
     vision.start()
     # _____________________________________________________________________________________
 
@@ -281,34 +288,24 @@ def runController(mapNum):
     if s1.isOpen():
         s1.flush()
         
-        try:
-            while (running):
+    # this is the main logic loop where we put all our controlling equations/code
+    try:
+        while (running):
 
-                # for debugging:
-                print("Time elapsed: %d" % datetime.now().total_seconds())
-                print("IR:\tpos: (%f,%f), angle: %f" % (X, Y, THETA))
-                print("Camera:\t xDst: %d, slope:%d" % (vDist, vSlope))
+            # for debugging:
+            print("Time elapsed: %d" % datetime.now().total_seconds())
+            print("IR:\tpos: (%f,%f), angle: %f" % (X, Y, THETA))
+            print("Camera:\t xDst: %d, slope:%d" % (vDist, vSlope))
 
-                #check distance to lines on either side & angle in lane
-                #compute wheel speed adjustments based off of current speed and required corrections
-                #set wheels to corrected speed
-                #consider sleeping until a timeDelta has passed?
-        except KeyboardInterrupt:
-            print("Keyboard interrupt detected, gracefully exiting...")
-            running = False
+            #check distance to lines on either side & angle in lane
+            #compute wheel speed adjustments based off of current speed and required corrections
+            #set wheels to corrected speed
+            #consider sleeping until a timeDelta has passed?
+    except KeyboardInterrupt:
+        print("Keyboard interrupt detected, gracefully exiting...")
+        running = False
 
     #output = Kp*(goal-X)-Kd*SPEED
-
-        s1.readline()
-        for x in range(10):
-            s1.write(b'add23')
-            # read from serial
-            print("Going to read")
-            read_serial = s1.readline()
-            # cast it to integer and print 
-            s[0] = str(read_serial)
-            print("x:" + str(x))
-            print("Computing: " + s[0])
 
     #stop vehicle process. Set motor speeds to 0, close down serial port, and kill vision thread.
     setMotors(0,0)
