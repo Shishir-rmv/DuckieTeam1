@@ -323,7 +323,7 @@ def runController(mapNum):
 
 # main method
 if __name__ == '__main__':
-    mode = int(input("Which mode would you like to run?"))
+    mode = int(input("Which mode would you like to run? \n 1 or 2: Controller \n 3: Tracker \n 4: Manual"))
     #run lane navigation
     if(mode == 1 or mode == 2):
         runController(mode)
