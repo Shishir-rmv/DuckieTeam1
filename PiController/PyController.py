@@ -32,12 +32,24 @@ WHEEL_BASE = 137
 WHEEL_CIRCUMFERENCE = 219.9115
 
 
+import picamera
+
 # this will be the process that we split off for Dmitry to do computer vision work in
 # we sue shared memory to make passing information back and fourth
 def vision(distLeft, distRight, angle, go):
-    while (go):
-        # Do Dmitry stuff
-        pass
+	with picamera.PiCamera() as camera:
+    stream = io.BytesIO()
+    for foo in camera.capture_continuous(stream, format='jpeg'):
+        # Truncate the stream to the current position (in case
+        # prior iterations output a longer image)
+        stream.truncate()
+        stream.seek(0)
+		# Read the image and do some processing on it
+		data = np.fromstring(stream.getvalue(), dtype=np.uint8)
+
+
+        if (go):
+            break
 
 
 #function to grab encoder data 
