@@ -287,6 +287,9 @@ def runController(mapNum):
 
     if s1.isOpen():
         s1.flush()
+
+    # open state machine data for reading
+    states = json.load("StateMachine/map%d" % mapNum)
         
     # this is the main logic loop where we put all our controlling equations/code
     try:
@@ -301,6 +304,8 @@ def runController(mapNum):
             #compute wheel speed adjustments based off of current speed and required corrections
             #set wheels to corrected speed
             #consider sleeping until a timeDelta has passed?
+            # compare state machine data to current data and see if we need to initiate a turn?
+            
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
         running = False
