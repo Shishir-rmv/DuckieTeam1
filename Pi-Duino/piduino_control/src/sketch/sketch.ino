@@ -23,8 +23,8 @@ double x = 0;
 double y = 0;
 double l_s; //left distance changed
 double r_s; //right distance changed
-double l_count;
-double r_count;
+int l_count;
+int r_count;
 double delta_x;
 double heading;
 double ping_duration;
@@ -79,7 +79,7 @@ void setup() {
   md.init();
   md.setM1Speed(0);
   md.setM2Speed(0);
-  Serial.begin(9600);
+  Serial.begin(2000000);
   // Serial.println("Start");
 }
 
@@ -113,8 +113,8 @@ static unsigned int arg2 = 0;
       // Serial.println("motor");
       // Serial.println(arg1);
       // Serial.println(arg2);
-      md.setM1Speed((int)arg1);
-      md.setM2Speed((int)arg2);
+      md.setM1Speed(arg1);
+      md.setM2Speed(arg2);
       break;
 
     case png :

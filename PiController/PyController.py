@@ -7,7 +7,7 @@ import numpy as np
 #global variables
 
 port = "/dev/ttyACM0"
-rate = 9600
+rate = 2000000
 s1 = serial.Serial(port, rate, timeout=10)
 motorL = 0  # motor speeds
 motorR = 0
@@ -16,6 +16,8 @@ pingD = 0
 L_ENC_DIST = 0  # change in wheel distances and associated angle change
 R_ENC_DIST = 0
 SPEED = 0
+l_enc = 0
+r_enc = 0
 last_time = datetime.now()
 
 
@@ -34,7 +36,7 @@ Y = 0
 drive = False
 
 #below variables only needed if pi doing QE distance calculations
-PPR = 8
+PPR = 32
 #current approximation in mm, chassis constant
 WHEEL_BASE = 137   
 WHEEL_CIRCUMFERENCE = 219.9115
@@ -43,16 +45,16 @@ WHEEL_CIRCUMFERENCE = 219.9115
 # this will be the process that we split off for Dmitry to do computer vision work in
 # we use shared memory to make passing information back and fourth
 def vision(see, x1, y1, x2, y2, outSlope):
-	with picamera.PiCamera() as camera:
-    stream = io.BytesIO()
+    with picamera.PiCamera() as camera:
+        stream = io.BytesIO()
 
     for foo in camera.capture_continuous(stream, format='jpeg'):
         # Truncate the stream to the current position (in case
         # prior iterations output a longer image)
         stream.truncate()
         stream.seek(0)
-		# Read the image and do some processing on it
-		data = np.fromstring(stream.getvalue(), dtype=np.uint8)
+	# Read the image and do some processing on it
+        data = np.fromstring(stream.getvalue(), dtype=np.uint8)
         height, width, _ = data.shape
         cropped_img = data[336:384, :, :]
         cropped_blurred_image = np.array(Image.fromarray(cropped_img).filter(ImageFilter.SMOOTH_MORE))
@@ -113,12 +115,16 @@ def getEncoder():
     global THETA
     global X
     global Y
-    l_enc = 0
-    r_enc = 0
+    global WHEEL_BASE
+    global WHEEL_CIRCUMFERENCE
+    global PPR
+    global L_ENC_DIST
+    global R_ENC_DIST
+    global l_enc
+    global r_enc
     send = 'irr'
     s1.write(send.encode())
     result = s1.readline().decode("utf-8")
-    print(result)
 
     if (not result):
         print ("No result received from Arduino on getEncoder call")
@@ -139,11 +145,12 @@ def getEncoder():
 
         #update overall global positioning
         THETA += ENC_DELTA_THETA
-        X += ENC_DELTA_X*math.cos(THETA)
+        X += ENC_DELTA_X
         Y += ENC_DELTA_X*math.sin(THETA)
 
 
 def speed():
+    global X
     global last_time
     global last_X
     time = datetime.now()
@@ -174,8 +181,9 @@ def stop():
 
 #set motor speed
 def setMotors(motorSpeedL, motorSpeedR):
-    send = 'mtr' + str(motorSpeedL) + str(motorSpeedR)
+    send = 'mtr' +"0"+str(motorSpeedL) +"0"+ str(motorSpeedR)
     s1.write(send.encode())
+    print(send)
 
     #update the global variables once they're written to serial
     motorL = motorSpeedL
@@ -214,6 +222,8 @@ def runTracker():
     global SPEED
     global L_ENC_DIST
     global R_ENC_DIST
+    global l_enc
+    global r_enc
     print("PyTracer starting")
     # open the serial port to the Arduino
     s1.flushInput()
@@ -223,22 +233,23 @@ def runTracker():
 
     count = 0
     running = True
-    stopAt = 20
+    stopAt = 120
     records = {}
 
     if s1.isOpen():
         s1.flush()
         start = datetime.now()
+        setMotors(400,400)
         
         # while we're still within our window of execution
-        while ((datetime.now() - start).total_seconds() < stopAt):
+        while (((datetime.now() - start).total_seconds() < stopAt) and (X<100)):
             # get data from arduino
             getEncoder()
             speed()
 
             # store it in the array
             records[float((datetime.now() - start).total_seconds())] = {"L_ENC_DIST" : L_ENC_DIST, "R_ENC_DIST" : R_ENC_DIST, "SPEED" : SPEED,
-                                "ENC_DELTA_THETA" : ENC_DELTA_THETA, "x" : X, "Y" : Y}
+                                "ENC_DELTA_THETA" : ENC_DELTA_THETA, "x" : int(X), "Y" : Y, "l_enc" : l_enc, "r_enc" : r_enc}
 
         #dump data to file
         print("dumping (%d) records to a JSON in the Logs folder" % len(records))
@@ -246,7 +257,7 @@ def runTracker():
             json.dump(records, fp, indent=4)
 
     # once finished
-    setMotors(0,0)
+    stop()
     s1.close()
 
 

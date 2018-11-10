@@ -1,0 +1,72 @@
+{
+    "13.024109": {
+        "SPEED": 0,
+        "l_enc": 0,
+        "R_ENC_DIST": 0.0,
+        "ENC_DELTA_THETA": 0,
+        "L_ENC_DIST": 0.0,
+        "r_enc": 0,
+        "x": 75,
+        "Y": 7.546114184355722
+    },
+    "11.017717": {
+        "SPEED": 0,
+        "l_enc": 10,
+        "R_ENC_DIST": 82.4668125,
+        "ENC_DELTA_THETA": 0,
+        "L_ENC_DIST": 68.72234375,
+        "r_enc": 12,
+        "x": 75,
+        "Y": 7.546114184355722
+    },
+    "14.028156": {
+        "SPEED": 0,
+        "l_enc": 0,
+        "R_ENC_DIST": 34.361171875,
+        "ENC_DELTA_THETA": 0,
+        "L_ENC_DIST": 0.0,
+        "r_enc": 5,
+        "x": 92,
+        "Y": 13.368369288309303
+    },
+    "12.021272": {
+        "SPEED": 0,
+        "l_enc": 0,
+        "R_ENC_DIST": 0.0,
+        "ENC_DELTA_THETA": 0,
+        "L_ENC_DIST": 0.0,
+        "r_enc": 0,
+        "x": 75,
+        "Y": 7.546114184355722
+    },
+    "15.035783": {
+        "SPEED": 0,
+        "l_enc": 0,
+        "R_ENC_DIST": 0.0,
+        "ENC_DELTA_THETA": 0,
+        "L_ENC_DIST": 0.0,
+        "r_enc": 0,
+        "x": 92,
+        "Y": 13.368369288309303
+    },
+    "16.039792": {
+        "SPEED": 0,
+        "l_enc": 0,
+        "R_ENC_DIST": 20.616703125,
+        "ENC_DELTA_THETA": 0,
+        "L_ENC_DIST": 0.0,
+        "r_enc": 3,
+        "x": 103,
+        "Y": 18.26605474322174
+    },
+    "10.012131": {
+        "SPEED": 0,
+        "l_enc": 0,
+        "R_ENC_DIST": 0,
+        "ENC_DELTA_THETA": 0,
+        "L_ENC_DIST": 0,
+        "r_enc": 0,
+        "x": 0,
+        "Y": 0
+    }
+}
