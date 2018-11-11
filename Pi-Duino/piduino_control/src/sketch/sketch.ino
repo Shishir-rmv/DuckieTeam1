@@ -12,10 +12,12 @@
 #define ENC_PORT PIND
 #define ENC_PORT2 PINB
 
- #define WHEEL_BASE 137 //current approximation in mm, chassis constant
- #define WHEEL_CIRCUMFERENCE 219.9115 //circumference = 2*pi*r, r = 35mm, pi = 3.14
- #define PPR 32 //pulses per revolution is = to # of lines per revoluion aka number of white segments which is half of the total segments, this is assumig 32 segments
+#define WHEEL_BASE 137 //current approximation in mm, chassis constant
+#define WHEEL_CIRCUMFERENCE 219.9115 //circumference = 2*pi*r, r = 35mm, pi = 3.14
+#define PPR 32 //pulses per revolution is = to # of lines per revoluion aka number of white segments which is half of the total segments, this is assumig 32 segments
 
+#define k 5
+#define b 3
 // set all global position variables to 0
 DualMC33926MotorShield md;
 double theta = 0;
@@ -23,8 +25,12 @@ double x = 0;
 double y = 0;
 double l_s; //left distance changed
 double r_s; //right distance changed
-int l_count;
-int r_count;
+short l_count;
+short r_count;
+double motorL = 0;
+double motorR = 0;
+double error = 0;
+double error_dot = 0;
 double delta_x;
 double heading;
 double ping_duration;
@@ -41,6 +47,9 @@ str_code hashit (String inString) {
    if (inString == "png") return png;
    if (inString == "stp") return stopp;
    if (inString == "upd") return update;
+   if (inString == "odo") return odometry;
+   if (inString == "viz") return visual;
+   if (inString == "cal") return calibrat;
    if (inString == "none") return none;
 }
 
@@ -85,7 +94,9 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-//stopIfFault();
+stopIfFault();
+static int prevError = 0;
+static int output;
 static String opStr;
 static unsigned int arg1 = 0;
 static unsigned int arg2 = 0;
@@ -113,8 +124,10 @@ static unsigned int arg2 = 0;
       // Serial.println("motor");
       // Serial.println(arg1);
       // Serial.println(arg2);
-      md.setM1Speed(arg1);
-      md.setM2Speed(arg2);
+      motorL = arg1;
+      motorR = arg2;
+      md.setM2Speed(motorL);
+      md.setM1Speed(motorR);
       break;
 
     case png :
@@ -134,7 +147,21 @@ static unsigned int arg2 = 0;
       break;
   }
 
+//  error = r_count - l_count;
+//  error_dot = error - prevError;
+//  output = -k*error - b*error_dot;
+//  motorR += output;
+//  motorL -= output;
+  
+//  md.setM1Speed(motorL);
+//  md.setM2Speed(motorR);
+//
+//  prevError = error;
 }
+
+
+ 
+
 
 
 void encoder() {
