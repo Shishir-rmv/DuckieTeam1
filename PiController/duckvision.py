@@ -76,8 +76,6 @@ def draw_lane_lines(image, lines, color=[255, 0, 0], thickness=20):
     for line in lines:
         if line is not None:
             cv2.line(line_image, *line, color, thickness)
-    # image1 * α + image2 * β + λ
-    # image1 and image2 must be the same shape.
     return cv2.addWeighted(image, 1.0, line_image, 0.95, 0.0)
 
 
