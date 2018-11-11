@@ -42,6 +42,12 @@ WHEEL_BASE = 137
 WHEEL_CIRCUMFERENCE = 219.9115
 
 
+# to prevent the Pi from getting too far ahead of the arduino
+def write(cmd):
+    s1.write(cmd.encode())
+    s1.flush()
+
+
 #function to grab encoder data 
 #have to decide if the arduino will return just increments or already calculate the distance per wheel and theta itself
 
@@ -56,8 +62,7 @@ def getEncoder():
     global R_ENC_DIST
     global l_enc
     global r_enc
-    send = 'irr'
-    s1.write(send.encode())
+    write('irr')
     result = s1.readline().decode("utf-8")
 
     if (not result):
@@ -97,8 +102,7 @@ def speed():
 
 #get ping distance
 def getPing():
-    send = 'png'
-    s1.write(send.encode())
+    write('png')
     response = s1.readline().decode("utf-8")
 
     if (not response):
@@ -109,14 +113,13 @@ def getPing():
 
 #stop motors
 def stop():
-    send = 'stp'
-    s1.write(send.encode())
+    write('stp')
 
 
 #set motor speed
 def setMotors(motorSpeedL, motorSpeedR):
     send = 'mtr' +"0"+str(motorSpeedL) +"0"+ str(motorSpeedR)
-    s1.write(send.encode())
+    write(send)
     print(send)
 
     #update the global variables once they're written to serial
@@ -131,7 +134,6 @@ def runManual():
     s1.flushInput()
 
     if s1.isOpen():
-        s1.flush()
         cmd = ""
         
         # while we're still within our window of execution
@@ -139,7 +141,7 @@ def runManual():
             cmd = input('Enter Pi cmd (\'999\' to quit):')
             
             # encode and send the command
-            s1.write(cmd.encode())
+            write(cmd)
 
             # receive and print the response
             response = s1.readline().decode("utf-8")
@@ -171,9 +173,9 @@ def runTracker():
     records = {}
 
     if s1.isOpen():
-        s1.flush()
         start = datetime.now()
         setMotors(400,400)
+        s1.flush()
         
         # while we're still within our window of execution
         while (((datetime.now() - start).total_seconds() < stopAt) and (X<100)):
@@ -226,26 +228,80 @@ def runController(mapNum):
 
     # open the serial port to the Arduino & initialize
     s1.flushInput()
-    response = ""
-    count = 0
-    running = True
+    response, state = "", ""
+    count, e, oldR, oldL = 0, 0, 0, 0
+    running, stateChange, odometry = True, False, True
 
     if s1.isOpen():
         s1.flush()
 
     # open state machine data for reading
-    states = json.load("StateMachine/map%d" % mapNum)
+    machine = json.load("StateMachine/map%d" % mapNum)
         
     # this is the main logic loop where we put all our controlling equations/code
     try:
         while (running):
+            # only do this if we have changed state in our state machine
+
+            if (stateChange):
+                state = machine[state]["next"]
+                # set our controller mode for this state
+                if(machine[state]["mode"] == "odometry")
+                    odometry = True
+                    # communicate the mode down to the arduino
+                    write("odo")
+                else:
+                    odometry = False
+                    # communicate the mode down to the arduino
+                    write("vis")
+
+                # send speed calibration words down to arduino
+                #TODO: calculate what value to start motors at
+                cmd = "cal"+"0"+str(motorStartL)+"0"+str(motorStartdR)
+                write(cmd)
+                stateChange = False
 
             # for debugging:
-            vDist = 0
-            vSlope = 0
-            print("Time elapsed: %d" % datetime.now().total_seconds())
-            print("IR:\tpos: (%f,%f), angle: %f" % (X, Y, THETA))
-            print("Camera:\t xDst: %d, slope:%d" % (vDist, vSlope))
+            # vDist = 0
+            # vSlope = 0
+            # print("Time elapsed: %d" % datetime.now().total_seconds())
+            # print("IR:\tpos: (%f,%f), angle: %f" % (X, Y, THETA))
+            # print("Camera:\t xDst: %d, slope:%d" % (vDist, vSlope))
+
+            # if we're using an odometer-based controller
+            if (odometry):
+                if (machine[state]["act"] == "laneFollow"):
+                    # if we've reached our stop condition (total distance forward)
+                    if (Y >= machine[state]["stopConditon"]):
+                        write("stp")
+                        stateChange = True
+                    else:
+                        # query the QE
+                        getEncoder()
+
+                        # calculate the error based on the distance deltas and state machine specified curve constant
+                        e = (R_ENC_DIST - oldR) - machine[state]["c"]*(L_ENC_DIST - oldL)
+
+                        # send computed error down to the arduino
+                        cmd = "err%s0000" % str(e).zfill(4)
+                        write(cmd)
+                        
+                        # update x and y values to compute delta next iteration
+                        oldR, oldL = X, Y
+
+                # else, we're doing a blind turn
+                else:
+                    cmd = "trn%s0000" % str(machine[state]["c"]).zfill(4)
+                    write(cmd)
+                    
+
+
+            # if we're using a visual controller
+            else:
+                # check current visual positions
+                # compute error of vehicle in lane
+
+
 
             #check distance to lines on either side & angle in lane
             #compute wheel speed adjustments based off of current speed and required corrections

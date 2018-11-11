@@ -3,31 +3,32 @@
         "desc": "Starting line, right lane of long stretch (0,0)",
         "act": "laneFollow",
         "position" : [[0,0], [0, 120], 0, 0],
-        "next": [
-            1
-        ]
+        "mode" : "odometry", 
+        "c" : 1,
+        "stopCondition" : 48,
+        "next": 1
     },
     "1": {
         "desc": "Perform right turn",
-        "act": "shortArcR",
+        "act": "turn",
         "position" : [[0,120], [134, 22], 0, 90],
-        "next": [
-            2
-        ]
+        "mode" : "odometry", 
+        "c" : 10,
+        "stopCondition" : 90,
+        "next": 2
     },
     "2": {
         "desc": "Lane follow after right turn",
         "act": "laneFollow",
         "position" : [[134,22], [134, 75], 90, 90],
-        "next": [
-            -1
-        ]
+        "mode" : "odometry", 
+        "c" : 1,
+        "stopCondition" : 24,
+        "next": -1
     },
     "-1": {
         "desc": "stop",
         "act": "stop",
-        "next": [
-            -1
-        ]
+        "next": -1
     }
 }
