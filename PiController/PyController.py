@@ -1,13 +1,13 @@
 from multiprocessing import Process, Value
 import serial, json, math, threading
 from datetime import datetime
-from PiController.duckvision import vision
+from duckvision import vision
 
 
 
 #global variables
 port = "/dev/ttyACM0"
-rate = 2000000
+rate = 9600
 s1 = serial.Serial(port, rate, timeout=10)
 motorL = 0  # motor speeds
 motorR = 0
@@ -173,10 +173,10 @@ def runTracker():
     if s1.isOpen():
         s1.flush()
         start = datetime.now()
-        setMotors(400,400)
+        setMotors(150,150)
         
         # while we're still within our window of execution
-        while (((datetime.now() - start).total_seconds() < stopAt) and (X<100)):
+        while (((datetime.now() - start).total_seconds() < stopAt) and (X<1200)):
             # get data from arduino
             getEncoder()
             speed()
@@ -243,9 +243,9 @@ def runController(mapNum):
             # for debugging:
             vDist = 0
             vSlope = 0
-            print("Time elapsed: %d" % datetime.now().total_seconds())
-            print("IR:\tpos: (%f,%f), angle: %f" % (X, Y, THETA))
-            print("Camera:\t xDst: %d, slope:%d" % (vDist, vSlope))
+            #print("Time elapsed: %d" % datetime.now())
+            #print("IR:\tpos: (%f,%f), angle: %f" % (X, Y, THETA))
+            #print("Camera:\t xDst: %d, slope:%d" % (vDist, vSlope))
 
             #check distance to lines on either side & angle in lane
             #compute wheel speed adjustments based off of current speed and required corrections

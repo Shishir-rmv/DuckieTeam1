@@ -100,54 +100,62 @@ def select_white_yellow(image):
     return cv2.bitwise_and(image, image, mask = mask)
 
 
+
+def process(stream):
+    stream.seek(0)  #seek to location 0 of stream_img
+    # Truncate the stream to the current position (in case
+    # prior iterations output a longer image))
+    # Read the image and do some processing on it
+    image = np.fromstring(stream.getvalue(), dtype=np.uint8)
+    print(image.shape)
+    height, width = image.shape
+    region_of_interest_vert = [(0, height), (0, 300), (width, 300), (width, height)]
+    white_yellow_image = select_white_yellow(image)
+    gray_img = cv2.cvtColor(white_yellow_image, cv2.COLOR_RGB2GRAY)
+    cannyed_img = cv2.Canny(gray_img, 200, 300)
+    cropped_img = region_of_interest(cannyed_img, np.array([region_of_interest_vert], np.int32))
+
+    lines = cv2.HoughLinesP(cropped_img, rho=1, theta=np.pi / 60, threshold=10, minLineLength=40, maxLineGap=25)
+    left_line, right_line = lane_lines(image, lines)
+
+    left_slope = 0
+    right_slope = 0
+    if left_line:
+        (x1, y1), (x2, y2) = left_line
+        left_slope = (y2 - y1) / (x2 - x1)
+
+    if right_line:
+        (x1, y1), (x2, y2) = right_line
+        right_slope = (y2 - y1) / (x2 - x1)
+
+    slope_ratio = np.absolute(left_slope / right_slope)
+
+    print("Left Slope: %f, Right Slope: %f, Slope Ratio: %f" % (left_slope, right_slope, slope_ratio))
+
+    if (-0.7 <= left_slope <= -0.6) and (0.6 <= right_slope <= 0.7):
+        print("Going Straight")
+    elif (left_slope < -0.66 or right_slope < 0.66) or right_slope is None:
+        print("Turn Right")
+    elif (left_slope > -0.66 or right_slope > 0.66) or left_slope is None:
+        print("Turn Left")
+
+    duration = time.time() - start
+    print("Took: %x" % duration)
+    stream.seek(0)
+    stream.truncate()
+
+
+def gen_seq():
+    stream = io.BytesIO()
+    while True:
+        yield stream
+        process(stream)
+
+
 # this will be the process that we split off for Dmitry to do computer vision work in
 # we use shared memory to make passing information back and fourth
 def vision(see, x1, y1, x2, y2, outSlope):
-
+    print("Starting Vision")
     with picamera.PiCamera() as camera:
-        stream = io.BytesIO()
-        for foo in camera.capture_continuous(stream, format='jpeg'):
-            start = time.time()
-            # Truncate the stream to the current position (in case
-            # prior iterations output a longer image)
-            stream.truncate()
-            stream.seek(0)
-            # Read the image and do some processing on it
-            image = np.fromstring(stream.getvalue(), dtype=np.uint8)
-            height, width = image.shape
-            region_of_interest_vert = [(0, height), (0, 300), (width, 300), (width, height)]
-            white_yellow_image = select_white_yellow(image)
-            gray_img = cv2.cvtColor(white_yellow_image, cv2.COLOR_RGB2GRAY)
-            cannyed_img = cv2.Canny(gray_img, 200, 300)
-            cropped_img = region_of_interest(cannyed_img, np.array([region_of_interest_vert], np.int32))
-
-            lines = cv2.HoughLinesP(cropped_img, rho=1, theta=np.pi / 60, threshold=10, minLineLength=40, maxLineGap=25)
-            left_line, right_line = lane_lines(image, lines)
-
-            left_slope = 0
-            right_slope = 0
-            if left_line:
-                (x1, y1), (x2, y2) = left_line
-                left_slope = (y2 - y1) / (x2 - x1)
-
-            if right_line:
-                (x1, y1), (x2, y2) = right_line
-                right_slope = (y2 - y1) / (x2 - x1)
-
-            slope_ratio = np.absolute(left_slope / right_slope)
-
-            print("Left Slope: %f, Right Slope: %f, Slope Ratio: %f" % (left_slope, right_slope, slope_ratio))
-
-            if (-0.7 <= left_slope <= -0.6) and (0.6 <= right_slope <= 0.7):
-                print("Going Straight")
-            elif (left_slope < -0.66 or right_slope < 0.66) or right_slope is None:
-                print("Turn Right")
-            elif (left_slope > -0.66 or right_slope > 0.66) or left_slope is None:
-                print("Turn Left")
-
-            duration = time.time() - start
-            print("Took: %x" % duration)
-            # print(inner_x1, inner_y1, inner_x2, inner_y2, slope)
-            # break out if we sent the killswitch elsewhere
-            if (see.value):
-                break
+		print("Got the camera")
+		camera.capture_sequence(gen_seq(), use_video_port=False)
