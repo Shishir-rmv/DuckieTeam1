@@ -76,6 +76,8 @@ def draw_lane_lines(image, lines, color=[255, 0, 0], thickness=20):
     for line in lines:
         if line is not None:
             cv2.line(line_image, *line, color, thickness)
+    # image1 * α + image2 * β + λ
+    # image1 and image2 must be the same shape.
     return cv2.addWeighted(image, 1.0, line_image, 0.95, 0.0)
 
 
@@ -104,9 +106,10 @@ def process(stream):
     # Truncate the stream to the current position (in case
     # prior iterations output a longer image))
     # Read the image and do some processing on it
-    image = np.fromstring(stream.getvalue(), dtype=np.uint8)
-    print(image.shape)
-    height, width = image.shape
+    data = np.fromstring(stream.getvalue(), dtype=np.uint8)
+    # "Decode" the image from the array, preserving colour
+    image = cv2.imdecode(data, 1)
+    height, width, temp = image.shape
     region_of_interest_vert = [(0, height), (0, 300), (width, 300), (width, height)]
     white_yellow_image = select_white_yellow(image)
     gray_img = cv2.cvtColor(white_yellow_image, cv2.COLOR_RGB2GRAY)
@@ -138,7 +141,7 @@ def process(stream):
         print("Turn Left")
 
     duration = time.time() - start
-    print("Took: %x" % duration)
+    print("Took: %f" % duration)
     stream.seek(0)
     stream.truncate()
 
@@ -152,8 +155,17 @@ def gen_seq():
 
 # this will be the process that we split off for Dmitry to do computer vision work in
 # we use shared memory to make passing information back and fourth
-def vision(see, x1, y1, x2, y2, outSlope):
+def vision():
     print("Starting Vision")
     with picamera.PiCamera() as camera:
-        print("Got the camera")
-        camera.capture_sequence(gen_seq(), use_video_port=False)
+        camera.resolution = (640, 480)
+        # Set the framerate appropriately; too fast and the image processors
+        # will stall the image pipeline and crash the script
+        camera.framerate = 30
+        camera.start_preview()
+        time.sleep(1)
+        camera.capture_sequence(gen_seq(), format='jpeg', use_video_port=False)
+
+
+if __name__ == '__main__':
+    vision()
