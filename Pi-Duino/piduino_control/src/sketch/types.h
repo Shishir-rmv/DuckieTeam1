@@ -4,5 +4,8 @@ enum str_code{
 	png,
 	stopp,
 	update,
+        odometry,
+        calibrat,
+        visual,
 	none
 };

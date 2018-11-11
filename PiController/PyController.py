@@ -174,7 +174,7 @@ def runTracker():
 
     if s1.isOpen():
         start = datetime.now()
-        setMotors(150,150)
+        setMotors(200,200)
         
         # while we're still within our window of execution
         while (((datetime.now() - start).total_seconds() < stopAt) and (X<1200)):
@@ -215,7 +215,8 @@ def runController(mapNum):
     see = ('b', True)
 
     # define and start the computer vision process
-    vision_process = Process(target=vision, args=(see, x1, x2, y1, y2, slope))
+    # vision_process = Process(target=vision, args=(see, x1, x2, y1, y2, slope))
+    vision_process = Process(target=vision)
     vision_process.start()
     # _____________________________________________________________________________________
 
