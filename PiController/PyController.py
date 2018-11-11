@@ -1,7 +1,7 @@
 from multiprocessing import Process, Value
 import serial, json, math, threading
 from datetime import datetime
-
+from PiController.duckvision import vision
 
 
 
@@ -214,15 +214,15 @@ def runController(mapNum):
     see = ('b', True)
 
     # define and start the computer vision process
-    vision_process = Process(target=, args=(see, x1, x2, y1, y2, slope))
+    vision_process = Process(target=vision, args=(see, x1, x2, y1, y2, slope))
     vision_process.start()
     # _____________________________________________________________________________________
 
     print("PyController starting")
 
     # split off the starter thread so the machine can passively calibrate itself before we start
-    starter = threading.Thread(target=starter)
-    starter.start()
+    starter_thread = threading.Thread(target=starter)
+    starter_thread.start()
 
     # open the serial port to the Arduino & initialize
     s1.flushInput()
@@ -241,6 +241,8 @@ def runController(mapNum):
         while (running):
 
             # for debugging:
+            vDist = 0
+            vSlope = 0
             print("Time elapsed: %d" % datetime.now().total_seconds())
             print("IR:\tpos: (%f,%f), angle: %f" % (X, Y, THETA))
             print("Camera:\t xDst: %d, slope:%d" % (vDist, vSlope))
@@ -262,7 +264,7 @@ def runController(mapNum):
     s1.close()
     # once we're all done, send the kill switch to the inner vision loop and join the vision process
     see.value = False
-    starter.join()
+    starter_thread.join()
     vision_process.join()
 
 
