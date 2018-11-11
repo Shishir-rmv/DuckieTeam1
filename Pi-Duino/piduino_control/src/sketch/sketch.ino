@@ -25,8 +25,8 @@ double x = 0;
 double y = 0;
 double l_s; //left distance changed
 double r_s; //right distance changed
-int l_count;
-int r_count;
+short l_count;
+short r_count;
 double motorL = 0;
 double motorR = 0;
 double error = 0;
@@ -88,7 +88,7 @@ void setup() {
   md.init();
   md.setM1Speed(0);
   md.setM2Speed(0);
-  Serial.begin(2000000);
+  Serial.begin(9600);
   // Serial.println("Start");
 }
 
@@ -126,6 +126,8 @@ static unsigned int arg2 = 0;
       // Serial.println(arg2);
       motorL = arg1;
       motorR = arg2;
+      md.setM2Speed(motorL);
+      md.setM1Speed(motorR);
       break;
 
     case png :
@@ -144,16 +146,16 @@ static unsigned int arg2 = 0;
     default:
       break;
   }
-  error = r_count - l_count;
-  error_dot = error - prevError
-  output = -k*error - b*error_dot;
-  motorR += output;
-  motorL -= output;
+//  error = r_count - l_count;
+//  error_dot = error - prevError;
+//  output = -k*error - b*error_dot;
+//  motorR += output;
+//  motorL -= output;
   
-  md.setM1Speed(motorL);
-  md.setM2Speed(motorR);
-
-  prevError = error;
+//  md.setM1Speed(motorL);
+//  md.setM2Speed(motorR);
+//
+//  prevError = error;
 }
 
 
