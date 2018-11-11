@@ -75,7 +75,7 @@ def draw_lane_lines(image, lines, color=[255, 0, 0], thickness=20):
     line_image = np.zeros_like(image)
     for line in lines:
         if line is not None:
-            cv2.line(line_image, *line,  color, thickness)
+            cv2.line(line_image, *line, color, thickness)
     # image1 * α + image2 * β + λ
     # image1 and image2 must be the same shape.
     return cv2.addWeighted(image, 1.0, line_image, 0.95, 0.0)
@@ -88,21 +88,21 @@ def convert_hls(image):
 def select_white_yellow(image):
     converted = convert_hls(image)
     # white color mask
-    lower = np.uint8([  0, 200,   0])
+    lower = np.uint8([0, 200, 0])
     upper = np.uint8([255, 255, 255])
     white_mask = cv2.inRange(converted, lower, upper)
     # yellow color mask
-    lower = np.uint8([ 10,   0, 100])
-    upper = np.uint8([ 40, 255, 255])
+    lower = np.uint8([10, 0, 100])
+    upper = np.uint8([40, 255, 255])
     yellow_mask = cv2.inRange(converted, lower, upper)
     # combine the mask
     mask = cv2.bitwise_or(white_mask, yellow_mask)
-    return cv2.bitwise_and(image, image, mask = mask)
-
+    return cv2.bitwise_and(image, image, mask=mask)
 
 
 def process(stream):
-    stream.seek(0)  #seek to location 0 of stream_img
+    start = time.time()
+    stream.seek(0)  # seek to location 0 of stream_img
     # Truncate the stream to the current position (in case
     # prior iterations output a longer image))
     # Read the image and do some processing on it
@@ -157,5 +157,5 @@ def gen_seq():
 def vision(see, x1, y1, x2, y2, outSlope):
     print("Starting Vision")
     with picamera.PiCamera() as camera:
-		print("Got the camera")
-		camera.capture_sequence(gen_seq(), use_video_port=False)
+        print("Got the camera")
+        camera.capture_sequence(gen_seq(), use_video_port=False)
