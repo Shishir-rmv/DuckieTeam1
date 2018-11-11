@@ -1,11 +1,11 @@
 from multiprocessing import Process, Value
-import serial, json, math, threading, picamera
+import serial, json, math, threading
 from datetime import datetime
-from PIL import Image, ImageDraw, ImageFilter
-import numpy as np
+from duckvision import vision
+
+
 
 #global variables
-
 port = "/dev/ttyACM0"
 rate = 9600
 s1 = serial.Serial(port, rate, timeout=10)
@@ -16,6 +16,8 @@ pingD = 0
 L_ENC_DIST = 0  # change in wheel distances and associated angle change
 R_ENC_DIST = 0
 SPEED = 0
+l_enc = 0
+r_enc = 0
 last_time = datetime.now()
 
 
@@ -34,77 +36,11 @@ Y = 0
 drive = False
 
 #below variables only needed if pi doing QE distance calculations
-PPR = 8
+PPR = 32
 #current approximation in mm, chassis constant
 WHEEL_BASE = 137   
 WHEEL_CIRCUMFERENCE = 219.9115
 
-
-# this will be the process that we split off for Dmitry to do computer vision work in
-# we use shared memory to make passing information back and fourth
-def vision(see, x1, y1, x2, y2, outSlope):
-	with picamera.PiCamera() as camera:
-    stream = io.BytesIO()
-
-    for foo in camera.capture_continuous(stream, format='jpeg'):
-        # Truncate the stream to the current position (in case
-        # prior iterations output a longer image)
-        stream.truncate()
-        stream.seek(0)
-		# Read the image and do some processing on it
-		data = np.fromstring(stream.getvalue(), dtype=np.uint8)
-        height, width, _ = data.shape
-        cropped_img = data[336:384, :, :]
-        cropped_blurred_image = np.array(Image.fromarray(cropped_img).filter(ImageFilter.SMOOTH_MORE))
-
-        outer_x1, outer_y1, inner_x1, inner_y1 = 0, 0, 0, 0
-        outer_x2, outer_y2, inner_x2, inner_y2 = 0, 0, 0, 0
-        cropped_img_height, cropped_img_width, _ = cropped_blurred_image.shape
-        start_y = 0
-        while outer_x1 == 0:
-            for px in range(cropped_img_width, int(cropped_img_width/4), -1):
-                if (cropped_blurred_image[start_y, px - 1] > np.array([190,200,200])).all():
-                    outer_x1, outer_y1 = px, start_y
-                    break
-            start_y += 1
-
-        start_y = 0
-        while inner_x1 == 0:
-            for px in range(outer_x1, int(cropped_img_width/4), -1):
-                if (cropped_blurred_image[start_y, px - 1] < np.array([70,80,80])).all():
-                    inner_x1, inner_y1 = px, start_y
-                    break
-            start_y += 1
-        
-        end_y = cropped_img_height - 1
-        while outer_x2 ==0:
-            for px in range(cropped_img_width, int(cropped_img_width/4), -1):
-                if (cropped_blurred_image[end_y, px - 1] > np.array([190,200,200])).all():
-                    outer_x2, outer_y2 = px, end_y
-                    break
-            end_y -= 1
-            
-        end_y = cropped_img_height - 1
-        while inner_x2 ==0:
-            for px in range(outer_x2, int(cropped_img_width/4), -1):
-                if (cropped_blurred_image[end_y, px - 1] < np.array([70,80,80])).all():
-                    inner_x2, inner_y2 = px, end_y
-                    break
-            end_y -= 1
-                
-        slope = (inner_y2 - inner_y1)/(inner_x2 - inner_y1)
-
-        #set variables (in shared memory)
-        x1.value = inner_x1
-        y1.value = inner_y1
-        x2.value = inner_x2
-        y2.value = inner_y2
-        outSlope.value = slope
-
-        # print(inner_x1, inner_y1, inner_x2, inner_y2, slope)
-        #break out if we sent the killswitch elsewhere
-        if (see.value):
-            break
 
 #function to grab encoder data 
 #have to decide if the arduino will return just increments or already calculate the distance per wheel and theta itself
@@ -113,12 +49,16 @@ def getEncoder():
     global THETA
     global X
     global Y
-    l_enc = 0
-    r_enc = 0
+    global WHEEL_BASE
+    global WHEEL_CIRCUMFERENCE
+    global PPR
+    global L_ENC_DIST
+    global R_ENC_DIST
+    global l_enc
+    global r_enc
     send = 'irr'
     s1.write(send.encode())
     result = s1.readline().decode("utf-8")
-    print(result)
 
     if (not result):
         print ("No result received from Arduino on getEncoder call")
@@ -139,11 +79,12 @@ def getEncoder():
 
         #update overall global positioning
         THETA += ENC_DELTA_THETA
-        X += ENC_DELTA_X*math.cos(THETA)
+        X += ENC_DELTA_X
         Y += ENC_DELTA_X*math.sin(THETA)
 
 
 def speed():
+    global X
     global last_time
     global last_X
     time = datetime.now()
@@ -174,8 +115,9 @@ def stop():
 
 #set motor speed
 def setMotors(motorSpeedL, motorSpeedR):
-    send = 'mtr' + str(motorSpeedL) + str(motorSpeedR)
+    send = 'mtr' +"0"+str(motorSpeedL) +"0"+ str(motorSpeedR)
     s1.write(send.encode())
+    print(send)
 
     #update the global variables once they're written to serial
     motorL = motorSpeedL
@@ -214,6 +156,8 @@ def runTracker():
     global SPEED
     global L_ENC_DIST
     global R_ENC_DIST
+    global l_enc
+    global r_enc
     print("PyTracer starting")
     # open the serial port to the Arduino
     s1.flushInput()
@@ -223,22 +167,23 @@ def runTracker():
 
     count = 0
     running = True
-    stopAt = 20
+    stopAt = 120
     records = {}
 
     if s1.isOpen():
         s1.flush()
         start = datetime.now()
+        setMotors(150,150)
         
         # while we're still within our window of execution
-        while ((datetime.now() - start).total_seconds() < stopAt):
+        while (((datetime.now() - start).total_seconds() < stopAt) and (X<1200)):
             # get data from arduino
             getEncoder()
             speed()
 
             # store it in the array
             records[float((datetime.now() - start).total_seconds())] = {"L_ENC_DIST" : L_ENC_DIST, "R_ENC_DIST" : R_ENC_DIST, "SPEED" : SPEED,
-                                "ENC_DELTA_THETA" : ENC_DELTA_THETA, "x" : X, "Y" : Y}
+                                "ENC_DELTA_THETA" : ENC_DELTA_THETA, "x" : int(X), "Y" : Y, "l_enc" : l_enc, "r_enc" : r_enc}
 
         #dump data to file
         print("dumping (%d) records to a JSON in the Logs folder" % len(records))
@@ -246,7 +191,7 @@ def runTracker():
             json.dump(records, fp, indent=4)
 
     # once finished
-    setMotors(0,0)
+    stop()
     s1.close()
 
 
@@ -269,15 +214,15 @@ def runController(mapNum):
     see = ('b', True)
 
     # define and start the computer vision process
-    vision = Process(target=vision, args=(see, x1, x2, y1, y2, slope))
-    vision.start()
+    vision_process = Process(target=vision, args=(see, x1, x2, y1, y2, slope))
+    vision_process.start()
     # _____________________________________________________________________________________
 
     print("PyController starting")
 
     # split off the starter thread so the machine can passively calibrate itself before we start
-    starter = threading.Thread(target=starter)
-    starter.start()
+    starter_thread = threading.Thread(target=starter)
+    starter_thread.start()
 
     # open the serial port to the Arduino & initialize
     s1.flushInput()
@@ -289,16 +234,18 @@ def runController(mapNum):
         s1.flush()
 
     # open state machine data for reading
-    states = json.load("StateMachine/map%d" % mapNum)
+    # states = json.load("StateMachine/map%d" % mapNum)
         
     # this is the main logic loop where we put all our controlling equations/code
     try:
         while (running):
 
             # for debugging:
-            print("Time elapsed: %d" % datetime.now().total_seconds())
-            print("IR:\tpos: (%f,%f), angle: %f" % (X, Y, THETA))
-            print("Camera:\t xDst: %d, slope:%d" % (vDist, vSlope))
+            vDist = 0
+            vSlope = 0
+            #print("Time elapsed: %d" % datetime.now())
+            #print("IR:\tpos: (%f,%f), angle: %f" % (X, Y, THETA))
+            #print("Camera:\t xDst: %d, slope:%d" % (vDist, vSlope))
 
             #check distance to lines on either side & angle in lane
             #compute wheel speed adjustments based off of current speed and required corrections
@@ -317,8 +264,8 @@ def runController(mapNum):
     s1.close()
     # once we're all done, send the kill switch to the inner vision loop and join the vision process
     see.value = False
-    starter.join()
-    vision.join()
+    starter_thread.join()
+    vision_process.join()
 
 
 # main method

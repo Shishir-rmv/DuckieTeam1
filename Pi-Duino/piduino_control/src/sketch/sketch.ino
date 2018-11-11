@@ -88,7 +88,7 @@ void setup() {
   md.init();
   md.setM1Speed(0);
   md.setM2Speed(0);
-  Serial.begin(9600);
+  Serial.begin(2000000);
   // Serial.println("Start");
 }
 
@@ -146,6 +146,7 @@ static unsigned int arg2 = 0;
     default:
       break;
   }
+
 //  error = r_count - l_count;
 //  error_dot = error - prevError;
 //  output = -k*error - b*error_dot;

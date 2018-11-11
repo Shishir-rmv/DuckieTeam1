@@ -1,0 +1,182 @@
+{
+    "27.094118": {
+        "l_enc": 12,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 12,
+        "x": 154,
+        "R_ENC_DIST": 82.4668125,
+        "SPEED": 0,
+        "L_ENC_DIST": 82.4668125,
+        "Y": 51.931027142355056
+    },
+    "26.086019": {
+        "l_enc": 8,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 6,
+        "x": 72,
+        "R_ENC_DIST": 41.23340625,
+        "SPEED": 0,
+        "L_ENC_DIST": 54.977875,
+        "Y": 25.090856565737607
+    },
+    "21.063565": {
+        "l_enc": 0,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 0,
+        "x": 17,
+        "R_ENC_DIST": 0.0,
+        "SPEED": 0,
+        "L_ENC_DIST": 0.0,
+        "Y": 6.559921767427858
+    },
+    "18.047819": {
+        "l_enc": 0,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 0,
+        "x": 17,
+        "R_ENC_DIST": 0.0,
+        "SPEED": 0,
+        "L_ENC_DIST": 0.0,
+        "Y": 6.559921767427858
+    },
+    "19.051771": {
+        "l_enc": 0,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 0,
+        "x": 17,
+        "R_ENC_DIST": 0.0,
+        "SPEED": 0,
+        "L_ENC_DIST": 0.0,
+        "Y": 6.559921767427858
+    },
+    "15.03328": {
+        "l_enc": 0,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 0,
+        "x": 17,
+        "R_ENC_DIST": 0.0,
+        "SPEED": 0,
+        "L_ENC_DIST": 0.0,
+        "Y": 6.559921767427858
+    },
+    "12.02257": {
+        "l_enc": 0,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 0,
+        "x": 20,
+        "R_ENC_DIST": 0.0,
+        "SPEED": 0,
+        "L_ENC_DIST": 0.0,
+        "Y": 7.678262208120252
+    },
+    "16.03723": {
+        "l_enc": 0,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 0,
+        "x": 17,
+        "R_ENC_DIST": 0.0,
+        "SPEED": 0,
+        "L_ENC_DIST": 0.0,
+        "Y": 6.559921767427858
+    },
+    "13.026723": {
+        "l_enc": 0,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": -1,
+        "x": 17,
+        "R_ENC_DIST": -6.872234375,
+        "SPEED": 0,
+        "L_ENC_DIST": 0.0,
+        "Y": 6.559921767427858
+    },
+    "17.041309": {
+        "l_enc": 0,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 0,
+        "x": 17,
+        "R_ENC_DIST": 0.0,
+        "SPEED": 0,
+        "L_ENC_DIST": 0.0,
+        "Y": 6.559921767427858
+    },
+    "22.067496": {
+        "l_enc": 0,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 0,
+        "x": 17,
+        "R_ENC_DIST": 0.0,
+        "SPEED": 0,
+        "L_ENC_DIST": 0.0,
+        "Y": 6.559921767427858
+    },
+    "10.010078": {
+        "l_enc": 0,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 0,
+        "x": 0,
+        "R_ENC_DIST": 0,
+        "SPEED": 0,
+        "L_ENC_DIST": 0,
+        "Y": 0
+    },
+    "14.029305": {
+        "l_enc": 0,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 0,
+        "x": 17,
+        "R_ENC_DIST": 0.0,
+        "SPEED": 0,
+        "L_ENC_DIST": 0.0,
+        "Y": 6.559921767427858
+    },
+    "23.074084": {
+        "l_enc": 0,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 0,
+        "x": 17,
+        "R_ENC_DIST": 0.0,
+        "SPEED": 0,
+        "L_ENC_DIST": 0.0,
+        "Y": 6.559921767427858
+    },
+    "11.015133": {
+        "l_enc": -1,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 7,
+        "x": 20,
+        "R_ENC_DIST": 48.105640625,
+        "SPEED": 0,
+        "L_ENC_DIST": -6.872234375,
+        "Y": 7.678262208120252
+    },
+    "20.059636": {
+        "l_enc": 0,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 0,
+        "x": 17,
+        "R_ENC_DIST": 0.0,
+        "SPEED": 0,
+        "L_ENC_DIST": 0.0,
+        "Y": 6.559921767427858
+    },
+    "25.08208": {
+        "l_enc": 0,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 2,
+        "x": 24,
+        "R_ENC_DIST": 13.74446875,
+        "SPEED": 0,
+        "L_ENC_DIST": 0.0,
+        "Y": 9.434090396044095
+    },
+    "24.078072": {
+        "l_enc": 0,
+        "ENC_DELTA_THETA": 0,
+        "r_enc": 0,
+        "x": 17,
+        "R_ENC_DIST": 0.0,
+        "SPEED": 0,
+        "L_ENC_DIST": 0.0,
+        "Y": 6.559921767427858
+    }
+}
