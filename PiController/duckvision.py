@@ -114,7 +114,7 @@ def vision(see, x1, y1, x2, y2, outSlope):
             stream.seek(0)
             # Read the image and do some processing on it
             image = np.fromstring(stream.getvalue(), dtype=np.uint8)
-            height, width, temp = image.shape
+            height, width = image.shape
             region_of_interest_vert = [(0, height), (0, 300), (width, 300), (width, height)]
             white_yellow_image = select_white_yellow(image)
             gray_img = cv2.cvtColor(white_yellow_image, cv2.COLOR_RGB2GRAY)
