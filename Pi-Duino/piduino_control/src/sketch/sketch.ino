@@ -46,10 +46,10 @@ str_code hashit (String inString) {
    if (inString == "irr") return irSensor;
    if (inString == "png") return png;
    if (inString == "stp") return stopp;
-   if (inString == "upd") return update;
    if (inString == "odo") return odometry;
-   if (inString == "viz") return visual;
+   if (inString == "vis") return visual;
    if (inString == "cal") return calibrat;
+   if (inString == "upd") return update;
    if (inString == "none") return none;
 }
 
@@ -88,7 +88,7 @@ void setup() {
   md.init();
   md.setM1Speed(0);
   md.setM2Speed(0);
-  Serial.begin(2000000);
+  Serial.begin(9600);
   // Serial.println("Start");
 }
 
@@ -147,7 +147,6 @@ static unsigned int arg2 = 0;
     default:
       break;
   }
-
 //  error = r_count - l_count;
 //  error_dot = error - prevError;
 //  output = -k*error - b*error_dot;

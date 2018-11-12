@@ -8,7 +8,12 @@ from duckvision import vision
 #global variables
 port = "/dev/ttyACM0"
 rate = 9600
-s1 = serial.Serial(port, rate, timeout=10)
+s1 = serial.Serial()
+s1.port = port
+s1.baudrate = rate
+s1.timeout = 10
+s1.open()
+
 motorL = 0  # motor speeds
 motorR = 0
 #ping distance
