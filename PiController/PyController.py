@@ -11,8 +11,8 @@ rate = 9600
 s1 = serial.Serial()
 s1.port = port
 s1.baudrate = rate
-s1.timeout = 10
-s1.open()
+s1.timeout = 2
+
 
 motorL = 0  # motor speeds
 motorR = 0
@@ -68,8 +68,9 @@ def getEncoder():
     global l_enc
     global r_enc
     write('irr')
+    print("reading result")
     result = s1.readline().decode("utf-8")
-
+    print("read result")
     if (not result):
         print ("No result received from Arduino on getEncoder call")
     else:
@@ -183,8 +184,10 @@ def runTracker():
         
         # while we're still within our window of execution
         while (((datetime.now() - start).total_seconds() < stopAt) and (X<1200)):
+            print("getting encoder counti ")
             # get data from arduino
             getEncoder()
+            print("getting speed ")
             speed()
 
             # store it in the array
@@ -251,7 +254,7 @@ def runController(mapNum):
             if (stateChange):
                 state = machine[state]["next"]
                 # set our controller mode for this state
-                if(machine[state]["mode"] == "odometry")
+                if(machine[state]["mode"] == "odometry"):
                     odometry = True
                     # communicate the mode down to the arduino
                     write("odo")
@@ -303,6 +306,7 @@ def runController(mapNum):
 
             # if we're using a visual controller
             else:
+                i = 0; #delete this
                 # check current visual positions
                 # compute error of vehicle in lane
 
@@ -329,6 +333,7 @@ def runController(mapNum):
 
 # main method
 if __name__ == '__main__':
+    s1.open()
     mode = int(input("Which mode would you like to run? \n 1 or 2: Controller \n 3: Tracker \n 4: Manual"))
     #run lane navigation
     if(mode == 1 or mode == 2):
