@@ -52,6 +52,8 @@ def write(cmd):
     s1.write(cmd.encode())
     s1.flush()
 
+def read():
+    return s1.read_until(';').decode("utf-8")
 
 #function to grab encoder data 
 #have to decide if the arduino will return just increments or already calculate the distance per wheel and theta itself
@@ -69,7 +71,7 @@ def getEncoder():
     global r_enc
     write('irr')
 
-    result = s1.readline().decode("utf-8")
+    result = read()
 
     if (not result):
         print ("No result received from Arduino on getEncoder call")
@@ -109,7 +111,7 @@ def speed():
 #get ping distance
 def getPing():
     write('png')
-    response = s1.readline().decode("utf-8")
+    response = read()
 
     if (not response):
         print ("No result received from Arduino on getPing call")
@@ -150,7 +152,7 @@ def runManual():
             write(cmd)
 
             # receive and print the response
-            response = s1.readline().decode("utf-8")
+            response = read()
 
     # once finished
     setMotors(0,0)

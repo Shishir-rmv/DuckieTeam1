@@ -94,7 +94,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-stopIfFault();
+//stopIfFault();
 static int prevError = 0;
 static int output;
 static String opStr;
@@ -200,14 +200,14 @@ void encoder() {
   // Serial.println();
 }
 void getEnc() {
-  Serial.println(String(l_count)+","+String(r_count));
+  Serial.println(String(l_count)+","+String(r_count)+";");
   l_count = 0;
   r_count = 0;
 }
 
 void ping() {
   ping_duration = pulseIn(PING_PIN, HIGH);
-  Serial.println(ping_duration);
+  Serial.println(String(ping_duration)+";");
 }
 
 void Stop() {
@@ -219,7 +219,7 @@ void stopIfFault()
 {
   if (md.getFault())
   {
-    Serial.println("fault");
+    Serial.println("fault;");
       md.setM1Speed(0);
       md.setM2Speed(0);
     while(1);
