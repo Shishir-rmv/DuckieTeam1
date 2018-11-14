@@ -1,4 +1,5 @@
-from datetime imprt datetime
+from datetime import datetime
+import serial
 
 #global variables
 port = "/dev/ttyACM0"
@@ -13,23 +14,23 @@ def write(cmd):
     start = datetime.now()
     s1.write(cmd.encode())
     total = (datetime.now() - start).total_seconds()
-    print("\nTotal INNER write call: %f" % total)
+    print("Total INNER write call: %f" % total)
 
     start = datetime.now()
     s1.flush()
     total = (datetime.now() - start).total_seconds()
-    print("\nTotal flush call: %f" % total)
+    print("Total flush call: %f" % total)
 
 def read():
     start = datetime.now()
     bytesToRead = s1.inWaiting()
     total = (datetime.now() - start).total_seconds()
-    print("\nTotal inWaiting call: %f" % total)
+    print("Total inWaiting call: %f" % total)
 
     start = datetime.now()
     response = s1.read(bytesToRead)
     total = (datetime.now() - start).total_seconds()
-    print("\nTotal read call: %f" % total)
+    print("Total read call: %f" % total)
 
     return response
 
@@ -37,12 +38,12 @@ def read():
 if __name__ == '__main__':
     s1.open()
     for x in range (10):
-            start = datetime.now()
+        start = datetime.now()
         write("irr")
         total = (datetime.now() - start).total_seconds()
-        print("\nTotal write call: %f" % total)
+        print("Total write call: %f" % total)
 
         start = datetime.now()
         response = read()
         total = (datetime.now() - start).total_seconds()
-        print("\nResponse:%s\nTotal read call: %f" % (response, total))
+        print("Response:%s\nTotal read call: %f\n" % (response, total))
