@@ -4,6 +4,7 @@ import io
 import cv2
 import time
 from multiprocessing import Value
+from pprint import pprint
 
 COUNT = 1
 
@@ -189,6 +190,7 @@ def process(stream, vOffset):
 
 def gen_seq(vOffset, go):
     stream = io.BytesIO()
+    pprint.pprint(go)
     while go.value:
         yield stream
         process(stream, vOffset)
