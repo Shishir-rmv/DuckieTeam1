@@ -252,7 +252,7 @@ def runController(mapNum):
         s1.flush()
 
     # open state machine data for reading
-    machine = json.load("StateMachine/map%d" % mapNum)
+    machine = json.load("StateMachine/map%d.json" % mapNum)
         
     # this is the main logic loop where we put all our controlling equations/code
     try:

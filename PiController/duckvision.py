@@ -187,7 +187,7 @@ def process(stream, vOffset):
         pass
 
 
-def gen_seq(vOffset):
+def gen_seq(vOffset, go):
     stream = io.BytesIO()
     while go.value:
         yield stream
