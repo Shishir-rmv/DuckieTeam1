@@ -4,7 +4,6 @@ import io
 import cv2
 import time
 from multiprocessing import Value
-from pprint import pprint
 
 COUNT = 1
 
@@ -171,7 +170,7 @@ def process(stream, vOffset):
         white_midpoint_x = (white_line_x1 + white_line_x2) / 2
         yellow_midpoint_x = (yellow_line_x1 + yellow_line_x2) / 2
         center_of_lane_x = int((white_midpoint_x + yellow_midpoint_x) / 2)
-        vOffset = 262 - center_of_lane_x
+        vOffset.value = 262 - center_of_lane_x
 
         # Debug stuff:
         # print("Center of the lane: (%d, %d)" % (center_of_lane_x, center_of_lane_y))
@@ -190,7 +189,6 @@ def process(stream, vOffset):
 
 def gen_seq(vOffset, go):
     stream = io.BytesIO()
-    pprint.pprint(go)
     while go.value:
         yield stream
         process(stream, vOffset)

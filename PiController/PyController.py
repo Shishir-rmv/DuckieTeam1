@@ -1,5 +1,5 @@
 from multiprocessing import Process, Value
-import serial, json, math, threading, time
+import serial, json, math, threading, time, pdb
 from datetime import datetime
 from duckvision import vision
 
@@ -140,7 +140,7 @@ def stop():
 def setMotors(motorSpeedL, motorSpeedR):
     send = 'mtr' +"0"+str(motorSpeedL) +"0"+ str(motorSpeedR)+";"
     write(send)
-    print(send)
+    #print(send)
 
     #update the global variables once they're written to serial
     motorL = motorSpeedL
@@ -229,7 +229,7 @@ def runController(mapNum):
 
     
     # define boolean to act as an off switch
-    see = ('b', True)
+    see = Value('b', True)
 
     # define and start the computer vision process
     vision_process = Process(target=vision, args=(vOffset, see))
@@ -244,7 +244,7 @@ def runController(mapNum):
 
     # open the serial port to the Arduino & initialize
     s1.flushInput()
-    response, state = "", ""
+    response, state = "", "0"
     count, e, oldR, oldL = 0, 0, 0, 0
     running, stateChange, odometry = True, False, True
 
@@ -252,7 +252,8 @@ def runController(mapNum):
         s1.flush()
 
     # open state machine data for reading
-    machine = json.load("StateMachine/map%d.json" % mapNum)
+    with open("StateMachine/map%d.json" % mapNum, 'r') as f:
+        machine = json.load(f)
         
     # this is the main logic loop where we put all our controlling equations/code
     try:
@@ -278,7 +279,7 @@ def runController(mapNum):
                 stateChange = False
 
             # for debugging:
-            print("Camera:\t vOffset: %d" % (vOffset))
+            print("Camera:\t vOffset: %d" % (vOffset.value))
             # vDist = 0
             # vSlope = 0
             # print("Time elapsed: %d" % datetime.now().total_seconds())
@@ -287,9 +288,10 @@ def runController(mapNum):
 
             # if we're using an odometer-based controller
             if (odometry):
+                #pdb.set_trace()
                 if (machine[state]["act"] == "laneFollow"):
                     # if we've reached our stop condition (total distance forward)
-                    if (Y >= machine[state]["stopConditon"]):
+                    if (Y >= machine[state]["stopCondition"]):
                         write("stp;")
                         stateChange = True
                     else:
