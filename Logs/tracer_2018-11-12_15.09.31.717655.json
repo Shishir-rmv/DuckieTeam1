@@ -1,0 +1,112 @@
+{
+    "6.045028": {
+        "L_ENC_DIST": 584.139921875,
+        "r_enc": 87,
+        "Y": 117.13277199226316,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 597.8843906249999,
+        "x": 1164,
+        "SPEED": 0,
+        "l_enc": 85
+    },
+    "4.018371": {
+        "L_ENC_DIST": 0,
+        "r_enc": 0,
+        "Y": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": 0,
+        "SPEED": 0,
+        "l_enc": 0
+    },
+    "1.011529": {
+        "L_ENC_DIST": 0,
+        "r_enc": 0,
+        "Y": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": 0,
+        "SPEED": 0,
+        "l_enc": 0
+    },
+    "2.01383": {
+        "L_ENC_DIST": 0,
+        "r_enc": 0,
+        "Y": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": 0,
+        "SPEED": 0,
+        "l_enc": 0
+    },
+    "8.064052": {
+        "L_ENC_DIST": 597.8843906249999,
+        "r_enc": 87,
+        "Y": 206.54470566068238,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 597.8843906249999,
+        "x": 1762,
+        "SPEED": 0,
+        "l_enc": 87
+    },
+    "8.049616": {
+        "L_ENC_DIST": 584.139921875,
+        "r_enc": 87,
+        "Y": 117.13277199226316,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 597.8843906249999,
+        "x": 1164,
+        "SPEED": 0,
+        "l_enc": 85
+    },
+    "3.016109": {
+        "L_ENC_DIST": 0,
+        "r_enc": 0,
+        "Y": 0,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 0,
+        "x": 0,
+        "SPEED": 0,
+        "l_enc": 0
+    },
+    "5.031665": {
+        "L_ENC_DIST": 570.395453125,
+        "r_enc": 84,
+        "Y": 28.748561699343,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 577.2676875,
+        "x": 573,
+        "SPEED": 0,
+        "l_enc": 83
+    },
+    "6.03398": {
+        "L_ENC_DIST": 570.395453125,
+        "r_enc": 84,
+        "Y": 28.748561699343,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 577.2676875,
+        "x": 573,
+        "SPEED": 0,
+        "l_enc": 83
+    },
+    "4.029535": {
+        "L_ENC_DIST": 570.395453125,
+        "r_enc": 84,
+        "Y": 28.748561699343,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 577.2676875,
+        "x": 573,
+        "SPEED": 0,
+        "l_enc": 83
+    },
+    "7.047258": {
+        "L_ENC_DIST": 584.139921875,
+        "r_enc": 87,
+        "Y": 117.13277199226316,
+        "ENC_DELTA_THETA": 0,
+        "R_ENC_DIST": 597.8843906249999,
+        "x": 1164,
+        "SPEED": 0,
+        "l_enc": 85
+    }
+}

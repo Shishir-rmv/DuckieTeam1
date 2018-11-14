@@ -53,8 +53,8 @@ def write(cmd):
     s1.flush()
 
 def read():
-    bytesToRead = s1.inWaiting()
-    s1.read(bytesToRead)
+    bytesToRead = ser.inWaiting()
+    ser.read(bytesToRead)
 
 #function to grab encoder data 
 #have to decide if the arduino will return just increments or already calculate the distance per wheel and theta itself
@@ -71,7 +71,7 @@ def getEncoder():
     global l_enc
     global r_enc
     write('irr')
-    time.sleep(.2)
+
     result = read()
 
     if (not result):

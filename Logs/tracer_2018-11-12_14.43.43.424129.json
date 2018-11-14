@@ -1,0 +1,22 @@
+{
+    "11.03931": {
+        "l_enc": 432,
+        "SPEED": 0,
+        "R_ENC_DIST": 2989.421953125,
+        "r_enc": 435,
+        "L_ENC_DIST": 2968.80525,
+        "Y": 443.3257814286272,
+        "x": 2979,
+        "ENC_DELTA_THETA": 0
+    },
+    "10.020586": {
+        "l_enc": 0,
+        "SPEED": 0,
+        "R_ENC_DIST": 0,
+        "r_enc": 0,
+        "L_ENC_DIST": 0,
+        "Y": 0,
+        "x": 0,
+        "ENC_DELTA_THETA": 0
+    }
+}
