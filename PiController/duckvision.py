@@ -3,6 +3,7 @@ import numpy as np
 import io
 import cv2
 import time
+from multiprocessing import Value
 
 COUNT = 1
 
@@ -188,14 +189,14 @@ def process(stream, vOffset):
 
 def gen_seq(vOffset):
     stream = io.BytesIO()
-    while True:
+    while go.value:
         yield stream
         process(stream, vOffset)
 
 
 # this will be the process that we split off for Dmitry to do computer vision work in
 # we use shared memory to make passing information back and fourth
-def vision(vOffset):
+def vision(vOffset, go):
     print("Starting Vision")
     with picamera.PiCamera() as camera:
         camera.resolution = (640, 480)
@@ -204,4 +205,4 @@ def vision(vOffset):
         camera.framerate = 30
         camera.start_preview()
         time.sleep(1)
-        camera.capture_sequence(gen_seq(vOffset), format='jpeg', use_video_port=True)
+        camera.capture_sequence(gen_seq(vOffset, go), format='jpeg', use_video_port=True)

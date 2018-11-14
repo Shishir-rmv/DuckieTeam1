@@ -232,7 +232,7 @@ def runController(mapNum):
     see = ('b', True)
 
     # define and start the computer vision process
-    vision_process = Process(target=vision, args=(vOffset))
+    vision_process = Process(target=vision, args=(vOffset, see))
     vision_process.start()
     # _____________________________________________________________________________________
 
