@@ -88,7 +88,7 @@ void setup() {
   md.init();
   md.setM1Speed(0);
   md.setM2Speed(0);
-  Serial.begin(9600);
+  Serial.begin(115200);
   // Serial.println("Start");
 }
 
@@ -100,30 +100,55 @@ static int output;
 static String opStr;
 static unsigned int arg1 = 0;
 static unsigned int arg2 = 0;
+static char input[15];
+static char opStrA[4];
+static char arg1A[5];
+static char arg2A[5];
 
   if(Serial.available()){
-    String input = Serial.readString();
-    // Serial.print("input: "+input);
+    
+//    String input = Serial.readString();
+//    // Serial.print("input: "+input);
+//
+//    opStr = input.substring(0,3);
+//    // Serial.println(opStr);
+//
+//    arg1 = input.substring(3,7).toInt();
+//    arg2 = input.substring(7,11).toInt();
+      Serial.readBytesUntil('\n',input,12);
+      opStrA[0] = input[0]; 
+      opStrA[1] = input[1];   
+      opStrA[2] = input[2]; 
+      opStrA[3] = 0; 
+      arg1A[0] = input[3]; 
+      arg1A[1] = input[4];
+      arg1A[2] = input[5];
+      arg1A[3] = input[6];
+      arg1A[4] = 0;
+      arg2A[0] = input[7];
+      arg2A[1] = input[8];
+      arg2A[2] = input[9];
+      arg2A[3] = input[10];
+      arg2A[4] = 0;
 
-    opStr = input.substring(0,3);
-    // Serial.println(opStr);
+      String opStr = String(opStrA);
+      int arg1 = atoi(arg1A);
+      int arg2 = atoi(arg2A);
+//      int a = arg1 + arg2;
+//      Serial.println(a);
+//      Serial.println(opStr);
+//      Serial.println(arg1);
+//      Serial.println(arg2);
+//      Serial.println(hashit(opStr));
 
-    arg1 = input.substring(3,7).toInt();
-    arg2 = input.substring(7,11).toInt();
-  }
-
-  else{
-    opStr = "none";
-  }
-
-  switch(hashit(opStr)){
+    switch(hashit(opStr)){
     case none :
       break;
 
     case motor :
-      // Serial.println("motor");
-      // Serial.println(arg1);
-      // Serial.println(arg2);
+      Serial.println("motor");
+      Serial.println(arg1);
+      Serial.println(arg2);
       motorL = arg1;
       motorR = arg2;
 
@@ -132,21 +157,32 @@ static unsigned int arg2 = 0;
       break;
 
     case png :
+    Serial.println("heyyyyy");
       // Serial.print("ping duration: ");
       ping();
       break;
 
     case stopp :
+    Serial.println("heyyyyyyyyyyyyyy");
       Stop();
       break;
 
     case irSensor :
       getEnc();
+      Serial.println("heyyyyy");
       break;
 
     default:
+    Serial.println("heyyy");
       break;
   }
+  opStr = "none";
+  }
+//  else{
+//    opStr = "none";
+//  }
+
+ 
 //  error = r_count - l_count;
 //  error_dot = error - prevError;
 //  output = -k*error - b*error_dot;
@@ -200,14 +236,14 @@ void encoder() {
   // Serial.println();
 }
 void getEnc() {
-  Serial.println(String(l_count)+","+String(r_count)+";");
+  Serial.println(String(l_count)+","+String(r_count)+",;");
   l_count = 0;
   r_count = 0;
 }
 
 void ping() {
   ping_duration = pulseIn(PING_PIN, HIGH);
-  Serial.println(String(ping_duration)+";");
+  Serial.println(String(ping_duration)+" ;");
 }
 
 void Stop() {
