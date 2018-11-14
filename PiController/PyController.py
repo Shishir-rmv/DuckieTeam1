@@ -4,7 +4,6 @@ from datetime import datetime
 from duckvision import vision
 
 
-
 #global variables
 port = "/dev/ttyACM0"
 rate = 115200
@@ -226,18 +225,14 @@ def starter():
 def runController(mapNum):
     # Define and split off the computer vision subprocess _________________________________
     # define doubles
-    x1 = Value('d', -9.99)
-    y1 = Value('d', -9.99)
-    x2 = Value('d', -9.99)
-    y2 = Value('d', -9.99)
-    slope = Value('d', 0.0)
+    vOffset = Value('i', 0)
+
     
     # define boolean to act as an off switch
     see = ('b', True)
 
     # define and start the computer vision process
-    # vision_process = Process(target=vision, args=(see, x1, x2, y1, y2, slope))
-    vision_process = Process(target=vision)
+    vision_process = Process(target=vision, args=(vOffset))
     vision_process.start()
     # _____________________________________________________________________________________
 
@@ -283,6 +278,7 @@ def runController(mapNum):
                 stateChange = False
 
             # for debugging:
+            print("Camera:\t vOffset: %d" % (vOffset))
             # vDist = 0
             # vSlope = 0
             # print("Time elapsed: %d" % datetime.now().total_seconds())
