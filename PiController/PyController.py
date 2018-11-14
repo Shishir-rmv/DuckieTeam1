@@ -7,7 +7,7 @@ from duckvision import vision
 
 #global variables
 port = "/dev/ttyACM0"
-rate = 9600
+rate = 115200
 s1 = serial.Serial()
 s1.port = port
 s1.baudrate = rate
@@ -108,9 +108,19 @@ def speed():
     last_X = X
 
 
+def comm_speed_test():
+    while(i<20):
+        start_time = datetime.now()
+        getEncoder()
+        end_time = datetime.now()
+        print("time for comm: %s", % str(end_time - start_time))
+        i=i+1
+
+
+
 #get ping distance
 def getPing():
-    write('png')
+    write('png;')
     response = read()
 
     if (not response):
@@ -121,12 +131,12 @@ def getPing():
 
 #stop motors
 def stop():
-    write('stp')
+    write('stp;')
 
 
 #set motor speed
 def setMotors(motorSpeedL, motorSpeedR):
-    send = 'mtr' +"0"+str(motorSpeedL) +"0"+ str(motorSpeedR)
+    send = 'mtr' +"0"+str(motorSpeedL) +"0"+ str(motorSpeedR)+";"
     write(send)
     print(send)
 
@@ -149,7 +159,7 @@ def runManual():
             cmd = input('Enter Pi cmd (\'999\' to quit):')
             
             # encode and send the command
-            write(cmd)
+            write(cmd+';')
 
             # receive and print the response
             response = read()
@@ -257,15 +267,15 @@ def runController(mapNum):
                 if(machine[state]["mode"] == "odometry"):
                     odometry = True
                     # communicate the mode down to the arduino
-                    write("odo")
+                    write("odo;")
                 else:
                     odometry = False
                     # communicate the mode down to the arduino
-                    write("vis")
+                    write("vis;")
 
                 # send speed calibration words down to arduino
                 #TODO: calculate what value to start motors at
-                cmd = "cal"+"0"+str(motorStartL)+"0"+str(motorStartdR)
+                cmd = "cal"+"0"+str(motorStartL)+"0"+str(motorStartdR)+';'
                 write(cmd)
                 stateChange = False
 
@@ -281,7 +291,7 @@ def runController(mapNum):
                 if (machine[state]["act"] == "laneFollow"):
                     # if we've reached our stop condition (total distance forward)
                     if (Y >= machine[state]["stopConditon"]):
-                        write("stp")
+                        write("stp;")
                         stateChange = True
                     else:
                         # query the QE
@@ -291,7 +301,7 @@ def runController(mapNum):
                         e = (R_ENC_DIST - oldR) - machine[state]["c"]*(L_ENC_DIST - oldL)
 
                         # send computed error down to the arduino
-                        cmd = "err%s0000" % str(e).zfill(4)
+                        cmd = "err%s0000;" % str(e).zfill(4)
                         write(cmd)
                         
                         # update x and y values to compute delta next iteration
@@ -336,7 +346,7 @@ if __name__ == '__main__':
     s1.open()
     time.sleep(1)
 
-    mode = int(input("Which mode would you like to run? \n 1 or 2: Controller \n 3: Tracker \n 4: Manual"))
+    mode = int(input("Which mode would you like to run? \n 1 or 2: Controller \n 3: Tracker \n 4: Manual \n 5: Comm speed test \n"))
     #run lane navigation
     if(mode == 1 or mode == 2):
         runController(mode)
@@ -348,6 +358,9 @@ if __name__ == '__main__':
     #run manual mode
     if(mode == 4):
         runManual()
+
+    if(mode == 5):
+        comm_speed_test()
 
     else:
         print("Wat")
