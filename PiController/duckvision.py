@@ -121,6 +121,11 @@ def select_yellow(image):
 def process(stream, vOffset):
     #try:
     if(True):
+
+    # Jake needed to initialize these since they were drawing errors
+    white_line_x1, white_line_y1, white_line_x2, white_line_y2 = 0,0,0,0
+    yellow_line_x1, yellow_line_y1, yellow_line_x2, yellow_line_y2 = 0,0,0,0
+
         stream.seek(0)  # seek to location 0 of stream_img
         # Truncate the stream to the current position (in case
         # prior iterations output a longer image))

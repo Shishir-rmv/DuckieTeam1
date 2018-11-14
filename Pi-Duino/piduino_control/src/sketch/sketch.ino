@@ -157,23 +157,23 @@ static char arg2A[5];
       break;
 
     case png :
-    Serial.println("heyyyyy");
+    //Serial.println("heyyyyy");
       // Serial.print("ping duration: ");
       ping();
       break;
 
     case stopp :
-    Serial.println("heyyyyyyyyyyyyyy");
+    //Serial.println("heyyyyyyyyyyyyyy");
       Stop();
       break;
 
     case irSensor :
       getEnc();
-      Serial.println("heyyyyy");
+      //Serial.println("heyyyyy");
       break;
 
     default:
-    Serial.println("heyyy");
+    //Serial.println("heyyy");
       break;
   }
   opStr = "none";
