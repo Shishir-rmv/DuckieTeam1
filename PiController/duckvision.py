@@ -119,7 +119,8 @@ def select_yellow(image):
 
 
 def process(stream, vOffset):
-    try:
+    #try:
+    if(True):
         stream.seek(0)  # seek to location 0 of stream_img
         # Truncate the stream to the current position (in case
         # prior iterations output a longer image))
@@ -182,9 +183,9 @@ def process(stream, vOffset):
 
         stream.seek(0)
         stream.truncate()
-    except Exception as e:
-        print(str(e))
-        pass
+    #except Exception as e:
+    #    print(str(e))
+    #    pass
 
 
 def gen_seq(vOffset, go):
