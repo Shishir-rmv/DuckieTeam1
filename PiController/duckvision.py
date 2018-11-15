@@ -93,7 +93,7 @@ def draw_lane_lines(image, lines, center, color=[0, 0, 255], thickness=20):
     for line in lines:
         if line is not None:
             cv2.line(line_image, *line,  color, thickness)
-    # image1 * α + image2 * β + λ
+    # image1 * alpha + image2 * beta + gamma
     # image1 and image2 must be the same shape.
     (center_of_lane_x, center_of_lane_y) = center
     cv2.circle(line_image, (center_of_lane_x, center_of_lane_y), 10, (255,0,0), -1)

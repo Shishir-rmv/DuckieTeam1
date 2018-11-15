@@ -396,11 +396,10 @@ def hardCoded(mapNum):
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
 
-    #stop vehicle process: Set motor speeds to 0, close down serial port, and kill vision thread.
+    #stop vehicle process: Set motor speeds to 0, and close down serial port.
     setMotors(0,0)
     s1.close()
     # once we're all done, send the kill switch to the inner vision loop and join the vision process
-    see.value = False
     starter_thread.join()
     print("Starter thread joined")
     vision_process.join() 
