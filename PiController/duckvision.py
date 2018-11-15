@@ -119,12 +119,12 @@ def select_yellow(image):
 
 
 def process(stream, vOffset):
-    #try:
-    if(True):
+    try:
+    #if(True):
 
-    # Jake needed to initialize these since they were drawing errors
-    white_line_x1, white_line_y1, white_line_x2, white_line_y2 = 0,0,0,0
-    yellow_line_x1, yellow_line_y1, yellow_line_x2, yellow_line_y2 = 0,0,0,0
+        # Jake needed to initialize these since they were drawing errors
+        white_line_x1, white_line_y1, white_line_x2, white_line_y2 = 0,0,0,0
+        yellow_line_x1, yellow_line_y1, yellow_line_x2, yellow_line_y2 = 0,0,0,0
 
         stream.seek(0)  # seek to location 0 of stream_img
         # Truncate the stream to the current position (in case
@@ -188,14 +188,15 @@ def process(stream, vOffset):
 
         stream.seek(0)
         stream.truncate()
-    #except Exception as e:
-    #    print(str(e))
-    #    pass
+    except Exception as e:
+        print(str(e))
+        pass
 
 
 def gen_seq(vOffset, go):
     stream = io.BytesIO()
     while go.value:
+        #print("VISION going")
         yield stream
         process(stream, vOffset)
 
@@ -212,3 +213,4 @@ def vision(vOffset, go):
         camera.start_preview()
         time.sleep(1)
         camera.capture_sequence(gen_seq(vOffset, go), format='jpeg', use_video_port=True)
+    print("Vision Finished")

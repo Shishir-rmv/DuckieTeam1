@@ -218,8 +218,9 @@ def runTracker():
 
 def starter():
     # use this to make it start moving when we want it to
-    input("Press Enter to start")
+    input("Press Enter to start\n")
     move = True
+    print("Starter thread finished")
 
 
 def runController(mapNum):
@@ -339,7 +340,9 @@ def runController(mapNum):
     # once we're all done, send the kill switch to the inner vision loop and join the vision process
     see.value = False
     starter_thread.join()
-    vision_process.join()
+    print("Starter thread joined")
+    vision_process.join() 
+    print("Vision Process joined")
 
 
 # main method
@@ -353,14 +356,14 @@ if __name__ == '__main__':
         runController(mode)
 
     #run tracker mode
-    if(mode == 3):
+    elif(mode == 3):
         runTracker()
 
     #run manual mode
-    if(mode == 4):
+    elif(mode == 4):
         runManual()
 
-    if(mode == 5):
+    elif(mode == 5):
         comm_speed_test()
 
     else:
