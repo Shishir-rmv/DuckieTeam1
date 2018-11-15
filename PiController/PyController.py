@@ -74,7 +74,8 @@ def getEncoder():
     result = read()
 
     if (not result):
-        print ("No result received from Arduino on getEncoder call")
+        #print ("No result received from Arduino on getEncoder call")
+        pass
     else:
         #result = (s1.readline()).decode("utf-8")
         qe = result.split(',')
