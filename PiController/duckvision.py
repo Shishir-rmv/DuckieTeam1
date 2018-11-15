@@ -172,10 +172,19 @@ def process(stream, vOffset):
 
         if white_line:
             (white_line_x1, white_line_y1), (white_line_x2, white_line_y2) = white_line
+            print("wx1: %d\twy1: %d\twx2: %d\twy2: %d" %(white_line_x1, white_line_y1, white_line_x2, white_line_y2))
+        else:
+            print("No white line detected")
 
         if yellow_line:
             (yellow_line_x1, yellow_line_y1), (yellow_line_x2, yellow_line_y2) = yellow_line
+            print("yx1: %d\tyy1: %d\tyx2: %d\tyy2: %d" %(yellow_line_x1, yellow_line_y1, yellow_line_x2, yellow_line_y2))
+        else:
+            print("No yellow line detected")
 
+        print("wx1: %d\twy1: %d\twx2: %d\twy2: %d" %(white_line_x1, white_line_y1, white_line_x2, white_line_y2))
+        print("yx1: %d\tyy1: %d\tyx2: %d\tyy2: %d" %(yellow_line_x1, yellow_line_y1, yellow_line_x2, yellow_line_y2))
+        
         white_midpoint_x = (white_line_x1 + white_line_x2) / 2
         yellow_midpoint_x = (yellow_line_x1 + yellow_line_x2) / 2
         center_of_lane_x = int((white_midpoint_x + yellow_midpoint_x) / 2)
