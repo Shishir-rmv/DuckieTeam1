@@ -347,6 +347,9 @@ def runController(mapNum):
     print("Vision Process joined")
 
 
+# this is the method that you will edit to do the hard-coded demos on Friday
+# it reads in state information from a JSON file that you can change, 
+# and will pass that down to the arduino to execute the 3 steps to stop on the red line
 def hardCoded(mapNum):
     print("HardController starting")
 
@@ -402,8 +405,6 @@ def hardCoded(mapNum):
     # once we're all done, send the kill switch to the inner vision loop and join the vision process
     starter_thread.join()
     print("Starter thread joined")
-    vision_process.join() 
-    print("Vision Process joined")
 
 # main method
 if __name__ == '__main__':
