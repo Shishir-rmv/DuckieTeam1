@@ -4,6 +4,8 @@
         "act": "laneFollow",
         "position" : [[0,0], [0, 120], 0, 0],
         "mode" : "odometry", 
+        "time" : -1,
+        "vRef" : 2,
         "c" : 1,
         "stopCondition" : 48,
         "next": 1
@@ -13,6 +15,8 @@
         "act": "turn",
         "position" : [[0,120], [134, 22], 0, 90],
         "mode" : "odometry", 
+        "time" : -1,
+        "vRef" : 2,
         "c" : 10,
         "stopCondition" : 90,
         "next": 2
@@ -22,6 +26,8 @@
         "act": "laneFollow",
         "position" : [[134,22], [134, 75], 90, 90],
         "mode" : "odometry", 
+        "time" : -1,
+        "vRef" : 2,
         "c" : 1,
         "stopCondition" : 24,
         "next": -1
