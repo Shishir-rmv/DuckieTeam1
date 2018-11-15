@@ -124,8 +124,8 @@ def select_yellow(image):
 
 def process(stream, vOffset):
 
-        global white_line_x1, white_line_y1, white_line_x2, white_line_y2
-        global yellow_line_x1, yellow_line_y1, yellow_line_x2, yellow_line_y2
+    global white_line_x1, white_line_y1, white_line_x2, white_line_y2
+    global yellow_line_x1, yellow_line_y1, yellow_line_x2, yellow_line_y2
 
     try:
     #if(True):
