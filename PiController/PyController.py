@@ -69,7 +69,7 @@ def getEncoder():
     global R_ENC_DIST
     global l_enc
     global r_enc
-    write('irr')
+    write('irr\n')
     r1 = s1.read(1)
     r2 = s2.read(1)
     l_enc = int.from_bytes(r1, byteorder = 'little', signed = False)
@@ -116,7 +116,7 @@ def comm_speed_test():
 
 #get ping distance
 def getPing():
-    write('png;')
+    write('png\n')
     response = s1.read(1)
 
     if (not response):
@@ -127,12 +127,12 @@ def getPing():
 
 #stop motors
 def stop():
-    write('stp;')
+    write('stp\n')
 
 
 #set motor speed
 def setMotors(motorSpeedL, motorSpeedR):
-    send = 'mtr' +"0"+str(motorSpeedL) +"0"+ str(motorSpeedR)+";"
+    send = 'mtr' +"0"+str(motorSpeedL) +"0"+ str(motorSpeedR)+"\n"
     write(send)
     #print(send)
 
@@ -155,7 +155,7 @@ def runManual():
             cmd = input('Enter Pi cmd (\'999\' to quit):')
             
             # encode and send the command
-            write(cmd+';')
+            write(cmd+'\n')
 
             # receive and print the response
             response = s1.read(1)
@@ -262,15 +262,15 @@ def runController(mapNum):
                 if(machine[state]["mode"] == "odometry"):
                     odometry = True
                     # communicate the mode down to the arduino
-                    write("odo;")
+                    write("odo\n")
                 else:
                     odometry = False
                     # communicate the mode down to the arduino
-                    write("vis;")
+                    write("vis\n")
 
                 # send speed calibration words down to arduino
                 #TODO: calculate what value to start motors at
-                cmd = "cal"+"0"+str(motorStartL)+"0"+str(motorStartdR)+';'
+                cmd = "cal"+"0"+str(motorStartL)+"0"+str(motorStartdR)+'\n'
                 write(cmd)
                 stateChange = False
 
@@ -288,7 +288,7 @@ def runController(mapNum):
                 if (machine[state]["act"] == "laneFollow"):
                     # if we've reached our stop condition (total distance forward)
                     if (Y >= machine[state]["stopCondition"]):
-                        write("stp;")
+                        write("stp\n")
                         stateChange = True
                     else:
                         # query the QE
@@ -298,7 +298,7 @@ def runController(mapNum):
                         e = (R_ENC_DIST - oldR) - machine[state]["c"]*(L_ENC_DIST - oldL)
 
                         # send computed error down to the arduino
-                        cmd = "err%s0000;" % str(e).zfill(4)
+                        cmd = "err%s0000\n" % str(e).zfill(4)
                         write(cmd)
                         
                         # update x and y values to compute delta next iteration
@@ -306,7 +306,7 @@ def runController(mapNum):
 
                 # else, we're doing a blind turn
                 else:
-                    cmd = "trn%s0000" % str(machine[state]["c"]).zfill(4)
+                    cmd = "trn%s0000\n" % str(machine[state]["c"]).zfill(4)
                     write(cmd)
                     
 
