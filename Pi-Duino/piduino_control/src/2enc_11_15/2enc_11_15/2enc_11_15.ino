@@ -37,20 +37,21 @@ double prevmillis_L = micros();
 double prevmillis_R = micros();
 double distance_R = 0;
 double distance_L=0;
-int update_rate = 2;//set from 1 to PPR or maybe more
+int update_rate = 1;//set from 1 to PPR or maybe more
 
 double error = 0;
 double error_dot = 0;
 double del_v = 0;
-double rpm_target_L;
-double rpm_target_R;
+
 double pwm_L = 200;
 double pwm_R = 200;
 double prev_error = 0;
 double distance = 0;
-double C = 1;
+double C = 1.50;
 static double rpm_L = (pwm_L-96.23)/2.114;
 static double rpm_R = (pwm_R-100.9)/2.02;
+double rpm_target_L = rpm_L;
+double rpm_target_R = rpm_R;
 
 str_code hashit (String inString) {
    if (inString == "mtr") return motor;
@@ -112,7 +113,7 @@ static unsigned int arg2 = 0;
     arg1 = input.substring(3,7).toInt();
     arg2 = input.substring(7,11).toInt();
   }
-  else if(distance>1000){//&& micros()>1000000
+  else if(distance>650){//&& micros()>1000000
     //Serial.println(micros());
     //
     Stop();
@@ -175,13 +176,13 @@ void encoder() {
   r_enc_count += r_enc;
 //  if ((pwm_R*r_enc)<0 && old_r_enc_count != 0){
 //    r_enc_count -= 2*r_enc;
-//   r_s = 2*WHEEL_CIRCUMFERENCE/PPR;
+//   r_s -= 2*r_enc*WHEEL_CIRCUMFERENCE/PPR;
 //  }else{
 //   r_enc_count += r_enc; 
 //  }
 //  if ((pwm_L*l_enc)<0 && old_l_enc_count != 0){
 //    l_enc_count -= 2*l_enc;
-//    l_s = 2*WHEEL_CIRCUMFERENCE/PPR;
+//    l_s -= 2*l_enc*WHEEL_CIRCUMFERENCE/PPR;
 //  }else{
 //  l_enc_count += l_enc;
 //  }
@@ -189,8 +190,8 @@ void encoder() {
   
   // //update the change in avg position and current heading
 
-  distance_L += l_s;
-  distance_R += r_s;
+  distance_L = l_enc_count*WHEEL_CIRCUMFERENCE/PPR;
+  distance_R = r_enc_count*WHEEL_CIRCUMFERENCE/PPR;
   
   if (l_enc_count!= old_l_enc_count){
     old_l_enc_count = l_enc_count;
@@ -231,19 +232,19 @@ void encoder() {
   
   //error_v = 5;
   //error = error_v * 2; 
-  error = (distance_L) - (distance_R);
+  error = (C*distance_L) - (distance_R);
   error_dot = error - prev_error;
-  del_v = -(0.006*error) - (0.00000*error_dot);
-  del_v = (del_v*60)/(70*3.14);
-  rpm_target_L = rpm_L + del_v;
-  rpm_target_R = rpm_R - del_v;
-  //pwm_L = 2.114*rpm_target_L + 96.23;
-  //pwm_R = 2.02*rpm_target_R + 100.9;
+  //del_v = -(0.3*error) - (0.0*error_dot);
+  //del_v = (del_v*60)/(70*3.14);
+  //rpm_target_L = rpm_target_L + del_v;
+  //rpm_target_R = rpm_target_R - del_v;
+  pwm_L = (2.114*rpm_target_L + 96.23);
+  pwm_R = C*(2.02*rpm_target_R + 100.9);
   prev_error = error;
 
   
    String ret = "";
-   ret =  String(error) + " "+ String(del_v)+" "+String(rpm_target_L) + " "+String(rpm_target_R);
+   ret =  String(error);
    Serial.println(ret);
 }
 
