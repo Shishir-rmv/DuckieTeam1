@@ -107,7 +107,7 @@ def convert_hls(image):
 def select_white(image):
     converted = convert_hls(image)
     # white color mask
-    lower = np.uint8([0, 215, 0])
+    lower = np.uint8([  0, 240, 0])
     upper = np.uint8([255, 255, 255])
     white_mask = cv2.inRange(converted, lower, upper)
     return cv2.bitwise_and(image, image, mask = white_mask)
@@ -117,7 +117,7 @@ def select_yellow(image):
     converted = convert_hls(image)
     # yellow color mask
     lower = np.uint8([ 10,   0, 100])
-    upper = np.uint8([ 100, 255, 255])
+    upper = np.uint8([ 40, 220, 220])
     yellow_mask = cv2.inRange(converted, lower, upper)
     return cv2.bitwise_and(image, image, mask = yellow_mask)
 
@@ -143,7 +143,7 @@ def process(stream, vOffset):
         height, width, temp = image.shape
 
         # Defines Region of Interest
-        region_of_interest_vert = [(0, height), (50, 240), (width-50, 240), (width, height)]
+        region_of_interest_vert = [(0, height), (0, 0), (width, 0), (width, height)]
 
         # Filters White and Yellow colors in the image
         white_image = select_white(image)
