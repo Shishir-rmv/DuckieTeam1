@@ -70,32 +70,25 @@ def getEncoder():
     global l_enc
     global r_enc
     write('irr')
-    time.sleep(.2)
-    result = read()
+    r1 = s1.read(1)
+    r2 = s2.read(1)
+    l_enc = int.from_bytes(r1, byteorder = 'little', signed = False)
+    r_enc = int.from_bytes(r2, byteorder = 'little', signed = False)
+   
+    # for debugging
+    print("from encoder call: %d %d" % (l_enc, r_enc))
+ 
+    L_ENC_DIST = l_enc * WHEEL_CIRCUMFERENCE/PPR
+    R_ENC_DIST = r_enc * WHEEL_CIRCUMFERENCE/PPR
 
-    if (not result):
-        #print ("No result received from Arduino on getEncoder call")
-        pass
-    else:
-        #result = (s1.readline()).decode("utf-8")
-        qe = result.split(',')
-        # for debugging
-        print("from encoder call: %s" % str(result))
-        #print(qe)
-        if(len(qe) >= 2):
-            l_enc = int(qe[0])
-            r_enc = int(qe[1])
-        L_ENC_DIST = l_enc * WHEEL_CIRCUMFERENCE/PPR
-        R_ENC_DIST = r_enc * WHEEL_CIRCUMFERENCE/PPR
+    #update the change in avg position and current heading
+    ENC_DELTA_X = (L_ENC_DIST + R_ENC_DIST)/2
+    ENC_DELTA_THETA = math.atan2((R_ENC_DIST-L_ENC_DIST)/2, WHEEL_BASE/2)
 
-        #update the change in avg position and current heading
-        ENC_DELTA_X = (L_ENC_DIST + R_ENC_DIST)/2
-        ENC_DELTA_THETA = math.atan2((R_ENC_DIST-L_ENC_DIST)/2, WHEEL_BASE/2)
-
-        #update overall global positioning
-        THETA += ENC_DELTA_THETA
-        X += ENC_DELTA_X
-        Y += ENC_DELTA_X*math.sin(THETA)
+    #update overall global positioning
+    THETA += ENC_DELTA_THETA
+    X += ENC_DELTA_X
+    Y += ENC_DELTA_X*math.sin(THETA)
 
 
 def speed():
@@ -124,7 +117,7 @@ def comm_speed_test():
 #get ping distance
 def getPing():
     write('png;')
-    response = read()
+    response = s1.read(1)
 
     if (not response):
         print ("No result received from Arduino on getPing call")
@@ -165,7 +158,7 @@ def runManual():
             write(cmd+';')
 
             # receive and print the response
-            response = read()
+            response = s1.read(1)
 
     # once finished
     setMotors(0,0)
