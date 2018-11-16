@@ -32,7 +32,10 @@ double ping_duration;
 char dataString[5] = {0};
 double duration_L;
 double duration_R;
-
+double dist_L=0;
+double dist_R=0;
+double prev_dist_L=0;
+double prev_dist_R=0;
 double prevmillis_L = micros();
 double prevmillis_R = micros();
 double distance_R = 0;
@@ -47,7 +50,7 @@ double pwm_L = 200;
 double pwm_R = 200;
 double prev_error = 0;
 double distance = 0;
-double C = 1.50;
+double C = 1;
 static double rpm_L = (pwm_L-96.23)/2.114;
 static double rpm_R = (pwm_R-100.9)/2.02;
 double rpm_target_L = rpm_L;
@@ -130,19 +133,22 @@ static char arg2A[5];
     int arg1 = atoi(arg1A);
     int arg2 = atoi(arg2A);
   }
-  else if(distance>650){//&& micros()>1000000
+  else if(distance>1000){//&& micros()>1000000
     //Serial.println(micros());
     //
+
+     C = 0.7;
+  }else if(distance>1345){
     Stop();
   }
-  //else if(distance>600){
-    //Serial.println(micros());
-    //Stop();
-  //  C = 0.7;
-   // distance_L = 0;
-   // distance_R = 0;
-
-    
+//  else if(distance>100){
+//    //Serial.println(micros());
+//    //Stop();
+//  //  C = 0.7;
+//    distance_L = 0;
+//    distance_R = 0;
+//
+//    
 //}
 else{
     
@@ -240,27 +246,53 @@ void encoder() {
     }
   }
 
- 
+  dist_L +=l_s;
+  dist_R +=r_s;
+//  Serial.print(dist_R-prev_dist_R);
+//  Serial.print(" ");
+//  if ((dist_L-prev_dist_L)>30 ||(dist_R-prev_dist_R)>30){
+//    error = (dist_L-prev_dist_L) - (dist_R-prev_dist_R);
+//    error_dot = error - prev_error;
+//    del_v = -(0.1*error) - (0.01*error_dot);
+//    del_v = (del_v*60)/(70*3.14);
+//    rpm_target_L = rpm_target_L + del_v;
+//    rpm_target_R = rpm_target_R - del_v;
+//    pwm_L = (2.114*rpm_target_L + 96.23);
+//    pwm_R = (2.02*rpm_target_R + 100.9);
+//    prev_error = error;
+//    prev_dist_L=dist_L;
+//    Serial.print(prev_dist_L);
+//    prev_dist_R=dist_R; 
+//    Serial.print(" ");
+//    Serial.println(prev_dist_R);
+//  }
   delta_x = (l_s + r_s)/2;
   heading = atan2((l_s-r_s)/2, WHEEL_BASE/2);
-
+  
   theta += heading;
   x += delta_x*cos(theta);
   y += delta_x*sin(theta);
-  distance = (distance_L +distance_R)/2;
-  
+  distance = (distance_L + distance_R)/2;
   //error_v = 5;
   //error = error_v * 2; 
+<<<<<<< HEAD
   error = (C*distance_L) - (distance_R);  // C, THE TURNING COEFFICIENT, IS MULTIPLIED TO L
+=======
+  error = (distance_L*C) - (distance_R);
+>>>>>>> 00c0e5e6f0b0ade9b657078d569a7dc177cc3cd5
   error_dot = error - prev_error;
-  //del_v = -(0.3*error) - (0.0*error_dot);
-  //del_v = (del_v*60)/(70*3.14);
-  //rpm_target_L = rpm_target_L + del_v;
-  //rpm_target_R = rpm_target_R - del_v;
+  del_v = -(0.3*error) - (2*error_dot);
+  del_v = (del_v*60)/(70*3.14);
+  rpm_target_L = rpm_target_L + del_v;
+  rpm_target_R = rpm_target_R - del_v;
   pwm_L = (2.114*rpm_target_L + 96.23);
+<<<<<<< HEAD
   pwm_R = C*(2.02*rpm_target_R + 100.9);  //C IS MULTIPLIED TO R HERE BUT L ABOVE
+=======
+  pwm_R = (2.02*rpm_target_R + 100.9)*C;
+>>>>>>> 00c0e5e6f0b0ade9b657078d569a7dc177cc3cd5
   prev_error = error;
-
+  
   
    String ret = "";
    ret =  String(error);
