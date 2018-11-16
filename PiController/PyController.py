@@ -71,7 +71,7 @@ def getEncoder():
     global r_enc
     write('irr\n')
     r1 = s1.read(1)
-    r2 = s2.read(1)
+    r2 = s1.read(1)
     l_enc = int.from_bytes(r1, byteorder = 'little', signed = False)
     r_enc = int.from_bytes(r2, byteorder = 'little', signed = False)
    
@@ -248,9 +248,9 @@ def runController(mapNum):
         s1.flush()
 
     # open state machine data for reading
-    with open("StateMachine/map%d.json" % mapNum, 'r') as f:
+    with open("StateMachine/map%s.json" % mapNum, 'r') as f:
         machine = json.load(f)
-        
+
     # this is the main logic loop where we put all our controlling equations/code
     try:
         while (running):
@@ -270,7 +270,7 @@ def runController(mapNum):
 
                 # send speed calibration words down to arduino
                 #TODO: calculate what value to start motors at
-                cmd = "cal"+"0"+str(motorStartL)+"0"+str(motorStartdR)+'\n'
+                #cmd = "cal"+"0"+str(motorStartL)+"0"+str(motorStartdR)+'\n'
                 write(cmd)
                 stateChange = False
 
@@ -421,7 +421,7 @@ if __name__ == '__main__':
     #run manual mode
     elif(mode == 5 or mode == 6):
         # hardCoded(mode)
-        runController(mode - 4)
+        runController(str(mode - 4))
 
     elif(mode == 7):
         comm_speed_test()

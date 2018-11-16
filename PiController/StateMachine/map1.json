@@ -8,7 +8,7 @@
         "vRef" : 2,
         "c" : 1,
         "stopCondition" : 48,
-        "next": 1
+        "next": "1"
     },
     "1": {
         "desc": "Perform right turn",
@@ -19,7 +19,7 @@
         "vRef" : 2,
         "c" : 10,
         "stopCondition" : 90,
-        "next": 2
+        "next": "2"
     },
     "2": {
         "desc": "Lane follow after right turn",
@@ -30,11 +30,11 @@
         "vRef" : 2,
         "c" : 1,
         "stopCondition" : 24,
-        "next": -1
+        "next": "-1"
     },
     "-1": {
         "desc": "stop",
         "act": "stop",
-        "next": -1
+        "next": "-1"
     }
 }
