@@ -45,8 +45,8 @@ double error_dot = 0;
 double del_v = 0;
 double rpm_target_L;
 double rpm_target_R;
-double pwm_L = 0;
-double pwm_R = 0;
+double pwm_L = 100;
+double pwm_R = 100;
 double prev_error = 0;
 double distance = 0;
 double C = 1;
@@ -225,8 +225,8 @@ void encoder() {
   del_v = (del_v*60)/(70*3.14);
   rpm_target_L = rpm_L + del_v;
   rpm_target_R = rpm_R - del_v;
-  //pwm_L = 2.114*rpm_target_L + 96.23;
-  //pwm_R = 2.02*rpm_target_R + 100.9;
+  pwm_L = 2.114*rpm_target_L + 96.23;
+  pwm_R = 2.02*rpm_target_R + 100.9;
   prev_error = error;
 
 
