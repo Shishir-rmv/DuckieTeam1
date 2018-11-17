@@ -105,16 +105,33 @@ void loop() {
 static String opStr;
 static unsigned int arg1 = 0;
 static unsigned int arg2 = 0;
+static char input[15];
+static char opStrA[4];
+static char arg1A[5];
+static char arg2A[5];
+  if (Serial.available()) {
 
-  if(Serial.available()){
-    String input = Serial.readString();
-    Serial.print("input: "+input);
+    Serial.readBytesUntil('\n', input, 12);
+    opStrA[0] = input[0];
+    opStrA[1] = input[1];
+    opStrA[2] = input[2];
+    opStrA[3] = 0;
 
-    opStr = input.substring(0,3);
-    // Serial.println(opStr);
+    arg1A[0] = input[3];
+    arg1A[1] = input[4];
+    arg1A[2] = input[5];
+    arg1A[3] = input[6];
+    arg1A[4] = 0;
 
-    arg1 = input.substring(3,7).toInt();
-    arg2 = input.substring(7,11).toInt();
+    arg2A[0] = input[7];
+    arg2A[1] = input[8];
+    arg2A[2] = input[9];
+    arg2A[3] = input[10];
+    arg2A[4] = 0;
+
+    String opStr = String(opStrA);
+    int arg1 = atoi(arg1A);
+    int arg2 = atoi(arg2A);
   }
   else if(distance>1000){//&& micros()>1000000
     //Serial.println(micros());
@@ -196,7 +213,9 @@ void encoder() {
   
   // //update the change in avg position and current heading
 
-  distance_L = l_enc_count*WHEEL_CIRCUMFERENCE/PPR;
+  distance_L = l_enc_count*WHEEL_CIRCUMFERENCE/PPR; //CHECK THESE
+//(********)CHECK THESE THEY ARE TOTAL DISPLACEMENTS //(*******)
+//(********) BEING USED IN ERROR CALCULATIONS //(*******)
   distance_R = r_enc_count*WHEEL_CIRCUMFERENCE/PPR;
   
   if (l_enc_count!= old_l_enc_count){
@@ -256,14 +275,22 @@ void encoder() {
   distance = (distance_L + distance_R)/2;
   //error_v = 5;
   //error = error_v * 2; 
+<<<<<<< HEAD
+  error = (C*distance_L) - (distance_R);  // C, THE TURNING COEFFICIENT, IS MULTIPLIED TO L
+=======
   error = (distance_L*C) - (distance_R);
+>>>>>>> 00c0e5e6f0b0ade9b657078d569a7dc177cc3cd5
   error_dot = error - prev_error;
   del_v = -(0.3*error) - (2*error_dot);
   del_v = (del_v*60)/(70*3.14);
   rpm_target_L = rpm_target_L + del_v;
   rpm_target_R = rpm_target_R - del_v;
   pwm_L = (2.114*rpm_target_L + 96.23);
+<<<<<<< HEAD
+  pwm_R = C*(2.02*rpm_target_R + 100.9);  //C IS MULTIPLIED TO R HERE BUT L ABOVE
+=======
   pwm_R = (2.02*rpm_target_R + 100.9)*C;
+>>>>>>> 00c0e5e6f0b0ade9b657078d569a7dc177cc3cd5
   prev_error = error;
   
   
@@ -272,9 +299,17 @@ void encoder() {
    Serial.println(ret);
 }
 
+void getEnc() {
+  Serial.write(lowByte(l_enc_count));
+  Serial.write(lowByte(r_enc_count));
+  Serial.flush();
+  l_enc_count = 0;
+  r_enc_count = 0;
+}
+
 void ping() {
   ping_duration = pulseIn(PING_PIN, HIGH);
-  Serial.println(ping_duration);
+  Serial.println(ping_duration);      //THIS MUST BE FIXED LATER
 }
 
 void Stop() {
