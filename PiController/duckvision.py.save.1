@@ -1,3 +1,4 @@
+
 import picamera
 import numpy as np
 import io
@@ -97,7 +98,7 @@ def draw_lane_lines(image, lines, center, color=[0, 0, 255], thickness=20):
     # image1 and image2 must be the same shape.
     (center_of_lane_x, center_of_lane_y) = center
     cv2.circle(line_image, (center_of_lane_x, center_of_lane_y), 10, (255,0,0), -1)
-    return cv2.addWeighted(image, 0.95, line_image, 1.0, 0.0)
+    return cv2.addWeighted(image, 1.0, line_image, 0.95, 0.0)
 
 
 def convert_hls(image):
@@ -107,7 +108,7 @@ def convert_hls(image):
 def select_white(image):
     converted = convert_hls(image)
     # white color mask
-    lower = np.uint8([  0, 220, 0])
+    lower = np.uint8([  0, 240, 0])
     upper = np.uint8([255, 255, 255])
     white_mask = cv2.inRange(converted, lower, upper)
     return cv2.bitwise_and(image, image, mask = white_mask)
@@ -116,36 +117,10 @@ def select_white(image):
 def select_yellow(image):
     converted = convert_hls(image)
     # yellow color mask
-    lower = np.uint8([ 10,  0, 200])
-    upper = np.uint8([ 130, 200, 255])
+    lower = np.uint8([ 10,   0, 100])
+    upper = np.uint8([ 40, 220, 220])
     yellow_mask = cv2.inRange(converted, lower, upper)
     return cv2.bitwise_and(image, image, mask = yellow_mask)
-
-
-def average_slope_intercept(lines):
-    lanes    = [] # (slope, intercept)
-    weights  = [] # (length,)
-    for line in lines:
-        for x1, y1, x2, y2 in line:
-            if x2==x1:
-                continue # ignore a vertical line
-            slope = (y2-y1)/(x2-x1)
-            intercept = y1 - slope*x1
-            length = np.sqrt((y2-y1)**2+(x2-x1)**2)
-            lanes.append((slope, intercept))
-            weights.append((length))
-
-    # add more weight to longer lines
-    lane  = np.dot(weights,  lanes) /np.sum(weights)  if len(weights) >0 else None
-    return lane # (slope, intercept)
-
-
-def lane_lines(image, lines):
-    lane = average_slope_intercept(lines)
-    y1 = image.shape[0] # bottom of the image
-    y2 = y1*0.6         # slightly lower than the middle
-    line  = make_line_points(y1, y2, lane)
-    return line
 
 
 def process(stream, vOffset):
@@ -169,7 +144,7 @@ def process(stream, vOffset):
         height, width, temp = image.shape
 
         # Defines Region of Interest
-        region_of_interest_vert = [(0, height), (0, 200), (450, 200), (500, height)]
+        region_of_interest_vert = [(0, height), (0, 0), (width, 0), (width, height)]
 
         # Filters White and Yellow colors in the image
         white_image = select_white(image)
