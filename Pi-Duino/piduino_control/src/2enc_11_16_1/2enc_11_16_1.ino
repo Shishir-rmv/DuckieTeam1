@@ -1,3 +1,10 @@
+//improvements needed to code:
+//start out at equal rpms instead of equal PWMs
+//PWMs might not matter if the initial target rpms are not equal
+//rpm_traget have no relation to the rpms being read by encoders
+//for suitable gains, need equations to convert the delv to mm/sec
+//which is currently in mm/(duration)
+
 #include <EnableInterrupt.h>
 #include "DualMC33926MotorShield.h"
 #include "types.h"
