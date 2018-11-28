@@ -164,7 +164,7 @@ def process(stream, vOffset):
         image = cv2.imdecode(data, 1)
 
         # Debug stuff:
-        cv2.imwrite('original_image%d.jpeg' % COUNT, image)
+        # cv2.imwrite('original_image%d.jpeg' % COUNT, image)
 
         height, width, temp = image.shape
 
@@ -176,8 +176,8 @@ def process(stream, vOffset):
         yellow_image = select_yellow(image)
 
         # Debug stuff:
-        cv2.imwrite('white_image%d.jpeg' % COUNT, white_image)
-        cv2.imwrite('yellow_image%d.jpeg' % COUNT, yellow_image)
+        # cv2.imwrite('white_image%d.jpeg' % COUNT, white_image)
+        # cv2.imwrite('yellow_image%d.jpeg' % COUNT, yellow_image)
 
         # Convert to Grayscale
         gray_of_white_img = cv2.cvtColor(white_image, cv2.COLOR_RGB2GRAY)
@@ -227,8 +227,11 @@ def process(stream, vOffset):
 
         # Debug stuff:
         # print("Center of the lane: (%d, %d)" % (center_of_lane_x, center_of_lane_y))
+        
         line_image = draw_lane_lines(image, (yellow_line, white_line), (center_of_lane_x, center_of_lane_y))
-        cv2.imwrite('lined_image%d.jpeg' % COUNT, line_image)
+        # for debugging
+        # cv2.imwrite('lined_image%d.jpeg' % COUNT, line_image)
+        
         COUNT = COUNT + 1
         # duration = time.time() - start
         # print("Took: %f" % duration)
