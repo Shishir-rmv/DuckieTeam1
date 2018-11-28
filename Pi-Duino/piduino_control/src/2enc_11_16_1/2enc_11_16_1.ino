@@ -193,16 +193,34 @@ else{
 
 void encoder() {
   int l_enc = read_encoderL((ENC_PORT2 & 0b110000) >> 4);
-  //Serial.println(ENC_PORT,BIN); 
   int r_enc = read_encoderR((ENC_PORT & 0b1100000) >> 5);
 
-  r_s = r_enc*WHEEL_CIRCUMFERENCE/PPR;
-  l_s = l_enc*WHEEL_CIRCUMFERENCE/PPR;
+  //distance and distance_total have just been put in place for
+  //having different total distance for different state and turns
   l_enc_count += l_enc;
   r_enc_count += r_enc;
-  
+  distance_L = l_enc_count*WHEEL_CIRCUMFERENCE/PPR;
+  distance_R = r_enc_count*WHEEL_CIRCUMFERENCE/PPR;  
+  distance = (distance_L + distance_R)/2;    
+   
   l_enc_count_total += l_enc;
   r_enc_count_total += r_enc;
+  distance_total_L = l_enc_count_total*WHEEL_CIRCUMFERENCE/PPR;
+  distance_total_R = r_enc_count_total*WHEEL_CIRCUMFERENCE/PPR;
+  distance_total = ((distance_total_L + distance_total_R))/2;
+   
+  
+  r_s = r_enc*WHEEL_CIRCUMFERENCE/PPR;
+  l_s = l_enc*WHEEL_CIRCUMFERENCE/PPR; 
+  delta_x = (l_s + r_s)/2;
+  heading = atan2((l_s-r_s)/2, WHEEL_BASE/2);
+  
+  theta += heading;   
+  x += delta_x*cos(theta);
+  y += delta_x*sin(theta);
+   
+  
+  
    
 // stop-gap fix for skipping counts   
 //  if ((pwm_R*r_enc)<0 && old_r_enc_count != 0){
@@ -220,8 +238,7 @@ void encoder() {
 
   
 
-  distance_L = l_enc_count*WHEEL_CIRCUMFERENCE/PPR;
-  distance_R = r_enc_count*WHEEL_CIRCUMFERENCE/PPR;
+
   
   if (l_enc_count!= old_l_enc_count){
     old_l_enc_count = l_enc_count;
@@ -250,37 +267,6 @@ void encoder() {
 //      Serial.print("   ");
     }
   }
-
-//  Serial.print(dist_R-prev_dist_R);
-//  Serial.print(" ");
-//  if ((dist_L-prev_dist_L)>30 ||(dist_R-prev_dist_R)>30){
-//    error = (dist_L-prev_dist_L) - (dist_R-prev_dist_R);
-//    error_dot = error - prev_error;
-//    del_v = -(0.1*error) - (0.01*error_dot);
-//    del_v = (del_v*60)/(70*3.14);
-//    rpm_target_L = rpm_target_L + del_v;
-//    rpm_target_R = rpm_target_R - del_v;
-//    pwm_L = (2.114*rpm_target_L + 96.23);
-//    pwm_R = (2.02*rpm_target_R + 100.9);
-//    prev_error = error;
-//    prev_dist_L=dist_L;
-//    Serial.print(prev_dist_L);
-//    prev_dist_R=dist_R; 
-//    Serial.print(" ");
-//    Serial.println(prev_dist_R);
-//  }
-  delta_x = (l_s + r_s)/2;
-  heading = atan2((l_s-r_s)/2, WHEEL_BASE/2);
-  
-  theta += heading;
-  Serial.println(theta);
-  x += delta_x*cos(theta);
-  y += delta_x*sin(theta);
-  distance = (distance_L + distance_R)/2;
-  distance_total_L = l_enc_count_total*WHEEL_CIRCUMFERENCE/PPR;
-  distance_total_R = r_enc_count_total*WHEEL_CIRCUMFERENCE/PPR;
-  
-  distance_total = ((distance_total_L + distance_total_R))/2; 
   
   if (distance_total<400){
     Serial.println("going straight 1");
@@ -342,22 +328,20 @@ void ping() {
   Serial.println(ping_duration);
 }
 
-void Stop() {
-  md.setM1Speed(0);
-  md.setM2Speed(0);
-}
 
-void stopIfFault()
-{
-  if (md.getFault())
-  {
+//check the stop if fault in the library
+void stopIfFault(){
+  if (md.getFault()){
     Serial.println("fault");
-      md.setM1Speed(0);
-      md.setM2Speed(0);
+    Stop();
     while(1);
   }
 }
 
+void Stop() {
+  md.setM1Speed(0);
+  md.setM2Speed(0);
+}
 
 int8_t read_encoderL(int8_t new_val)
 {
