@@ -153,8 +153,8 @@ def process(stream, vOffset):
     global white_line_x1, white_line_y1, white_line_x2, white_line_y2
     global yellow_line_x1, yellow_line_y1, yellow_line_x2, yellow_line_y2
     global COUNT
-    try:
-    #if(True):
+    #try:
+    if(True):
         stream.seek(0)  # seek to location 0 of stream_img
         # Truncate the stream to the current position (in case
         # prior iterations output a longer image))
@@ -238,9 +238,9 @@ def process(stream, vOffset):
 
         stream.seek(0)
         stream.truncate()
-    except Exception as e:
-        print(str(e))
-        pass
+    #except Exception as e:
+        #print(str(e))
+        #pass
 
 
 def gen_seq(vOffset, go):
