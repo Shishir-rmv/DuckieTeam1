@@ -1,8 +1,5 @@
-import picamera
+import picamera, io, cv2, time, pdb
 import numpy as np
-import io
-import cv2
-import time
 from multiprocessing import Value
 
 COUNT = 1
@@ -29,6 +26,7 @@ def make_line_points(y1, y2, line):
     slope, intercept = line
 
     # make sure everything is integer as cv2.line requires it
+    pdb.set_trace()
     x1 = int((y1 - intercept) / slope)
     x2 = int((y2 - intercept) / slope)
     y1 = int(y1)
