@@ -36,7 +36,7 @@ int r_enc_count;
 int old_l_enc_count = 0;
 int old_r_enc_count = 0;
 double ping_duration;
-char dataString[5] = {0};
+char dataString[5] = {0};                //
 double duration_L;
 double duration_R;
 double prev_dist_L=0;
@@ -79,11 +79,12 @@ str_code hashit (String inString) {
 }
 
 void setup() {
+  //setting interrupts on these pins
   pinMode(L_ENC_A, INPUT);
   digitalWrite(L_ENC_A, HIGH);
   pinMode(L_ENC_B, INPUT);
   digitalWrite(L_ENC_B, HIGH);
-
+   
   enableInterrupt(L_ENC_A, encoder, CHANGE);
   enableInterrupt(L_ENC_B, encoder, CHANGE);
 
@@ -95,6 +96,7 @@ void setup() {
   enableInterrupt(R_ENC_A, encoder, CHANGE);
   enableInterrupt(R_ENC_B, encoder, CHANGE);
 
+  //setting up pins for ping 
   pinMode(PING_PIN, OUTPUT);
   digitalWrite(PING_PIN, LOW);
   delayMicroseconds(2);
@@ -113,12 +115,10 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
 //stopIfFault();
 static String opStr;
 static unsigned int arg1 = 0;
 static unsigned int arg2 = 0;
-//Serial.println(distance_total);
   if(Serial.available()){
     String input = Serial.readString();
     Serial.print("input: "+input);
@@ -157,7 +157,6 @@ static unsigned int arg2 = 0;
 else{
    md.setM2Speed(pwm_L);    
    md.setM1Speed(pwm_R);
-
    opStr = "none";
    }
 
@@ -201,8 +200,11 @@ void encoder() {
   l_s = l_enc*WHEEL_CIRCUMFERENCE/PPR;
   l_enc_count += l_enc;
   r_enc_count += r_enc;
+  
   l_enc_count_total += l_enc;
   r_enc_count_total += r_enc;
+   
+// stop-gap fix for skipping counts   
 //  if ((pwm_R*r_enc)<0 && old_r_enc_count != 0){
 //    r_enc_count -= 2*r_enc;
 //   r_s -= 2*r_enc*WHEEL_CIRCUMFERENCE/PPR;
@@ -217,7 +219,6 @@ void encoder() {
 //  }
 
   
-  // //update the change in avg position and current heading
 
   distance_L = l_enc_count*WHEEL_CIRCUMFERENCE/PPR;
   distance_R = r_enc_count*WHEEL_CIRCUMFERENCE/PPR;
