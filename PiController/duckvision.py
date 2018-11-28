@@ -20,13 +20,12 @@ def make_line_points(y1, y2, line):
     """
     Convert a line represented in slope and intercept into pixel points
     """
-    if line is None:
+    if (line == (0,0)):
         return None
 
     slope, intercept = line
 
     # make sure everything is integer as cv2.line requires it
-    pdb.set_trace()
     x1 = int((y1 - intercept) / slope)
     x2 = int((y2 - intercept) / slope)
     y1 = int(y1)
