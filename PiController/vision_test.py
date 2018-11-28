@@ -9,8 +9,12 @@ if __name__ == '__main__':
         vision_process = Process(target=vision, args=(vOffset, see))
         vision_process.start()
         running = True;
+        oldVal = -999
         while(running):
-            print("Camera:\t vOffset: %d" % (vOffset.value))
+            if (vOffset.value != oldVal):
+                oldVal = vOffset.value
+                print("Camera:\t vOffset: %d" % (vOffset.value))
+
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
         running = False
