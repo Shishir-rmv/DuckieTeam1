@@ -220,7 +220,7 @@ def process(stream, vOffset):
 
         # Jake added error suppression, was getting values in the range of -4000 to 4000 (possibly larger in magnitude)
         if (center_of_lane_x <= 640 and center_of_lane_x >= 0):
-            print("\t\t\tWmid: %s, Ymid: %s" % (str(white_midpoint_x), str(yellow_midpoint_x)))
+            # print("\t\t\tWmid: %s, Ymid: %s" % (str(white_midpoint_x), str(yellow_midpoint_x)))
             vOffset.value = 262 - center_of_lane_x
 
         # Debug stuff:

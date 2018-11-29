@@ -213,7 +213,7 @@ def runTracker():
 def starter():
     global move
     # use this to make it start moving when we want it to
-    input("Press Enter to start\n")
+    input("\nPress Enter to start\n")
     move = True
     print("Starter thread finished")
 
