@@ -25,8 +25,6 @@
 
 DualMC33926MotorShield md;
 double ping_duration;
-char dataString[5] = {0};                //
-
 double theta = 0;
 double x = 0;
 double y = 0;
@@ -63,14 +61,16 @@ double error = 0;
 double error_dot = 0;
 double del_v = 0;
 
-double rpm_target_L = 60;
-double rpm_target_R = 60;
+double rpm_target_L = 30;
+double rpm_target_R = 30;
+double rpm_R = rpm_target_R;
+double rpm_L = rpm_target_L;
 double pwm_L = (2.114*rpm_target_L + 96.23);
 double pwm_R = (2.02*rpm_target_R + 100.9);
 
 // BELOW VARIABLES NEED TO BE REMOVED FOR NORMAL OPERATION
 // USED ONLY FOR THE DEMO USING ENCODER ODOMETRY
-int update_rate = 1;//set from 1 to PPR or maybe more
+int update_rate = 4;//set from 1 to PPR or maybe more
 int third=0;
 int second = 0;
 int turn = 0;
@@ -125,6 +125,8 @@ void loop() {
 static String opStr;
 static unsigned int arg1 = 0;
 static unsigned int arg2 = 0;
+static double prevmillis_L = micros();
+static double prevmillis_R = micros();
   if(Serial.available()){
     String input = Serial.readString();
     Serial.print("input: "+input);
@@ -231,41 +233,42 @@ void encoder() {
   
   if (l_enc_count!= old_l_enc_count){
     old_l_enc_count = l_enc_count;
-    if (l_enc_count%update_rate==0){
+    if (l_enc_count%update_rate==0 && l_enc_count>2){
       duration_L = (micros() - prevmillis_L); // Time difference between revolution in microsecond
       rpm_L = update_rate*(60000000/duration_L)/PPR; // rpm = (1/ time millis)*1000*1000*60;
       prevmillis_L = micros();
-//      Serial.print("L "); 
-//      Serial.print(l_enc_count);
-//      Serial.print("   ");  
-//      Serial.print(rpm_L);
-//      Serial.print("   ");
+        Serial.print("L "); 
+        Serial.print(l_enc_count);
+        Serial.print("   ");  
+        Serial.println(rpm_L);
+        Serial.print("   ");
       }
   }
   if (r_enc_count!= old_r_enc_count){
     old_r_enc_count = r_enc_count;
-    if(r_enc_count%update_rate==0){
+    if(r_enc_count%update_rate==0 && r_enc_count>2){
       duration_R = (micros() - prevmillis_R); // Time difference between revolution in microsecond
       rpm_R = update_rate*(60000000/duration_R)/PPR; // rpm = (1/ time millis)*1000*1000*60;
       old_r_enc_count = r_enc_count;
       prevmillis_R = micros();
-//      Serial  .print("  R ");
-//      Serial.print(r_enc_count);
-//      Serial.print("   ");  
-//      Serial.print(rpm_R);
-//      Serial.print("   ");
+        Serial.print("  R ");
+        Serial.print(r_enc_count);
+        Serial.print("   ");  
+        Serial.println(rpm_R);
+       Serial.print("   ");
     }
   }
   
-  if (distance_total<400){
+  if (distance_total<1000){
     Serial.println("going straight 1");
     error = (distance_L) - (distance_R);//0.975*
     error_dot = error - prev_error;
-    del_v = -(.8*error) - (5.9*error_dot);
+    Serial.println(error);
+    del_v = -(.0008*error) - (0*error_dot);
     del_v = (del_v*60)/(70*3.14);
-    rpm_target_L = rpm_target_L + del_v;
-    rpm_target_R = rpm_target_R - del_v;
-    pwm_L = 1.3*(2.114*rpm_target_L + 96.23);
+    rpm_target_L = rpm_L + del_v;
+    rpm_target_R = rpm_R - del_v;
+    pwm_L = (2.114*rpm_target_L + 96.23);
     pwm_R = (2.02*rpm_target_R + 100.9);
     prev_error = error;
   }else if (theta<=-1.84 || third == 1){ 
