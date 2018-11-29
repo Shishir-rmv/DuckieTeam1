@@ -252,7 +252,7 @@ def visionController():
         while (running):
             # only do this if we have changed state in our state machine
 
-            if (moving):
+            if (move):
                 now = vOffset.value
                 if (now != oldVal):
                     oldVal = now
