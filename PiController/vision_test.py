@@ -19,4 +19,4 @@ if __name__ == '__main__':
         print("Keyboard interrupt detected, gracefully exiting...")
         running = False
         see.value = False
-        vision_process.join()
+        vision_process.terminate()
