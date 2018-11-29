@@ -38,7 +38,7 @@ double prev_dist_L=0;
 double prev_dist_R=0;
 double prevmillis_L = micros();
 double prevmillis_R = micros();
-double distance_R = 0;
+double distance_R = 0;S
 double distance_L=0;
 int update_rate = 1;//set from 1 to PPR or maybe more
 
@@ -275,22 +275,25 @@ void encoder() {
   distance = (distance_L + distance_R)/2;
   //error_v = 5;
   //error = error_v * 2; 
-<<<<<<< HEAD
+  //bhavesh I had a merge conflict and think this line of code is the older one
   error = (C*distance_L) - (distance_R);  // C, THE TURNING COEFFICIENT, IS MULTIPLIED TO L
-=======
+
+  //and this is the newer one?
   error = (distance_L*C) - (distance_R);
->>>>>>> 00c0e5e6f0b0ade9b657078d569a7dc177cc3cd5
+
   error_dot = error - prev_error;
   del_v = -(0.3*error) - (2*error_dot);
   del_v = (del_v*60)/(70*3.14);
   rpm_target_L = rpm_target_L + del_v;
   rpm_target_R = rpm_target_R - del_v;
   pwm_L = (2.114*rpm_target_L + 96.23);
-<<<<<<< HEAD
+
+  //bhavesh I had a merge conflict and think this line of code is the older one
   pwm_R = C*(2.02*rpm_target_R + 100.9);  //C IS MULTIPLIED TO R HERE BUT L ABOVE
-=======
+
+  //and this is the newer one? (Could be the other way around)
   pwm_R = (2.02*rpm_target_R + 100.9)*C;
->>>>>>> 00c0e5e6f0b0ade9b657078d569a7dc177cc3cd5
+
   prev_error = error;
   
   
