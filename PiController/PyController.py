@@ -217,6 +217,57 @@ def starter():
     move = True
     print("Starter thread finished")
 
+def visionController():
+    global move
+    # Define and split off the computer vision subprocess _________________________________
+    # define doubles
+    vOffset = Value('i', 0)
+
+    
+    # define boolean to act as an off switch
+    see = Value('b', True)
+
+    # define and start the computer vision process
+    vision_process = Process(target=vision, args=(vOffset, see))
+    vision_process.start()
+    # _____________________________________________________________________________________
+
+    print("PyController starting")
+
+    # split off the starter thread so the machine can passively calibrate itself before we start
+    starter_thread = threading.Thread(target=starter)
+    starter_thread.start()
+
+    # open the serial port to the Arduino & initialize
+    s1.flushInput()
+    response, state = "", "0"
+    count, e, oldR, oldL = 0, 0, 0, 0
+    running, stateChange, odometry = True, False, True
+
+    if s1.isOpen():
+        s1.flush()
+
+    # this is the main logic loop where we put all our controlling equations/code
+    try:
+        while (running):
+            # only do this if we have changed state in our state machine
+
+            if (moving):
+                
+            
+    except KeyboardInterrupt:
+        print("Keyboard interrupt detected, gracefully exiting...")
+        running = False
+
+    #stop vehicle process. Set motor speeds to 0, close down serial port, and kill vision thread.
+    setMotors(0,0)
+    s1.close()
+    # once we're all done, send the kill switch to the inner vision loop and join the vision process
+    see.value = False
+    starter_thread.join()
+    print("Starter thread joined")
+    vision_process.join() 
+    print("Vision Process joined")
 
 def runController(mapNum):
     # Define and split off the computer vision subprocess _________________________________
@@ -404,7 +455,7 @@ if __name__ == '__main__':
     s1.open()
     time.sleep(1)
 
-    mode = int(input("Which mode would you like to run? \n 1 or 2: Hard-coded \n 3: Tracker \n 4: Manual \n 5 or 6: Controller\n 7: Comm speed test \n"))
+    mode = int(input("Which mode would you like to run? \n 1 or 2: Hard-coded \n 3: Tracker \n 4: Manual\n 5: Controller\n6: BasicVisionController\n 7: Comm speed test \n"))
     #run lane navigation
     if(mode == 1 or mode == 2):
         # runController(mode)
@@ -419,9 +470,13 @@ if __name__ == '__main__':
         runManual()
 
     #run manual mode
-    elif(mode == 5 or mode == 6):
+    elif(mode == 5):
         # hardCoded(mode)
         runController(str(mode - 4))
+
+    # run basic vision tester
+    elif(mode == 6):
+        visionController()
 
     elif(mode == 7):
         comm_speed_test()
