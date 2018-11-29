@@ -241,7 +241,7 @@ def visionController():
     # open the serial port to the Arduino & initialize
     s1.flushInput()
     response, state = "", "0"
-    count, e, oldR, oldL = 0, 0, 0, 0
+    oldVal, now = -999, 0
     running, stateChange, odometry = True, False, True
 
     if s1.isOpen():
@@ -253,6 +253,11 @@ def visionController():
             # only do this if we have changed state in our state machine
 
             if (moving):
+                now = vOffset.value
+                if (now != oldVal):
+                    oldVal = now
+                    print("Camera:\t vOffset: %d" % (vOffset.value))
+                    write("ver%s" % str(now))
                 
             
     except KeyboardInterrupt:
@@ -266,7 +271,7 @@ def visionController():
     see.value = False
     starter_thread.join()
     print("Starter thread joined")
-    vision_process.join() 
+    vision_process.terminate() 
     print("Vision Process joined")
 
 def runController(mapNum):
