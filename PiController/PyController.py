@@ -460,7 +460,7 @@ if __name__ == '__main__':
     s1.open()
     time.sleep(1)
 
-    mode = int(input("Which mode would you like to run? \n 1 or 2: Hard-coded \n 3: Tracker \n 4: Manual\n 5: Controller\n6: BasicVisionController\n 7: Comm speed test \n"))
+    mode = int(input("Which mode would you like to run? \n 1 or 2: Hard-coded \n 3: Tracker \n 4: Manual\n 5: Controller\n 6: BasicVisionController\n 7: Comm speed test \n"))
     #run lane navigation
     if(mode == 1 or mode == 2):
         # runController(mode)
