@@ -256,7 +256,8 @@ def visionController():
                 now = vOffset.value
                 if (now != oldVal):
                     oldVal = now
-                    print("Camera:\t vOffset: %d" % (vOffset.value))
+                    print("Camera:\t vOffset: %d" % (now))
+                    # TODO
                     write("ver%s" % str(now))
                 
             
