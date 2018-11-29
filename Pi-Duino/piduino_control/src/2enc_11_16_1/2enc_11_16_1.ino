@@ -24,51 +24,57 @@
 
 
 DualMC33926MotorShield md;
+double ping_duration;
+char dataString[5] = {0};                //
+
 double theta = 0;
 double x = 0;
 double y = 0;
+double C = 1;
 double l_s; //left distance changed
 double r_s; //right distance changed
 double delta_x;
 double heading;
+
 int l_enc_count;
 int r_enc_count;
 int old_l_enc_count = 0;
 int old_r_enc_count = 0;
-double ping_duration;
-char dataString[5] = {0};                //
-double duration_L;
-double duration_R;
-double prev_dist_L=0;
-double prev_dist_R=0;
-double prevmillis_L = micros();
-double prevmillis_R = micros();
+
+// total values can be removed for normal operation
+// used only for demo to segregate distances at different stretches
+double l_enc_count_total = 0;
+double r_enc_count_total = 0;
+
+double distance = 0;
 double distance_R = 0;
-double distance_L=0;
-int update_rate = 1;//set from 1 to PPR or maybe more
+double distance_L = 0;
 double distance_total=0;
 double distance_total_R = 0;
 double distance_total_L=0;
-int third=0;
 
-double l_enc_count_total = 0;
-double r_enc_count_total = 0;
-int turn = 0;
+double duration_L;
+double duration_R;
+double prevmillis_L = micros();
+double prevmillis_R = micros();
 
+double prev_error = 0;
 double error = 0;
 double error_dot = 0;
 double del_v = 0;
 
-double pwm_L = 180;
-double pwm_R = 180;
-double prev_error = 0;
-double distance = 0;
-double C = 1;
-static double rpm_L = ((pwm_L/1.3)-96.23)/2.114;
-static double rpm_R = (pwm_R-100.9)/2.02;
-double rpm_target_L = rpm_L;
-double rpm_target_R = rpm_R;
+double rpm_target_L = 60;
+double rpm_target_R = 60;
+double pwm_L = (2.114*rpm_target_L + 96.23);
+double pwm_R = (2.02*rpm_target_R + 100.9);
+
+// BELOW VARIABLES NEED TO BE REMOVED FOR NORMAL OPERATION
+// USED ONLY FOR THE DEMO USING ENCODER ODOMETRY
+int update_rate = 1;//set from 1 to PPR or maybe more
+int third=0;
 int second = 0;
+int turn = 0;
+
 str_code hashit (String inString) {
    if (inString == "mtr") return motor;
    if (inString == "irr") return irSensor;
@@ -136,25 +142,8 @@ static unsigned int arg2 = 0;
     
   }else if(distance_total>2225){//1870 if(turn != 1)
     //Serial.println(distance);
-    Stop();
-//  }else if(distance_total>1345 && second != 1){
-//    l_enc_count=0;
-//    r_enc_count=0;
-//    prev_error = 0;
-//    second = 1;
-//    Serial.println(distance);
-    
-  }
-//  else if(distance>100){
-//    //Serial.println(micros());
-//    //Stop();
-//  //  C = 0.7;
-//    distance_L = 0;
-//    distance_R = 0;
-//
-//    
-//}
-else{
+    Stop(); 
+  }else{
    md.setM2Speed(pwm_L);    
    md.setM1Speed(pwm_R);
    opStr = "none";
@@ -279,7 +268,6 @@ void encoder() {
     pwm_L = 1.3*(2.114*rpm_target_L + 96.23);
     pwm_R = (2.02*rpm_target_R + 100.9);
     prev_error = error;
-    
   }else if (theta<=-1.84 || third == 1){ 
     if( theta<=-1.84 && second != 1){
       Serial.println("finished turn");
