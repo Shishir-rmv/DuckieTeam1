@@ -8,6 +8,9 @@ COUNT = 1
 white_line_x1, white_line_y1, white_line_x2, white_line_y2 = 0,0,0,0
 yellow_line_x1, yellow_line_y1, yellow_line_x2, yellow_line_y2 = 0,0,0,0
 
+expected_slope_yellow = -1.5
+expected_slope_white = 2.5
+
 def region_of_interest(img, vertices):
     mask = np.zeros_like(img)
     match_mask_color = 255
@@ -161,7 +164,7 @@ def process(stream, vOffset):
         image = cv2.imdecode(data, 1)
 
         # Debug stuff:
-        # cv2.imwrite('original_image%d.jpeg' % COUNT, image)
+        cv2.imwrite('original_image%d.jpeg' % COUNT, image)
 
         height, width, temp = image.shape
 
@@ -173,8 +176,8 @@ def process(stream, vOffset):
         yellow_image = select_yellow(image)
 
         # Debug stuff:
-        # cv2.imwrite('white_image%d.jpeg' % COUNT, white_image)
-        # cv2.imwrite('yellow_image%d.jpeg' % COUNT, yellow_image)
+        cv2.imwrite('white_image%d.jpeg' % COUNT, white_image)
+        cv2.imwrite('yellow_image%d.jpeg' % COUNT, yellow_image)
 
         # Convert to Grayscale
         gray_of_white_img = cv2.cvtColor(white_image, cv2.COLOR_RGB2GRAY)
@@ -214,6 +217,14 @@ def process(stream, vOffset):
         white_midpoint_y = (white_line_y1 + white_line_y2)/2
         yellow_midpoint_y = (yellow_line_y1 + yellow_line_y2)/2
 
+        slope_white = (white_line_y2 - white_line_y1)/(white_line_x2 - white_line_x1)
+        slope_yellow = (yellow_line_y2 - yellow_line_y1)/(yellow_line_x2 - yellow_line_x1)
+        
+        yellow_angle = np.arctan(expected_slope_yellow - slope_yellow)/(1 + (expected_slope_yellow * slope_yellow))
+        white_angle = np.arctan(expected_slope_white - slope_white)/(1 + (expected_slope_white * slope_white))
+        
+        print("Slope of Yellow line: %f, Slope of White line: %f" % (slope_yellow, slope_white))
+        print("Yellow angle: %f, White angle: %f" % (yellow_angle, white_angle))
         center_of_lane_x = int((white_midpoint_x + yellow_midpoint_x) / 2)
         center_of_lane_y = int((white_midpoint_y + yellow_midpoint_y)/2)
 
@@ -228,7 +239,7 @@ def process(stream, vOffset):
         
         line_image = draw_lane_lines(image, (yellow_line, white_line), (center_of_lane_x, center_of_lane_y))
         # for debugging
-        # cv2.imwrite('lined_image%d.jpeg' % COUNT, line_image)
+        cv2.imwrite('lined_image%d.jpeg' % COUNT, line_image)
         
         COUNT = COUNT + 1
         # duration = time.time() - start
