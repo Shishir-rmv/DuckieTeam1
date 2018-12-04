@@ -236,8 +236,11 @@ def visionController():
     # open the serial port to the Arduino & initialize
     s1.flushInput()
     response, state = "", "0"
-    oldVal, now, vRef = -999, 0, 0
+    oldVal, now = -999, 0
     running, stateChange, odometry, flag = True, False, True, True
+
+    # in mm/sec
+    vRef = 0
 
     if s1.isOpen():
         s1.flush()
