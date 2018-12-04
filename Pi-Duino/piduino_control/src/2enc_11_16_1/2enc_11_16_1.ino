@@ -375,8 +375,12 @@ void stopIfFault(){
 }
 
 void Stop() {
-  md.setM1Speed(0);
-  md.setM2Speed(0);
+  pwm_R = 0;
+  pwm_L = 0;
+  rpm_target_R = 0;
+  rpm_target_L = 0;
+  md.setM2Speed(pwm_L);    
+  md.setM1Speed(pwm_R);
 }
 
 int8_t read_encoderL(int8_t new_val)
