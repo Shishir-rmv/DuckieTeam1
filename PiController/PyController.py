@@ -473,7 +473,7 @@ if __name__ == '__main__':
         "\n 3: Tracker " + 
         "\n 4: Manual " + 
         "\n 5: Controller " + 
-        "\n 6: BasicVisionController " + 
+        "\n 6: Basic Vision Controller " + 
         "\n 7: Comm speed test \n"))
     #run lane navigation
     if(mode == 1 or mode == 2):
