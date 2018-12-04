@@ -23,7 +23,6 @@
 #define WHEEL_CIRCUMFERENCE 219.9115 //circumference = 2*pi*r, r = 35mm, pi = 3.14
 #define PPR 32 //pulses per revolution is = to # of lines per revoluion aka number of white segments which is half of the total segments, this is assumig 32 segments
 
-
 DualMC33926MotorShield md;
 double ping_duration;
 double theta = 0;
@@ -96,16 +95,16 @@ void setup() {
   pinMode(L_ENC_B, INPUT);
   digitalWrite(L_ENC_B, HIGH);
    
-  enableInterrupt(L_ENC_A, encoder, CHANGE);
-  enableInterrupt(L_ENC_B, encoder, CHANGE);
+  //enableInterrupt(L_ENC_A, encoder, CHANGE);
+  //enableInterrupt(L_ENC_B, encoder, CHANGE);
 
   pinMode(R_ENC_A, INPUT);
   digitalWrite(R_ENC_A, HIGH);
   pinMode(R_ENC_B, INPUT);
   digitalWrite(R_ENC_B, HIGH);
 
-  enableInterrupt(R_ENC_A, encoder, CHANGE);
-  enableInterrupt(R_ENC_B, encoder, CHANGE);
+  //enableInterrupt(R_ENC_A, encoder, CHANGE);
+  //enableInterrupt(R_ENC_B, encoder, CHANGE);
 
   //setting up pins for ping 
   pinMode(PING_PIN, OUTPUT);
@@ -211,6 +210,17 @@ void loop() {
       break;
   }
   }
+  if abs(v_err)>0{
+    error_dot = v_err - prev_error;
+    del_v = -(.08*v_err) - (0*error_dot);
+    del_v = (del_v*60)/(70*3.14);
+    rpm_target_L = rpm_target_L + del_v;
+    rpm_target_R = rpm_target_R - del_v;
+    pwm_L = (2.114*rpm_target_L + 96.23);
+    pwm_R = (2.02*rpm_target_R + 100.9);
+    prev_error = v_err;
+  }
+     
   md.setM2Speed(pwm_L);    
   md.setM1Speed(pwm_R);
   opStr = "none";
