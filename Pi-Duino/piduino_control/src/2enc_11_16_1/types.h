@@ -3,6 +3,8 @@ enum str_code{
 	irSensor,
 	png,
 	stopp,
+  start,
+  vOffset,
   odometry,
   calibrat,
   visual,
