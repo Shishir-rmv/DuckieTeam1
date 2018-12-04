@@ -11,6 +11,7 @@
 
 #define ENC_PORT PIND
 #define ENC_PORT2 PINB
+
 #define WHEEL_BASE 137 //current approximation in mm, chassis constant
 #define WHEEL_CIRCUMFERENCE 219.9115 //circumference = 2*pi*r, r = 35mm, pi = 3.14
 #define PPR 32 //pulses per revolution is = to # of lines per revoluion aka number of white segments which is half of the total segments, this is assumig 32 segments
@@ -62,10 +63,13 @@ static double rpm_R = (pwm_R-100.9)/2.02;
 double rpm_target_L = rpm_L;
 double rpm_target_R = rpm_R;
 int second = 0;
+
 str_code hashit (String inString) {
    if (inString == "mtr") return motor;
    if (inString == "irr") return irSensor;
    if (inString == "png") return png;
+   if (inString == "srt") return start;
+   if (instring == "vrf") return vOffset;
    if (inString == "stp") return stopp;
    if (inString == "upd") return update;
    if (inString == "none") return none;
@@ -111,16 +115,31 @@ void loop() {
 static String opStr;
 static unsigned int arg1 = 0;
 static unsigned int arg2 = 0;
+  static char input[15];
+  static char opStrA[4];
+  static char arg1A[5];
+  static char arg2A[5];
 //Serial.println(distance_total);
   if(Serial.available()){
-    String input = Serial.readString();
-    Serial.print("input: "+input);
+    Serial.readBytesUntil('\n', input, 12);
+    opStrA[0] = input[0];
+    opStrA[1] = input[1];
+    opStrA[2] = input[2];
+    opStrA[3] = 0;
+    arg1A[0] = input[3];
+    arg1A[1] = input[4];
+    arg1A[2] = input[5];
+    arg1A[3] = input[6];
+    arg1A[4] = 0;
+    arg2A[0] = input[7];
+    arg2A[1] = input[8];
+    arg2A[2] = input[9];
+    arg2A[3] = input[10];
+    arg2A[4] = 0;
 
-    opStr = input.substring(0,3);
-    // Serial.println(opStr);
-
-    arg1 = input.substring(3,7).toInt();
-    arg2 = input.substring(7,11).toInt();
+    String opStr = String(opStrA);
+    int arg1 = atoi(arg1A);
+    int arg2 = atoi(arg2A);
 //  }else if(distance_total>1100 && distance_total<1345){//&& micros()>1000000
 //    //Serial.println(micros());
 //    //
@@ -159,9 +178,6 @@ else{
       break;
 
     case motor :
-      // Serial.println("motor");
-      // Serial.println(arg1);
-      // Serial.println(arg2);
       md.setM1Speed((int)arg1);
       md.setM2Speed((int)arg2);
       break;
