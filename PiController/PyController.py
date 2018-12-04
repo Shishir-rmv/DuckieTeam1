@@ -125,11 +125,6 @@ def getPing():
         pingD = response
 
 
-#stop motors
-def stop():
-    write('stp\n')
-
-
 #set motor speed
 def setMotors(motorSpeedL, motorSpeedR):
     send = 'mtr' +"0"+str(motorSpeedL) +"0"+ str(motorSpeedR)+"\n"
@@ -241,24 +236,36 @@ def visionController():
     # open the serial port to the Arduino & initialize
     s1.flushInput()
     response, state = "", "0"
-    oldVal, now = -999, 0
-    running, stateChange, odometry = True, False, True
+    oldVal, now, vRef = -999, 0, 0
+    running, stateChange, odometry, flag = True, False, True, True
 
     if s1.isOpen():
         s1.flush()
 
+
+    # assume "stp" and "srt" and then "vrf" similar to "mtr". 
+    # Pass "vrf" and two 4 character numbers afterwards. 
+    # So cast the vOfset to a 4 character string, and pad up to 8 characters total with 0's.
+
     # this is the main logic loop where we put all our controlling equations/code
     try:
         while (running):
-            # only do this if we have changed state in our state machine
+            # only do this if we have changed state in our state machine?
 
+            # if the starter thread has changed this global variable to allow movement
             if (move):
+                if(flag):
+                    # send initial calibration
+                    # TODO: ASK WHAT'S A GOOD VREF.
+                    write("srt0000%s" % str(vRef).zfill(4))
+                    flag = False
+
+                # check for visual error changes
                 now = vOffset.value
                 if (now != oldVal):
                     oldVal = now
                     print("Camera:\t vOffset: %d" % (now))
-                    # TODO
-                    write("ver%s" % str(now))
+                    write("ver0000%s" % str(now).zfill(4))
                 
             
     except KeyboardInterrupt:
@@ -266,14 +273,14 @@ def visionController():
         running = False
 
     #stop vehicle process. Set motor speeds to 0, close down serial port, and kill vision thread.
-    setMotors(0,0)
+    write("stp\n")
     s1.close()
     # once we're all done, send the kill switch to the inner vision loop and join the vision process
     see.value = False
     starter_thread.join()
     print("Starter thread joined")
     vision_process.terminate() 
-    print("Vision Process joined")
+    print("Vision process terminated")
 
 def runController(mapNum):
     # Define and split off the computer vision subprocess _________________________________
@@ -461,7 +468,13 @@ if __name__ == '__main__':
     s1.open()
     time.sleep(1)
 
-    mode = int(input("Which mode would you like to run? \n 1 or 2: Hard-coded \n 3: Tracker \n 4: Manual\n 5: Controller\n 6: BasicVisionController\n 7: Comm speed test \n"))
+    mode = int(input("Which mode would you like to run? " + 
+        "\n 1 or 2: Hard-coded " + 
+        "\n 3: Tracker " + 
+        "\n 4: Manual " + 
+        "\n 5: Controller " + 
+        "\n 6: BasicVisionController " + 
+        "\n 7: Comm speed test \n"))
     #run lane navigation
     if(mode == 1 or mode == 2):
         # runController(mode)
