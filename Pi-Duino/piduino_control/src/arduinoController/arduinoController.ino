@@ -8,6 +8,7 @@
 #include <EnableInterrupt.h>
 #include "DualMC33926MotorShield.h"
 #include "types.h"
+#include <string.h>
 
 
 #define L_ENC_A 12 //change to actual used pins. A is front wheel. B is back
@@ -123,17 +124,28 @@ void loop() {
     opStrA[0] = input[0];
     opStrA[1] = input[1];
     opStrA[2] = input[2];
-    opStrA[3] = 0;
-    arg1A[0] = input[3];
-    arg1A[1] = input[4];
-    arg1A[2] = input[5];
-    arg1A[3] = input[6];
-    arg1A[4] = 0;
-    arg2A[0] = input[7];
-    arg2A[1] = input[8];
-    arg2A[2] = input[9];
-    arg2A[3] = input[10];
-    arg2A[4] = 0;
+    // WHY WERE THESE HERE?
+    // opStrA[3] = 0;
+
+    // if there's a first argument
+    if (strlen(input) >= 7){
+      arg1A[0] = input[3];
+      arg1A[1] = input[4];
+      arg1A[2] = input[5];
+      arg1A[3] = input[6];
+      // WHY WERE THESE HERE?
+      // arg1A[4] = 0;
+    }
+
+    // if there's a second argument
+    if (strlen(input) >= 11){
+      arg2A[0] = input[7];
+      arg2A[1] = input[8];
+      arg2A[2] = input[9];
+      arg2A[3] = input[10];
+      // WHY WERE THESE HERE?
+      // arg2A[4] = 0;
+    }
 
     String opStr = String(opStrA);
     int arg1 = atoi(arg1A);
