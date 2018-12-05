@@ -25,49 +25,30 @@
 
 DualMC33926MotorShield md;
 double ping_duration;
-double theta = 0;
-double x = 0;
-double y = 0;
-double C = 1;
-double l_s; //left distance changed
-double r_s; //right distance changed
-double delta_x;
-double heading;
 
-int l_enc_count;
-int r_enc_count;
-int old_l_enc_count = 0;
-int old_r_enc_count = 0;
+// positional variables
+double theta = 0, x = 0, y = 0, C = 1;
+double delta_x, heading, l_s, r_s; //left & right distance changed
+
+// encoder counts
+int l_enc_count, r_enc_count, old_l_enc_count = 0, old_r_enc_count = 0;
 
 // total values can be removed for normal operation
 // used only for demo to segregate distances at different stretches
-double l_enc_count_total = 0;
-double r_enc_count_total = 0;
+double l_enc_count_total = 0, r_enc_count_total = 0;
 
-double distance = 0;
-double distance_R = 0;
-double distance_L = 0;
-double distance_total=0;
-double distance_total_R = 0;
-double distance_total_L=0;
+// distances
+double distance = 0, distance_R = 0, distance_L = 0, distance_total=0, distance_total_R = 0, distance_total_L=0;
 
-double duration_L;
-double duration_R;
-double prevmillis_L = micros();
-double prevmillis_R = micros();
+// durations?
+double duration_L, duration_R, prevmillis_L = micros(), prevmillis_R = micros();
 
-double prev_error = 0;
-double error = 0;
-double error_dot = 0;
-double del_v = 0;
+// errors
+double prev_error = 0, error = 0, error_dot = 0, del_v = 0;
 int fourth;
 
-double rpm_target_L = 0;
-double rpm_target_R = 0;
-double rpm_R = 0;
-double rpm_L = 0;
-double pwm_L = 0;
-double pwm_R = 0;
+// rpm's
+double rpm_target_L = 0, rpm_target_R = 0, rpm_R = 0, rpm_L = 0, pwm_L = 0, pwm_R = 0;
 
 int v_err = 0;
 

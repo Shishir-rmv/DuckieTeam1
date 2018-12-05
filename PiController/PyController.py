@@ -240,7 +240,7 @@ def visionController():
     running, stateChange, odometry, flag = True, False, True, True
 
     # in mm/sec
-    vRef = 60 
+    vRef = 150
 
     if s1.isOpen():
         s1.flush()
@@ -261,6 +261,7 @@ def visionController():
                 if(flag):
                     # send initial calibration
                     # TODO: ASK WHAT'S A GOOD VREF.
+                    print("SENDING: srt0000%s" % str(vRef).zfill(4))
                     write("srt0000%s" % str(vRef).zfill(4))
                     flag = False
 
@@ -268,7 +269,8 @@ def visionController():
                 now = vOffset.value
                 if (now != oldVal):
                     oldVal = now
-                    print("Camera:\t vOffset: %d" % (now))
+                    # print("Camera:\t vOffset: %d" % (now))
+                    print("SENDING: ver0000%s" % str(now).zfill(4))
                     write("ver0000%s" % str(now).zfill(4))
                 
             

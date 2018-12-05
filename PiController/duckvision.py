@@ -1,3 +1,5 @@
+import traceback
+
 import picamera, io, cv2, time, pdb
 import numpy as np
 from multiprocessing import Value
@@ -64,7 +66,10 @@ def select_white_line(image, lines):
 
     y1 = image.shape[0]  # bottom of the image
     y2 = y1 * 0.6  # slightly lower than the middle
-    white_line = make_line_points(y1, y2, (slope, least_intercept))
+    white_line = None
+    if slope and least_intercept:
+        white_line = make_line_points(y1, y2, (slope, least_intercept))
+
     return white_line
 
 
@@ -91,7 +96,10 @@ def select_yellow_line(image, lines):
 
     y1 = image.shape[0]  # bottom of the image
     y2 = y1 * 0.6  # slightly lower than the middle
-    yellow_line = make_line_points(y1, y2, (slope, least_intercept))
+    yellow_line = None
+    if slope and least_intercept:
+        yellow_line = make_line_points(y1, y2, (slope, least_intercept))
+
     return yellow_line
 
 
@@ -115,7 +123,7 @@ def convert_hls(image):
 def select_white(image):
     converted = convert_hls(image)
     # white color mask
-    lower = np.uint8([0, 220, 0])
+    lower = np.uint8([0, 215, 0])
     upper = np.uint8([255, 255, 255])
     white_mask = cv2.inRange(converted, lower, upper)
     return cv2.bitwise_and(image, image, mask=white_mask)
@@ -124,8 +132,8 @@ def select_white(image):
 def select_yellow(image):
     converted = convert_hls(image)
     # yellow color mask
-    lower = np.uint8([50, 120, 130])
-    upper = np.uint8([100, 200, 255])
+    lower = np.uint8([50, 100, 130])
+    upper = np.uint8([100, 255, 255])
     yellow_mask = cv2.inRange(converted, lower, upper)
     return cv2.bitwise_and(image, image, mask=yellow_mask)
 
@@ -226,7 +234,7 @@ def process(stream, vOffset):
                 line_image = draw_lane_lines(image, (yellow_line, white_line), (center_of_lane_x, center_of_lane_y))
                 cv2.imwrite('lined_image%d.jpeg' % COUNT, line_image)
         except Exception as e:
-            print(str(e))
+            traceback.print_exc()
 
         stream.seek(0)
         stream.truncate()
