@@ -54,15 +54,16 @@ def select_white_line(image, lines):
         for x1, y1, x2, y2 in line:
             # any line which is tilted towards right and lies entirely
             # in the right half of the image is discarded
-            if img_width/2 < x1 != x2 > img_width / 2:
-                current_slope = (y2 - y1) / (x2 - x1)
-                if current_slope > 0:
-                    intercept = y1 - current_slope * x1
-                    if least_intercept is None:
-                        least_intercept = intercept
-                    elif 0 < intercept < least_intercept:
-                        least_intercept = intercept
-                    slope = current_slope
+            if x1 > img_width / 2 and x2 > img_width / 2:
+                if x1 != x2:
+                    current_slope = (y2 - y1) / (x2 - x1)
+                    if current_slope > 0:
+                        intercept = y1 - current_slope * x1
+                        if least_intercept is None:
+                            least_intercept = intercept
+                        elif 0 < intercept < least_intercept:
+                            least_intercept = intercept
+                        slope = current_slope
 
     y1 = image.shape[0]  # bottom of the image
     y2 = y1 * 0.6  # slightly lower than the middle
@@ -84,15 +85,16 @@ def select_yellow_line(image, lines):
         for x1, y1, x2, y2 in line:
             # any line which is tilted towards left and lies entirely
             # in the left half of the image is discarded
-            if img_width / 2 >= x1 != x2 <= img_width / 2:
-                current_slope = (y2 - y1) / (x2 - x1)
-                if current_slope < -1.4:
-                    intercept = y1 - current_slope * x1
-                    if least_intercept is None:
-                        least_intercept = intercept
-                    elif 0 < intercept < least_intercept:
-                        least_intercept = intercept
-                    slope = current_slope
+            if x1 <= img_width / 2 and x2 <= img_width / 2:
+                if x1 != x2:
+                    current_slope = (y2 - y1) / (x2 - x1)
+                    if current_slope < -1.4:
+                        intercept = y1 - current_slope * x1
+                        if least_intercept is None:
+                            least_intercept = intercept
+                        elif 0 < intercept < least_intercept:
+                            least_intercept = intercept
+                        slope = current_slope
 
     y1 = image.shape[0]  # bottom of the image
     y2 = y1 * 0.6  # slightly lower than the middle
