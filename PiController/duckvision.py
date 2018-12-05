@@ -54,15 +54,16 @@ def select_white_line(image, lines):
         for x1, y1, x2, y2 in line:
             # any line which is tilted towards right and lies entirely
             # in the right half of the image is discarded
-            if x1 > img_width/2 and x2 > img_width/2:
-                current_slope = (y2 - y1) / (x2 - x1)
-                if current_slope > 0:
-                    intercept = y1 - current_slope * x1
-                    if least_intercept is None:
-                        least_intercept = intercept
-                    elif 0 < intercept < least_intercept:
-                        least_intercept = intercept
-                    slope = current_slope
+            if x1 > img_width / 2 and x2 > img_width / 2:
+                if x1 != x2:
+                    current_slope = (y2 - y1) / (x2 - x1)
+                    if current_slope > 0:
+                        intercept = y1 - current_slope * x1
+                        if least_intercept is None:
+                            least_intercept = intercept
+                        elif 0 < intercept < least_intercept:
+                            least_intercept = intercept
+                        slope = current_slope
 
     y1 = image.shape[0]  # bottom of the image
     y2 = y1 * 0.6  # slightly lower than the middle
@@ -85,14 +86,15 @@ def select_yellow_line(image, lines):
             # any line which is tilted towards left and lies entirely
             # in the left half of the image is discarded
             if x1 <= img_width / 2 and x2 <= img_width / 2:
-                current_slope = (y2 - y1) / (x2 - x1)
-                if current_slope < -1.4:
-                    intercept = y1 - current_slope * x1
-                    if least_intercept is None:
-                        least_intercept = intercept
-                    elif 0 < intercept < least_intercept:
-                        least_intercept = intercept
-                    slope = current_slope
+                if x1 != x2:
+                    current_slope = (y2 - y1) / (x2 - x1)
+                    if current_slope < -1.4:
+                        intercept = y1 - current_slope * x1
+                        if least_intercept is None:
+                            least_intercept = intercept
+                        elif 0 < intercept < least_intercept:
+                            least_intercept = intercept
+                        slope = current_slope
 
     y1 = image.shape[0]  # bottom of the image
     y2 = y1 * 0.6  # slightly lower than the middle
@@ -155,7 +157,7 @@ def process(stream, vOffset):
         height, width, temp = image.shape
 
         # Defines Region of Interest
-        region_of_interest_vert = [(0, height), (0, height / 2), (width - 200, height / 2), (width - 100, height)]
+        region_of_interest_vert = [(0, height), (0, height / 2), (900, height / 2), (1100, height)]
 
         try:
             # Filters White and Yellow colors in the image
@@ -211,15 +213,17 @@ def process(stream, vOffset):
                     vOffset.value = 555 - center_of_lane_x
                 print("White: Yes\t Yellow: Yes\t Slope_White: %f\t Slope_Yellow: %f\t VOffset: %d" % (slope_white, slope_yellow, vOffset.value))
             elif white_line and not yellow_line:
+                (white_line_x1, white_line_y1), (white_line_x2, white_line_y2) = white_line
                 # slope_white = (white_line_y2 - white_line_y1) / (white_line_x2 - white_line_x1)
                 diff = exp_dist_frm_white - white_line_x1
                 vOffset.value = diff
-                print("White: Yes\t Yellow: No\t VOffset: %d" % (vOffset.value))
+                print("White: Yes\t Yellow: No\t\t\t\tVOffset: %d" % (vOffset.value))
             elif yellow_line and not white_line:
+                (yellow_line_x1, yellow_line_y1), (yellow_line_x2, yellow_line_y2) = yellow_line
                 # slope_yellow = (yellow_line_y2 - yellow_line_y1) / (yellow_line_x2 - yellow_line_x1)
                 diff = exp_dist_frm_yellow - yellow_line_x1
                 vOffset.value = diff
-                print("White: No\t Yellow: Yes\t VOffset: %d" % (vOffset.value))
+                print("White: No\t Yellow: Yes\t\t\t\tVOffset: %d" % (vOffset.value))
             else:
                 print("No lines found!")
 
