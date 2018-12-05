@@ -211,19 +211,17 @@ def process(stream, vOffset):
                     vOffset.value = 555 - center_of_lane_x
                 print("White: Yes\t Yellow: Yes\t Slope_White: %f\t Slope_Yellow: %f\t VOffset: %d" % (slope_white, slope_yellow, vOffset.value))
             elif white_line and not yellow_line:
-                slope_white = (white_line_y2 - white_line_y1) / (white_line_x2 - white_line_x1)
+                # slope_white = (white_line_y2 - white_line_y1) / (white_line_x2 - white_line_x1)
                 diff = exp_dist_frm_white - white_line_x1
                 vOffset.value = diff
-                print("White: Yes\t Yellow: No\t Slope_White: %f\t VOffset: %d" % (slope_white, vOffset.value))
+                print("White: Yes\t Yellow: No\t VOffset: %d" % (vOffset.value))
             elif yellow_line and not white_line:
-                slope_yellow = (yellow_line_y2 - yellow_line_y1) / (yellow_line_x2 - yellow_line_x1)
-                diff = expected_slope_yellow - yellow_line_x1
+                # slope_yellow = (yellow_line_y2 - yellow_line_y1) / (yellow_line_x2 - yellow_line_x1)
+                diff = exp_dist_frm_yellow - yellow_line_x1
                 vOffset.value = diff
-                print("White: No\t Yellow: Yes\t Slope_Yellow: %f\t VOffset: %d" % (slope_yellow, vOffset.value))
+                print("White: No\t Yellow: Yes\t VOffset: %d" % (vOffset.value))
             else:
                 print("No lines found!")
-                vOffset.value = 0
-
 
             # Debug stuff - To save images uncomment this:
             COUNT = COUNT + 1
