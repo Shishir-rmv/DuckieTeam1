@@ -113,9 +113,9 @@ void loop() {
   static unsigned int arg1 = 0;
   static unsigned int arg2 = 0;
   static char input[15];
-  static char opStrA[4];
-  static char arg1A[5];
-  static char arg2A[5];
+  static char opStrA[3];
+  static char arg1A[4];
+  static char arg2A[4];
   static double prevmillis_L = micros();
   static double prevmillis_R = micros();
 
@@ -181,10 +181,10 @@ void loop() {
       break;
     
     case start :
-      rpm_target_L=arg2;//(arg2*60)/(70*3.14);
+      rpm_target_L=arg1;(arg1*60)/(70*3.14);
       rpm_target_R=rpm_target_L;
-      pwm_L = (2.114*rpm_target_L + 96.23);
-      pwm_R = (2.02*rpm_target_R + 100.9);
+      pwm_L = (2.2*rpm_target_L + 85);
+      pwm_R = (2.1*rpm_target_R + 81);
       break;
     
     case vOffset :
@@ -210,8 +210,8 @@ void loop() {
     del_v = (del_v*60)/(70*3.14);
     rpm_target_L = rpm_target_L + del_v;
     rpm_target_R = rpm_target_R - del_v;
-    pwm_L = (2.114*rpm_target_L + 96.23);
-    pwm_R = (2.02*rpm_target_R + 100.9);
+    pwm_L = (2.2*rpm_target_L + 85);
+    pwm_R = (2.1*rpm_target_R + 81);
     prev_error = v_err;
   }
      
