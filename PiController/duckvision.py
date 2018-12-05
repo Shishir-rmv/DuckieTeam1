@@ -213,11 +213,13 @@ def process(stream, vOffset):
                     vOffset.value = 555 - center_of_lane_x
                 print("White: Yes\t Yellow: Yes\t Slope_White: %f\t Slope_Yellow: %f\t VOffset: %d" % (slope_white, slope_yellow, vOffset.value))
             elif white_line and not yellow_line:
+                (white_line_x1, white_line_y1), (white_line_x2, white_line_y2) = white_line
                 # slope_white = (white_line_y2 - white_line_y1) / (white_line_x2 - white_line_x1)
                 diff = exp_dist_frm_white - white_line_x1
                 vOffset.value = diff
                 print("White: Yes\t Yellow: No\t\t\t\tVOffset: %d" % (vOffset.value))
             elif yellow_line and not white_line:
+                (yellow_line_x1, yellow_line_y1), (yellow_line_x2, yellow_line_y2) = yellow_line
                 # slope_yellow = (yellow_line_y2 - yellow_line_y1) / (yellow_line_x2 - yellow_line_x1)
                 diff = exp_dist_frm_yellow - yellow_line_x1
                 vOffset.value = diff
