@@ -226,13 +226,13 @@ def process(stream, vOffset):
                 print("No lines found!")
 
             # Debug stuff - To save images uncomment this:
-            COUNT = COUNT + 1
-            if COUNT <= 50:
-                cv2.imwrite('original_image%d.jpeg' % COUNT, image)
-                cv2.imwrite('white_image%d.jpeg' % COUNT, white_image)
-                cv2.imwrite('yellow_image%d.jpeg' % COUNT, yellow_image)
-                line_image = draw_lane_lines(image, (yellow_line, white_line), (center_of_lane_x, center_of_lane_y))
-                cv2.imwrite('lined_image%d.jpeg' % COUNT, line_image)
+            # COUNT = COUNT + 1
+            # if COUNT <= 50:
+            #     cv2.imwrite('original_image%d.jpeg' % COUNT, image)
+            #     cv2.imwrite('white_image%d.jpeg' % COUNT, white_image)
+            #     cv2.imwrite('yellow_image%d.jpeg' % COUNT, yellow_image)
+            #     line_image = draw_lane_lines(image, (yellow_line, white_line), (center_of_lane_x, center_of_lane_y))
+            #     cv2.imwrite('lined_image%d.jpeg' % COUNT, line_image)
         except Exception as e:
             traceback.print_exc()
 
