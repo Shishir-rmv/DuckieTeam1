@@ -251,7 +251,8 @@ def visionController():
     # So cast the vOfset to a 4 character string, and pad up to 8 characters total with 0's.
 
     # this is the main logic loop where we put all our controlling equations/code
-    try:
+    #try:
+    if(True):
         while (running):
             # only do this if we have changed state in our state machine?
 
@@ -271,9 +272,9 @@ def visionController():
                     write("ver0000%s" % str(now).zfill(4))
                 
             
-    except KeyboardInterrupt:
-        print("Keyboard interrupt detected, gracefully exiting...")
-        running = False
+    #except KeyboardInterrupt:
+        #print("Keyboard interrupt detected, gracefully exiting...")
+        #running = False
 
     #stop vehicle process. Set motor speeds to 0, close down serial port, and kill vision thread.
     write("stp\n")

@@ -38,7 +38,7 @@ double prev_dist_L=0;
 double prev_dist_R=0;
 double prevmillis_L = micros();
 double prevmillis_R = micros();
-double distance_R = 0;S
+double distance_R = 0;
 double distance_L=0;
 int update_rate = 1;//set from 1 to PPR or maybe more
 
