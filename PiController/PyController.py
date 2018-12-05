@@ -279,6 +279,7 @@ def visionController():
         #running = False
 
     #stop vehicle process. Set motor speeds to 0, close down serial port, and kill vision thread.
+    print("SENDING: stp\\n")
     write("stp\n")
     s1.close()
     # once we're all done, send the kill switch to the inner vision loop and join the vision process
