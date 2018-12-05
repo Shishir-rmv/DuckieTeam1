@@ -3,6 +3,10 @@ import numpy as np
 from multiprocessing import Value
 
 COUNT = 1
+WIDTH = 1280
+HEIGHT = 720
+exp_dist_frm_white = 1205
+exp_dist_frm_yellow = -49
 
 # Jake needed to initialize these since they were drawing errors
 white_line_x1, white_line_y1, white_line_x2, white_line_y2 = 0, 0, 0, 0
@@ -10,7 +14,6 @@ yellow_line_x1, yellow_line_y1, yellow_line_x2, yellow_line_y2 = 0, 0, 0, 0
 
 expected_slope_yellow = -1.5
 expected_slope_white = 2.5
-
 
 def region_of_interest(img, vertices):
     mask = np.zeros_like(img)
@@ -35,56 +38,60 @@ def make_line_points(y1, y2, line):
     y1 = int(y1)
     y2 = int(y2)
 
-    return ((x1, y1), (x2, y2))
+    return (x1, y1), (x2, y2)
 
 
 def select_white_line(image, lines):
+    img_width = image.shape[1]
     if lines is None:
         return None
-    leftmost_x1 = image.shape[1]
-    leftmost_x2 = image.shape[1]
 
-    leftmost_y1 = int(image.shape[0] * 0.6)
-    leftmost_y2 = image.shape[0]
-    slope = 0
-    intercept = 0
-    longest_line = 0
+    least_intercept = None
+    slope = None
     for line in lines:
         for x1, y1, x2, y2 in line:
-            if x1 < leftmost_x1 and x2 < leftmost_x2:
-                leftmost_x1 = x1
-                leftmost_x2 = x2
-                vlength = np.abs(y2 - y1)
-                if vlength > longest_line:
-                    longest_line = vlength
-                    slope = (y2 - y1) / (x2 - x1)
-                    intercept = y1 - slope * x1
+            # any line which is tilted towards right and lies entirely
+            # in the right half of the image is discarded
+            if x1 > img_width/2 and x2 > img_width/2:
+                current_slope = (y2 - y1) / (x2 - x1)
+                if current_slope > 0:
+                    intercept = y1 - current_slope * x1
+                    if least_intercept is None:
+                        least_intercept = intercept
+                    elif 0 < intercept < least_intercept:
+                        least_intercept = intercept
+                    slope = current_slope
 
-    white_line = make_line_points(leftmost_y1, leftmost_y2, (slope, intercept))
-
+    y1 = image.shape[0]  # bottom of the image
+    y2 = y1 * 0.6  # slightly lower than the middle
+    white_line = make_line_points(y1, y2, (slope, least_intercept))
     return white_line
 
 
 def select_yellow_line(image, lines):
+    img_width = image.shape[1]
     if lines is None:
         return None
-    rightmost_x1 = 0
-    rightmost_y1 = int(image.shape[0] * 0.6)
-    rightmost_y2 = image.shape[0]
-    slope = 0
-    intercept = 0
-    longest_line = 0
+
+    least_intercept = None
+    slope = None
     for line in lines:
         for x1, y1, x2, y2 in line:
-            vlength = np.abs(y2 - y1)
-            if vlength > longest_line:
-                longest_line = vlength
-                if x1 > rightmost_x1:
-                    rightmost_x1 = x1
-                    slope = (y2 - y1) / (x2 - x1)
-                    intercept = y1 - slope * x1
+            # any line which is tilted towards left and lies entirely
+            # in the left half of the image is discarded
+            if x1 <= img_width / 2 and x2 <= img_width / 2:
+                current_slope = (y2 - y1) / (x2 - x1)
+                if current_slope < -1.4:
+                    intercept = y1 - current_slope * x1
+                    if least_intercept is None:
+                        least_intercept = intercept
+                    elif 0 < intercept < least_intercept:
+                        least_intercept = intercept
+                    slope = current_slope
 
-    yellow_line = make_line_points(rightmost_y1, rightmost_y2, (slope, intercept))
+    y1 = image.shape[0]  # bottom of the image
+    y2 = y1 * 0.6  # slightly lower than the middle
+    yellow_line = make_line_points(y1, y2, (slope, least_intercept))
     return yellow_line
 
 
@@ -117,43 +124,18 @@ def select_white(image):
 def select_yellow(image):
     converted = convert_hls(image)
     # yellow color mask
-    lower = np.uint8([50, 120, 150])
+    lower = np.uint8([50, 120, 130])
     upper = np.uint8([100, 200, 255])
     yellow_mask = cv2.inRange(converted, lower, upper)
     return cv2.bitwise_and(image, image, mask=yellow_mask)
 
 
-def average_slope_intercept(lines):
-    lanes = []  # (slope, intercept)
-    weights = []  # (length,)
-    for line in lines:
-        for x1, y1, x2, y2 in line:
-            if x2 == x1:
-                continue  # ignore a vertical line
-            slope = (y2 - y1) / (x2 - x1)
-            intercept = y1 - slope * x1
-            length = np.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
-            lanes.append((slope, intercept))
-            weights.append((length))
-
-    # add more weight to longer lines
-    lane = np.dot(weights, lanes) / np.sum(weights) if len(weights) > 0 else None
-    return lane  # (slope, intercept)
-
-
-def lane_lines(image, lines):
-    lane = average_slope_intercept(lines)
-    y1 = image.shape[0]  # bottom of the image
-    y2 = y1 * 0.6  # slightly lower than the middle
-    line = make_line_points(y1, y2, lane)
-    return line
-
-
 def process(stream, vOffset):
+    global exp_dist_frm_white, exp_dist_frm_yellow
     global white_line_x1, white_line_y1, white_line_x2, white_line_y2
     global yellow_line_x1, yellow_line_y1, yellow_line_x2, yellow_line_y2
     global COUNT
-    # try:
+
     if (True):
         stream.seek(0)  # seek to location 0 of stream_img
         # Truncate the stream to the current position (in case
@@ -162,93 +144,92 @@ def process(stream, vOffset):
         data = np.fromstring(stream.getvalue(), dtype=np.uint8)
         # "Decode" the image from the array, preserving colour
         image = cv2.imdecode(data, 1)
-
-        # Debug stuff:
-        # cv2.imwrite('original_image%d.jpeg' % COUNT, image)
-
         height, width, temp = image.shape
 
         # Defines Region of Interest
-        region_of_interest_vert = [(0, height), (0, 200), (width, 200), (width, height)]
+        region_of_interest_vert = [(0, height), (0, height / 2), (width - 200, height / 2), (width - 100, height)]
 
-        # Filters White and Yellow colors in the image
-        white_image = select_white(image)
-        yellow_image = select_yellow(image)
+        try:
+            # Filters White and Yellow colors in the image
+            white_image = select_white(image)
+            yellow_image = select_yellow(image)
 
-        # Debug stuff:
-        # cv2.imwrite('white_image%d.jpeg' % COUNT, white_image)
-        # cv2.imwrite('yellow_image%d.jpeg' % COUNT, yellow_image)
+            # Detecting edges of white and yellow blocks:
+            cannyed_of_white_img = cv2.Canny(white_image, 50, 200)
+            cannyed_of_yellow_img = cv2.Canny(yellow_image, 50, 200)
 
-        # Convert to Grayscale
-        gray_of_white_img = cv2.cvtColor(white_image, cv2.COLOR_RGB2GRAY)
-        gray_of_yellow_img = cv2.cvtColor(yellow_image, cv2.COLOR_RGB2GRAY)
+            # Crop the images to region of interest
+            cropped_white_img = region_of_interest(cannyed_of_white_img, np.array([region_of_interest_vert], np.int32))
+            cropped_yellow_img = region_of_interest(cannyed_of_yellow_img, np.array([region_of_interest_vert], np.int32))
 
-        cannyed_of_white_img = cv2.Canny(gray_of_white_img, 50, 200)
-        cannyed_of_yellow_img = cv2.Canny(gray_of_yellow_img, 50, 200)
+            # Detecting all the lines in both the images
+            white_lines = cv2.HoughLinesP(cropped_white_img, rho=1, theta=np.pi / 180, threshold=30, minLineLength=1,
+                                          maxLineGap=100)
+            yellow_lines = cv2.HoughLinesP(cropped_yellow_img, rho=1, theta=np.pi / 180, threshold=30, minLineLength=1,
+                                           maxLineGap=100)
 
-        cropped_white_img = region_of_interest(cannyed_of_white_img, np.array([region_of_interest_vert], np.int32))
-        cropped_yellow_img = region_of_interest(cannyed_of_yellow_img, np.array([region_of_interest_vert], np.int32))
+            # Filter the lines
+            white_line = select_white_line(image, white_lines)
+            yellow_line = select_yellow_line(image, yellow_lines)
 
-        white_lines = cv2.HoughLinesP(cropped_white_img, rho=1, theta=np.pi / 180, threshold=30, minLineLength=1,
-                                      maxLineGap=100)
-        yellow_lines = cv2.HoughLinesP(cropped_yellow_img, rho=1, theta=np.pi / 180, threshold=30, minLineLength=1,
-                                       maxLineGap=100)
-        white_line = select_white_line(image, white_lines)
-        yellow_line = select_yellow_line(image, yellow_lines)
+            slope_white = None
+            slope_yellow = None
+            center_of_lane_x = None
+            center_of_lane_y = None
 
-        slope_white = expected_slope_white
-        slope_yellow = expected_slope_yellow
-        if white_line:
-            (white_line_x1, white_line_y1), (white_line_x2, white_line_y2) = white_line
-            slope_white = (white_line_y2 - white_line_y1) / (white_line_x2 - white_line_x1)
-            # print("wx1: %d\twy1: %d\twx2: %d\twy2: %d" %(white_line_x1, white_line_y1, white_line_x2, white_line_y2))
-        else:
-            # print("No white line detected")
-            pass
+            if white_line and yellow_line:
+                # When both the lines are visible
+                (white_line_x1, white_line_y1), (white_line_x2, white_line_y2) = white_line
+                (yellow_line_x1, yellow_line_y1), (yellow_line_x2, yellow_line_y2) = yellow_line
 
-        if yellow_line:
-            (yellow_line_x1, yellow_line_y1), (yellow_line_x2, yellow_line_y2) = yellow_line
-            slope_yellow = (yellow_line_y2 - yellow_line_y1) / (yellow_line_x2 - yellow_line_x1)
-            # print("yx1: %d\tyy1: %d\tyx2: %d\tyy2: %d" %(yellow_line_x1, yellow_line_y1, yellow_line_x2, yellow_line_y2))
-        else:
-            # print("No yellow line detected")
-            pass
+                slope_white = (white_line_y2 - white_line_y1) / (white_line_x2 - white_line_x1)
+                slope_yellow = (yellow_line_y2 - yellow_line_y1) / (yellow_line_x2 - yellow_line_x1)
 
-        # print("wx1: %d\twy1: %d\twx2: %d\twy2: %d" %(white_line_x1, white_line_y1, white_line_x2, white_line_y2))
-        # print("yx1: %d\tyy1: %d\tyx2: %d\tyy2: %d" %(yellow_line_x1, yellow_line_y1, yellow_line_x2, yellow_line_y2))
-        white_midpoint_x = (white_line_x1 + white_line_x2) / 2
-        yellow_midpoint_x = (yellow_line_x1 + yellow_line_x2) / 2
-        white_midpoint_y = (white_line_y1 + white_line_y2) / 2
-        yellow_midpoint_y = (yellow_line_y1 + yellow_line_y2) / 2
+                white_midpoint_x = (white_line_x1 + white_line_x2) / 2
+                white_midpoint_y = (white_line_y1 + white_line_y2) / 2
 
-        yellow_angle = np.arctan(expected_slope_yellow - slope_yellow) / (1 + (expected_slope_yellow * slope_yellow))
-        white_angle = np.arctan(expected_slope_white - slope_white) / (1 + (expected_slope_white * slope_white))
+                yellow_midpoint_x = (yellow_line_x1 + yellow_line_x2) / 2
+                yellow_midpoint_y = (yellow_line_y1 + yellow_line_y2) / 2
 
-        print("Slope of Yellow line: %f \t Slope of White line: %f \t Yellow angle: %f \t White angle: %f" % (slope_yellow, slope_white, yellow_angle, white_angle))
-        center_of_lane_x = int((white_midpoint_x + yellow_midpoint_x) / 2)
-        center_of_lane_y = int((white_midpoint_y + yellow_midpoint_y) / 2)
+                yellow_angle = np.arctan(expected_slope_yellow - slope_yellow) / (
+                            1 + (expected_slope_yellow * slope_yellow))
+                white_angle = np.arctan(expected_slope_white - slope_white) / (1 + (expected_slope_white * slope_white))
 
-        # Jake added error suppression, was getting values in the range of -4000 to 4000 (possibly larger in magnitude)
-        if (center_of_lane_x <= 640 and center_of_lane_x >= 0):
-            # print("\t\t\tWmid: %s, Ymid: %s" % (str(white_midpoint_x), str(yellow_midpoint_x)))
-            vOffset.value = 555 - center_of_lane_x
+                center_of_lane_x = int((white_midpoint_x + yellow_midpoint_x) / 2)
+                center_of_lane_y = int((white_midpoint_y + yellow_midpoint_y) / 2)
 
-        # Debug stuff:
-        # print("Center of the lane: (%d, %d)" % (center_of_lane_x, center_of_lane_y))
+                # Jake added error suppression, was getting values in the range of -4000 to 4000 (possibly larger in magnitude)
+                if (center_of_lane_x <= WIDTH and center_of_lane_x >= 0):
+                    vOffset.value = 555 - center_of_lane_x
+                print("White: Yes\t Yellow: Yes\t Slope_White: %f\t Slope_Yellow: %f\t VOffset: %d" % (slope_white, slope_yellow, vOffset.value))
+            elif white_line and not yellow_line:
+                slope_white = (white_line_y2 - white_line_y1) / (white_line_x2 - white_line_x1)
+                diff = exp_dist_frm_white - white_line_x1
+                vOffset.value = diff
+                print("White: Yes\t Yellow: No\t Slope_White: %f\t VOffset: %d" % (slope_white, vOffset.value))
+            elif yellow_line and not white_line:
+                slope_yellow = (yellow_line_y2 - yellow_line_y1) / (yellow_line_x2 - yellow_line_x1)
+                diff = expected_slope_yellow - yellow_line_x1
+                vOffset.value = diff
+                print("White: No\t Yellow: Yes\t Slope_Yellow: %f\t VOffset: %d" % (slope_yellow, vOffset.value))
+            else:
+                print("No lines found!")
+                vOffset.value = 0
 
-        line_image = draw_lane_lines(image, (yellow_line, white_line), (center_of_lane_x, center_of_lane_y))
-        # for debugging
-        # cv2.imwrite('lined_image%d.jpeg' % COUNT, line_image)
 
-        COUNT = COUNT + 1
-        # duration = time.time() - start
-        # print("Took: %f" % duration)
+            # Debug stuff - To save images uncomment this:
+            COUNT = COUNT + 1
+            if COUNT <= 50:
+                cv2.imwrite('original_image%d.jpeg' % COUNT, image)
+                cv2.imwrite('white_image%d.jpeg' % COUNT, white_image)
+                cv2.imwrite('yellow_image%d.jpeg' % COUNT, yellow_image)
+                line_image = draw_lane_lines(image, (yellow_line, white_line), (center_of_lane_x, center_of_lane_y))
+                cv2.imwrite('lined_image%d.jpeg' % COUNT, line_image)
+        except Exception as e:
+            print(str(e))
 
         stream.seek(0)
         stream.truncate()
-    # except Exception as e:
-    # print(str(e))
-    # pass
 
 
 def gen_seq(vOffset, go):
@@ -262,9 +243,10 @@ def gen_seq(vOffset, go):
 # this will be the process that we split off for Dmitry to do computer vision work in
 # we use shared memory to make passing information back and fourth
 def vision(vOffset, go):
+    global WIDTH, HEIGHT
     print("Starting Vision")
     with picamera.PiCamera() as camera:
-        camera.resolution = (1280, 720)
+        camera.resolution = (WIDTH, HEIGHT)
         # Set the framerate appropriately; too fast and the image processors
         # will stall the image pipeline and crash the script
         camera.framerate = 30
