@@ -135,7 +135,7 @@ def select_yellow(image):
     converted = convert_hls(image)
     # yellow color mask
     lower = np.uint8([50, 100, 130])
-    upper = np.uint8([100, 255, 255])
+    upper = np.uint8([100, 200, 255])
     yellow_mask = cv2.inRange(converted, lower, upper)
     return cv2.bitwise_and(image, image, mask=yellow_mask)
 

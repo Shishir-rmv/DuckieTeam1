@@ -1,7 +1,7 @@
 from multiprocessing import Process, Value
 import serial, json, math, threading, time, pdb
 from datetime import datetime
-from duckvision import vision
+from enhancedduckvision import vision
 
 
 #global variables
