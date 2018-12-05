@@ -13,7 +13,7 @@ if __name__ == '__main__':
         while(running):
             if (vOffset.value != oldVal):
                 oldVal = vOffset.value
-                print("Camera:\t vOffset: %d" % (vOffset.value))
+                # print("Camera:\t vOffset: %d" % (vOffset.value))
 
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
