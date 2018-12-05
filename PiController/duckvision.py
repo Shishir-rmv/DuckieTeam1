@@ -199,19 +199,23 @@ def process(stream, vOffset):
                 center_of_lane_y = int((white_midpoint_y + yellow_midpoint_y) / 2)
 
                 # Jake added error suppression, was getting values in the range of -4000 to 4000 (possibly larger in magnitude)
-                if (center_of_lane_x <= 640 and center_of_lane_x >= 0):
-                    vOffset.value = 575 - center_of_lane_x
+                if (center_of_lane_x <= WIDTH and center_of_lane_x >= 0):
+                    vOffset.value = 555 - center_of_lane_x
+                print("White: Yes\t Yellow: Yes\t Slope_White: %f\t Slope_Yellow: %f\t VOffset: %d" % (slope_white, slope_yellow, vOffset.value))
             elif white_line and not yellow_line:
                 slope_white = (white_line_y2 - white_line_y1) / (white_line_x2 - white_line_x1)
                 diff = exp_dist_frm_white - white_line_x1
                 vOffset.value = diff
+                print("White: Yes\t Yellow: No\t Slope_White: %f\t VOffset: %d" % (slope_white, vOffset.value))
             elif yellow_line and not white_line:
+                slope_yellow = (yellow_line_y2 - yellow_line_y1) / (yellow_line_x2 - yellow_line_x1)
                 diff = expected_slope_yellow - yellow_line_x1
                 vOffset.value = diff
+                print("White: No\t Yellow: Yes\t Slope_Yellow: %f\t VOffset: %d" % (slope_yellow, vOffset.value))
             else:
+                print("No lines found!")
                 vOffset.value = 0
 
-            print("White: %r\t Yellow: %r\t Slope_White: %f\t Slope_Yellow: %f\t VOffset: %d" % (white_line, yellow_line, slope_white, slope_yellow, vOffset.value))
 
             # Debug stuff - To save images uncomment this:
             COUNT = COUNT + 1
