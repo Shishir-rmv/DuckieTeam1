@@ -54,7 +54,7 @@ def select_white_line(image, lines):
         for x1, y1, x2, y2 in line:
             # any line which is tilted towards right and lies entirely
             # in the right half of the image is discarded
-            if x1 > img_width/2 and x2 > img_width/2:
+            if img_width/2 < x1 != x2 > img_width / 2:
                 current_slope = (y2 - y1) / (x2 - x1)
                 if current_slope > 0:
                     intercept = y1 - current_slope * x1
@@ -84,7 +84,7 @@ def select_yellow_line(image, lines):
         for x1, y1, x2, y2 in line:
             # any line which is tilted towards left and lies entirely
             # in the left half of the image is discarded
-            if x1 <= img_width / 2 and x2 <= img_width / 2:
+            if img_width / 2 >= x1 != x2 <= img_width / 2:
                 current_slope = (y2 - y1) / (x2 - x1)
                 if current_slope < -1.4:
                     intercept = y1 - current_slope * x1
@@ -155,7 +155,7 @@ def process(stream, vOffset):
         height, width, temp = image.shape
 
         # Defines Region of Interest
-        region_of_interest_vert = [(0, height), (0, height / 2), (width - 200, height / 2), (width - 100, height)]
+        region_of_interest_vert = [(0, height), (0, height / 2), (900, height / 2), (1100, height)]
 
         try:
             # Filters White and Yellow colors in the image
@@ -214,23 +214,23 @@ def process(stream, vOffset):
                 # slope_white = (white_line_y2 - white_line_y1) / (white_line_x2 - white_line_x1)
                 diff = exp_dist_frm_white - white_line_x1
                 vOffset.value = diff
-                print("White: Yes\t Yellow: No\t VOffset: %d" % (vOffset.value))
+                print("White: Yes\t Yellow: No\t\t\t\tVOffset: %d" % (vOffset.value))
             elif yellow_line and not white_line:
                 # slope_yellow = (yellow_line_y2 - yellow_line_y1) / (yellow_line_x2 - yellow_line_x1)
                 diff = exp_dist_frm_yellow - yellow_line_x1
                 vOffset.value = diff
-                print("White: No\t Yellow: Yes\t VOffset: %d" % (vOffset.value))
+                print("White: No\t Yellow: Yes\t\t\t\tVOffset: %d" % (vOffset.value))
             else:
                 print("No lines found!")
 
             # Debug stuff - To save images uncomment this:
-            # COUNT = COUNT + 1
-            # if COUNT <= 50:
-            #     cv2.imwrite('original_image%d.jpeg' % COUNT, image)
-            #     cv2.imwrite('white_image%d.jpeg' % COUNT, white_image)
-            #     cv2.imwrite('yellow_image%d.jpeg' % COUNT, yellow_image)
-            #     line_image = draw_lane_lines(image, (yellow_line, white_line), (center_of_lane_x, center_of_lane_y))
-            #     cv2.imwrite('lined_image%d.jpeg' % COUNT, line_image)
+            COUNT = COUNT + 1
+            if COUNT <= 50:
+                cv2.imwrite('original_image%d.jpeg' % COUNT, image)
+                cv2.imwrite('white_image%d.jpeg' % COUNT, white_image)
+                cv2.imwrite('yellow_image%d.jpeg' % COUNT, yellow_image)
+                line_image = draw_lane_lines(image, (yellow_line, white_line), (center_of_lane_x, center_of_lane_y))
+                cv2.imwrite('lined_image%d.jpeg' % COUNT, line_image)
         except Exception as e:
             traceback.print_exc()
 
