@@ -79,7 +79,7 @@ def process(stream, vOffset):
 
             if white_exist and yellow_exist:
                 current_center = (white_px[1] + yellow_px[1]) / 2
-                diff = expected_center - current_center
+                diff = current_center - expected_center
                 print("White Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
                     int(white_px[1]), int(white_px[0]), int(yellow_px[1]), int(yellow_px[0]), current_center, diff))
                 vOffset.value = int(diff)
