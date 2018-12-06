@@ -85,7 +85,7 @@ def process(stream, vOffset):
                     print("No yellow pixels found")
 
                 if white_exist:
-                    diff = 1100 - int(white_px[1])
+                    diff = int(white_px[1]) - 1100
                     vOffset.value = int(diff)
                     print("White Pixel: x = %d, y = %d\t diff: %d" % (int(white_px[1]), int(white_px[0]), diff))
                 elif yellow_exist:
