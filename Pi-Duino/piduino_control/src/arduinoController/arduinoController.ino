@@ -181,7 +181,6 @@ void loop() {
       break;
     
     case start :
-      Serial.write(lowByte(arg2));
       rpm_target_L=arg2;//(arg1*60)/(70*3.14);
       rpm_target_R=rpm_target_L;
       pwm_L = (2.2*rpm_target_L + 85);
@@ -211,6 +210,8 @@ void loop() {
     del_v = (del_v*60)/(70*3.14);
     rpm_target_L = rpm_target_L + del_v;
     rpm_target_R = rpm_target_R - del_v;
+    Serial.write(lowByte(rpm_target_L));
+    Serial.write(lowByte(rpm_target_R));
     pwm_L = (2.2*rpm_target_L + 85);
     pwm_R = (2.1*rpm_target_R + 81);
     prev_error = v_err;
