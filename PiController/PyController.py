@@ -265,6 +265,7 @@ def visionController():
                     write("srt0000%s\n" % str(vRef).zfill(4))
                     r1 = s1.read(1)
                     arg2 = int.from_bytes(r1, byteorder = 'little', signed = False)
+                    print(arg2)
                     flag = False
 
                 # check for visual error changes
