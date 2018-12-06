@@ -82,13 +82,13 @@ def process(stream, vOffset):
                 diff = expected_center - current_center
                 print("White Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
                     int(white_px[1]), int(white_px[0]), int(yellow_px[1]), int(yellow_px[0]), current_center, diff))
-                vOffset.value = diff
+                vOffset.value = int(diff)
             elif white_exist and not yellow_exist:
                 diff = int(white_px[1]) - 1100
-                vOffset.value = diff
+                vOffset.value = int(diff)
             elif yellow_exist and not white_exist:
                 diff = 67 - int(yellow_px[1])
-                vOffset.value = diff
+                vOffset.value = int(diff)
 
         except Exception as e:
             traceback.print_exc()
