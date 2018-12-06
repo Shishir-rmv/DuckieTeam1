@@ -55,7 +55,7 @@ int v_err = 0;
 
 // BELOW VARIABLES NEED TO BE REMOVED FOR NORMAL OPERATION
 // USED ONLY FOR THE DEMO USING ENCODER ODOMETRY
-int update_rate = 4;//set from 1 to PPR or maybe more
+int update_rate = 16;//set from 1 to PPR or maybe more
 int third=0;
 int second = 0;
 int turn = 0;
@@ -189,7 +189,6 @@ void loop() {
     
     case vOffset :
       v_err = arg2;
-      Serial.println(v_err);
       break;
     
     case stopp :
@@ -206,7 +205,7 @@ void loop() {
   }
   if abs(v_err>0 && fourth!=1){
     error_dot = v_err - prev_error;
-    del_v = -(0.00008*v_err) - (0*error_dot);
+    del_v = -(0.000008*v_err) - (0*error_dot);
     del_v = (del_v*60)/(70*3.14);
     rpm_target_L = rpm_target_L + del_v;
     rpm_target_R = rpm_target_R - del_v;
