@@ -49,7 +49,7 @@ double prev_error = 0, error = 0, error_dot = 0, del_v = 0;
 int fourth;
 
 // rpm's
-double rpm_target_L = 0, rpm_target_R = 0, rpm_R = 0, rpm_L = 0, pwm_L = 0, pwm_R = 0;
+double rpm_target_L = 0, rpm_target_R = 0, rpm_R = 0, rpm_L = 0,rpm_R_ref = 0, rpm_L_ref = 0, pwm_L = 0, pwm_R = 0;
 
 int v_err = 0;
 
@@ -171,10 +171,10 @@ void loop() {
       break;
     
     case start :
-      rpm_L=arg2;//(arg1*60)/(70*3.14);
-      rpm_R=rpm_L;
-      pwm_L = (2.2*rpm_L + 85);
-      pwm_R = (2.1*rpm_R + 81);
+      rpm_L_ref=arg2;//(arg1*60)/(70*3.14);
+      rpm_R_ref=rpm_L_ref;
+      pwm_L = (2.2*rpm_L_ref + 85);
+      pwm_R = (2.1*rpm_R_ref + 81);
       break;
     
     case vOffset :
@@ -197,8 +197,8 @@ void loop() {
     error_dot = v_err - prev_error;
     del_v = -(0.000008*v_err) - (0*error_dot);
     del_v = (del_v*60)/(70*3.14);
-    rpm_target_L = rpm_L + del_v;
-    rpm_target_R = rpm_R - del_v;
+    rpm_target_L = rpm_L_ref + del_v;
+    rpm_target_R = rpm_R_ref - del_v;
 //    Serial.write('a');
 //    Serial.write(lowByte((int)rpm_target_L));
 //    Serial.write('b');
