@@ -8,7 +8,6 @@
 #include <EnableInterrupt.h>
 #include "DualMC33926MotorShield.h"
 #include "types.h"
-#include <string.h>
 
 
 #define L_ENC_A 12 //change to actual used pins. A is front wheel. B is back
@@ -24,32 +23,51 @@
 #define WHEEL_CIRCUMFERENCE 219.9115 //circumference = 2*pi*r, r = 35mm, pi = 3.14
 #define PPR 32 //pulses per revolution is = to # of lines per revoluion aka number of white segments which is half of the total segments, this is assumig 32 segments
 
+
 DualMC33926MotorShield md;
 double ping_duration;
+double theta = 0;
+double x = 0;
+double y = 0;
+double C = 1;
+double l_s; //left distance changed
+double r_s; //right distance changed
+double delta_x;
+double heading;
 
-// positional variables
-double theta = 0, x = 0, y = 0, C = 1;
-double delta_x, heading, l_s, r_s; //left & right distance changed
-
-// encoder counts
-int l_enc_count, r_enc_count, old_l_enc_count = 0, old_r_enc_count = 0;
+int l_enc_count;
+int r_enc_count;
+int old_l_enc_count = 0;
+int old_r_enc_count = 0;
 
 // total values can be removed for normal operation
 // used only for demo to segregate distances at different stretches
-double l_enc_count_total = 0, r_enc_count_total = 0;
+double l_enc_count_total = 0;
+double r_enc_count_total = 0;
 
-// distances
-double distance = 0, distance_R = 0, distance_L = 0, distance_total=0, distance_total_R = 0, distance_total_L=0;
+double distance = 0;
+double distance_R = 0;
+double distance_L = 0;
+double distance_total=0;
+double distance_total_R = 0;
+double distance_total_L=0;
 
-// durations?
-double duration_L, duration_R, prevmillis_L = micros(), prevmillis_R = micros();
+double duration_L;
+double duration_R;
+double prevmillis_L = micros();
+double prevmillis_R = micros();
 
-// errors
-double prev_error = 0, error = 0, error_dot = 0, del_v = 0;
-int fourth;
+double prev_error = 0;
+double error = 0;
+double error_dot = 0;
+double del_v = 0;
 
-// rpm's
-double rpm_target_L = 0, rpm_target_R = 0, rpm_R = 0, rpm_L = 0, pwm_L = 0, pwm_R = 0;
+double rpm_target_L = 0;
+double rpm_target_R = 0;
+double rpm_R = 0;
+double rpm_L = 0;
+double pwm_L = 0;
+double pwm_R = 0;
 
 int v_err = 0;
 
@@ -78,16 +96,16 @@ void setup() {
   pinMode(L_ENC_B, INPUT);
   digitalWrite(L_ENC_B, HIGH);
    
-  //enableInterrupt(L_ENC_A, encoder, CHANGE);
-  //enableInterrupt(L_ENC_B, encoder, CHANGE);
+  enableInterrupt(L_ENC_A, encoder, CHANGE);
+  enableInterrupt(L_ENC_B, encoder, CHANGE);
 
   pinMode(R_ENC_A, INPUT);
   digitalWrite(R_ENC_A, HIGH);
   pinMode(R_ENC_B, INPUT);
   digitalWrite(R_ENC_B, HIGH);
 
-  //enableInterrupt(R_ENC_A, encoder, CHANGE);
-  //enableInterrupt(R_ENC_B, encoder, CHANGE);
+  enableInterrupt(R_ENC_A, encoder, CHANGE);
+  enableInterrupt(R_ENC_B, encoder, CHANGE);
 
   //setting up pins for ping 
   pinMode(PING_PIN, OUTPUT);
@@ -124,28 +142,17 @@ void loop() {
     opStrA[0] = input[0];
     opStrA[1] = input[1];
     opStrA[2] = input[2];
-    // WHY WERE THESE HERE?
-    // opStrA[3] = 0;
-
-    // if there's a first argument
-    if (strlen(input) >= 7){
-      arg1A[0] = input[3];
-      arg1A[1] = input[4];
-      arg1A[2] = input[5];
-      arg1A[3] = input[6];
-      // WHY WERE THESE HERE?
-      arg1A[4] = '\0';
-    }
-
-    // if there's a second argument
-    if (strlen(input) >= 11){
-      arg2A[0] = input[7];
-      arg2A[1] = input[8];
-      arg2A[2] = input[9];
-      arg2A[3] = input[10];
-      // WHY WERE THESE HERE?
-      arg2A[4] = '\0';
-    }
+    opStrA[3] = 0;
+    arg1A[0] = input[3];
+    arg1A[1] = input[4];
+    arg1A[2] = input[5];
+    arg1A[3] = input[6];
+    arg1A[4] = 0;
+    arg2A[0] = input[7];
+    arg2A[1] = input[8];
+    arg2A[2] = input[9];
+    arg2A[3] = input[10];
+    arg2A[4] = 0;
 
     String opStr = String(opStrA);
     int arg1 = atoi(arg1A);
@@ -181,10 +188,10 @@ void loop() {
       break;
     
     case start :
-      rpm_target_L=arg2;//(arg1*60)/(70*3.14);
-      rpm_target_R=rpm_target_L;
-      pwm_L = (2.2*rpm_target_L + 85);
-      pwm_R = (2.1*rpm_target_R + 81);
+      //rpm_target_L=(arg2*60)/(70*3.14);
+      //rpm_target_R=rpm_target_L;
+      pwm_L = arg2;//(2.114*rpm_target_L + 96.23);
+      pwm_R = arg2;//(2.02*rpm_target_R + 100.9);
       break;
     
     case vOffset :
@@ -204,26 +211,9 @@ void loop() {
       break;
   }
   }
-  if abs(v_err>0 && fourth!=1){
-    error_dot = v_err - prev_error;
-    del_v = -(0.00008*v_err) - (0.5*error_dot);
-    del_v = (del_v*60)/(70*3.14);
-    rpm_target_L = rpm_target_L + del_v;
-    rpm_target_R = rpm_target_R - del_v;
-    Serial.write('a');
-    Serial.write(lowByte((int)rpm_target_L));
-    Serial.write('b');
-    Serial.write(lowByte((int)rpm_target_R));
-    pwm_L = (2.2*rpm_target_L + 85);
-    pwm_R = (2.1*rpm_target_R + 81);
-    prev_error = v_err;
-  }
-     
   md.setM2Speed(pwm_L);    
   md.setM1Speed(pwm_R);
   opStr = "none";
-  arg1 = 0;
-  arg2 = 0;
 }
 
 
@@ -304,59 +294,6 @@ void encoder() {
     }
   }
   
-  if (distance_total<1000){
-    Serial.println("going straight 1");
-    error = (distance_L) - (distance_R);//0.975*
-    error_dot = error - prev_error;
-    Serial.println(error);
-    del_v = -(.0008*error) - (0*error_dot);
-    del_v = (del_v*60)/(70*3.14);
-    rpm_target_L = rpm_L + del_v;
-    rpm_target_R = rpm_R - del_v;
-    pwm_L = (2.114*rpm_target_L + 96.23);
-    pwm_R = (2.02*rpm_target_R + 100.9);
-    prev_error = error;
-  }else if (theta<=-1.84 || third == 1){ 
-    if( theta<=-1.84 && second != 1){
-      Serial.println("finished turn");
-      l_enc_count = 0;
-      r_enc_count = 0;
-      prev_error = 0;
-      distance_L = 0;
-      distance_R = 0;
-      rpm_target_L = ((180/1.3)-96.23)/2.114;
-      rpm_target_R = (180-100.9)/2.02;
-      second = 1;
-      turn = 1;
-      third =1;
-     }
-    Serial.println("going straight");
-    error = (distance_L) - (distance_R);//0.975*
-    error_dot = error - prev_error;
-    del_v = -(0.8*error) - (5.9*error_dot);
-    del_v = (del_v*60)/(70*3.14);
-    rpm_target_L = rpm_target_L + del_v;
-    rpm_target_R = rpm_target_R - del_v;
-    pwm_L = 1.3*(2.114*rpm_target_L + 96.23);
-    pwm_R = (2.02*rpm_target_R + 100.9);
-    prev_error = error;
-  }else if(turn != 1){
-    Serial.println("in turn");
-    C = 1.38;
-    error = (C*distance_L) - (distance_R);
-    error_dot = error - prev_error;
-    del_v = -(0.003*error) - (0.05*error_dot);
-    del_v = (del_v*60)/(70*3.14);
-    rpm_target_L = rpm_target_L + del_v; // i switched this
-    rpm_target_R = rpm_target_R - del_v;
-    prev_error = error;
-    pwm_L = 1.3*(2.114*rpm_target_L + 96.23);
-    pwm_R = (2.02*rpm_target_R + 100.9);
-  }
-  
-   String ret = "";
-   ret =  String(error);
-   //Serial.println(ret);
 }
 
 void ping() {
@@ -385,12 +322,8 @@ void stopIfFault(){
 void Stop() {
   pwm_R = 0;
   pwm_L = 0;
-  rpm_target_R = 0;
-  rpm_target_L = 0;
-  v_err=0;
   md.setM2Speed(pwm_L);    
   md.setM1Speed(pwm_R);
-  fourth = 1;
 }
 
 int8_t read_encoderL(int8_t new_val)
