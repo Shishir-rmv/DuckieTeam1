@@ -207,7 +207,7 @@ void loop() {
   }
   if abs(v_err>0 && fourth!=1){
     error_dot = v_err - prev_error;
-    del_v = -(.008*v_err) - (0*error_dot);
+    del_v = -(.8*v_err) - (0*error_dot);
     del_v = (del_v*60)/(70*3.14);
     rpm_target_L = rpm_target_L + del_v;
     rpm_target_R = rpm_target_R - del_v;
