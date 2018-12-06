@@ -7,6 +7,7 @@ WIDTH = 1280
 HEIGHT = 720
 expected_center = 575
 
+
 def region_of_interest(img, vertices):
     mask = np.zeros_like(img)
     match_mask_color = 255
@@ -63,14 +64,31 @@ def process(stream, vOffset):
             cropped_yellow_img = region_of_interest(yellow_image, np.array([region_of_interest_yellow], np.int32))
 
             white_px = np.mean(np.where(np.any(cropped_white_img != [0, 0, 0], axis=-1)), axis=1)
+            white_exist = not np.all(np.isnan(white_px))
+            # Check if white pixels are found
+            if not white_exist:
+                white_px = np.array([-1, -1])
+                print("No white pixels found")
+
             yellow_px = np.mean(np.where(np.any(cropped_yellow_img != [0, 0, 0], axis=-1)), axis=1)
+            yellow_exist = not np.all(np.isnan(yellow_px))
+            # Check if yellow pixels are found
+            if not yellow_exist:
+                yellow_px = np.array([-1, -1])
+                print("No yellow pixels found")
 
-            current_center = (white_px[1] + yellow_px[1]) / 2
-            diff = expected_center - current_center
-
-            print("White Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
-                int(white_px[1]), int(white_px[0]), int(yellow_px[1]), int(yellow_px[0]), current_center, diff))
-
+            if white_exist and yellow_exist:
+                current_center = (white_px[1] + yellow_px[1]) / 2
+                diff = expected_center - current_center
+                print("White Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
+                    int(white_px[1]), int(white_px[0]), int(yellow_px[1]), int(yellow_px[0]), current_center, diff))
+                vOffset.value = diff
+            elif white_exist and not yellow_exist:
+                diff = int(white_px[1]) - 1100
+                vOffset.value = diff
+            elif yellow_exist and not white_exist:
+                diff = 67 - int(yellow_px[1])
+                vOffset.value = diff
 
         except Exception as e:
             traceback.print_exc()
