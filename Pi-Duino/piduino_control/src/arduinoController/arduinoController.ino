@@ -211,9 +211,9 @@ void loop() {
     rpm_target_L = rpm_target_L + del_v;
     rpm_target_R = rpm_target_R - del_v;
     Serial.write('a');
-    Serial.write(lowByte(rpm_target_L));
+    Serial.write(lowByte((int)rpm_target_L));
     Serial.write('b');
-    Serial.write(lowByte(rpm_target_R));
+    Serial.write(lowByte((int)rpm_target_R));
     pwm_L = (2.2*rpm_target_L + 85);
     pwm_R = (2.1*rpm_target_R + 81);
     prev_error = v_err;
