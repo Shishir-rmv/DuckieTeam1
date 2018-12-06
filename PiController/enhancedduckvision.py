@@ -84,29 +84,29 @@ def process(stream, vOffset):
                     yellow_px = np.array([-1, -1])
                     print("No yellow pixels found")
 
-                if white_exist:
-                    diff = int(white_px[1]) - 1100
-                    vOffset.value = int(diff)
-                    print("White Pixel: x = %d, y = %d\t diff: %d" % (int(white_px[1]), int(white_px[0]), diff))
-                elif yellow_exist:
-                    diff = int(yellow_px[1]) - 65
-                    vOffset.value = int(diff)
-                    print("Yellow Pixel: x = %d, y = %d\t diff: %d" % (int(yellow_px[1]), int(yellow_px[0]), diff))
-
-                # if white_exist and yellow_exist:
-                #     current_center = (white_px[1] + yellow_px[1]) / 2
-                #     diff = current_center - expected_center
-                #     print("White Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
-                #         int(white_px[1]), int(white_px[0]), int(yellow_px[1]), int(yellow_px[0]), current_center, diff))
-                #     vOffset.value = int(diff)
-                # elif white_exist and not yellow_exist:
+                # if white_exist:
                 #     diff = int(white_px[1]) - 1100
                 #     vOffset.value = int(diff)
                 #     print("White Pixel: x = %d, y = %d\t diff: %d" % (int(white_px[1]), int(white_px[0]), diff))
-                # elif yellow_exist and not white_exist:
-                #     diff = int(yellow_px[1]) - 67
+                # elif yellow_exist:
+                #     diff = int(yellow_px[1]) - 65
                 #     vOffset.value = int(diff)
                 #     print("Yellow Pixel: x = %d, y = %d\t diff: %d" % (int(yellow_px[1]), int(yellow_px[0]), diff))
+
+                if white_exist and yellow_exist:
+                    current_center = (white_px[1] + yellow_px[1]) / 2
+                    diff = current_center - expected_center
+                    print("White Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
+                        int(white_px[1]), int(white_px[0]), int(yellow_px[1]), int(yellow_px[0]), current_center, diff))
+                    vOffset.value = int(diff)
+                elif white_exist and not yellow_exist:
+                    diff = int(white_px[1]) - 1100
+                    vOffset.value = int(diff)
+                    print("White Pixel: x = %d, y = %d\t diff: %d" % (int(white_px[1]), int(white_px[0]), diff))
+                elif yellow_exist and not white_exist:
+                    diff = int(yellow_px[1]) - 67
+                    vOffset.value = int(diff)
+                    print("Yellow Pixel: x = %d, y = %d\t diff: %d" % (int(yellow_px[1]), int(yellow_px[0]), diff))
 
         except Exception as e:
             traceback.print_exc()
