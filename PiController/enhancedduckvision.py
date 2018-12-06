@@ -2,6 +2,7 @@ import traceback
 
 import picamera, io, cv2, time
 import numpy as np
+import warnings
 
 WIDTH = 1280
 HEIGHT = 720
@@ -52,45 +53,60 @@ def process(stream, vOffset):
         height, width, temp = image.shape
 
         # Defines Region of Interest
+        # Bottom right quadrant of the image for white line
         region_of_interest_white = [(width / 2, height), (width / 2, height / 2), (width, height / 2), (width, height)]
+        # Bottom left quadrant of the image for yellow line
         region_of_interest_yellow = [(0, height), (0, height / 2), (width / 2, height / 2), (width, height)]
 
         try:
-            # Filters White and Yellow colors in the image
-            white_image = select_white(image)
-            yellow_image = select_yellow(image)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=RuntimeWarning)
 
-            cropped_white_img = region_of_interest(white_image, np.array([region_of_interest_white], np.int32))
-            cropped_yellow_img = region_of_interest(yellow_image, np.array([region_of_interest_yellow], np.int32))
+                # Filters White and Yellow colors in the image
+                white_image = select_white(image)
+                yellow_image = select_yellow(image)
 
-            white_px = np.mean(np.where(np.any(cropped_white_img != [0, 0, 0], axis=-1)), axis=1)
-            white_exist = not np.all(np.isnan(white_px))
-            # Check if white pixels are found
-            if not white_exist:
-                white_px = np.array([-1, -1])
-                print("No white pixels found")
+                #
+                cropped_white_img = region_of_interest(white_image, np.array([region_of_interest_white], np.int32))
+                cropped_yellow_img = region_of_interest(yellow_image, np.array([region_of_interest_yellow], np.int32))
 
-            yellow_px = np.mean(np.where(np.any(cropped_yellow_img != [0, 0, 0], axis=-1)), axis=1)
-            yellow_exist = not np.all(np.isnan(yellow_px))
-            # Check if yellow pixels are found
-            if not yellow_exist:
-                yellow_px = np.array([-1, -1])
-                print("No yellow pixels found")
+                white_px = np.mean(np.where(np.any(cropped_white_img != [0, 0, 0], axis=-1)), axis=1)
+                white_exist = not np.all(np.isnan(white_px))
+                # Check if white pixels are found
+                if not white_exist:
+                    white_px = np.array([-1, -1])
+                    print("No white pixels found")
 
-            if white_exist and yellow_exist:
-                current_center = (white_px[1] + yellow_px[1]) / 2
-                diff = current_center - expected_center
-                print("White Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
-                    int(white_px[1]), int(white_px[0]), int(yellow_px[1]), int(yellow_px[0]), current_center, diff))
-                vOffset.value = int(diff)
-            elif white_exist and not yellow_exist:
-                diff = int(white_px[1]) - 1100
-                vOffset.value = int(diff)
-                print("White Pixel: x = %d, y = %d\t diff: %d" % (int(white_px[1]), int(white_px[0]), diff))
-            elif yellow_exist and not white_exist:
-                diff = int(yellow_px[1]) - 67
-                vOffset.value = int(diff)
-                print("Yellow Pixel: x = %d, y = %d\t diff: %d" % (int(yellow_px[1]), int(yellow_px[0]), diff))
+                yellow_px = np.mean(np.where(np.any(cropped_yellow_img != [0, 0, 0], axis=-1)), axis=1)
+                yellow_exist = not np.all(np.isnan(yellow_px))
+                # Check if yellow pixels are found
+                if not yellow_exist:
+                    yellow_px = np.array([-1, -1])
+                    print("No yellow pixels found")
+
+                if white_exist:
+                    diff = 1100 - int(white_px[1])
+                    vOffset.value = int(diff)
+                    print("White Pixel: x = %d, y = %d\t diff: %d" % (int(white_px[1]), int(white_px[0]), diff))
+                elif yellow_exist:
+                    diff = int(yellow_px[1]) - 65
+                    vOffset.value = int(diff)
+                    print("Yellow Pixel: x = %d, y = %d\t diff: %d" % (int(yellow_px[1]), int(yellow_px[0]), diff))
+
+                # if white_exist and yellow_exist:
+                #     current_center = (white_px[1] + yellow_px[1]) / 2
+                #     diff = current_center - expected_center
+                #     print("White Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
+                #         int(white_px[1]), int(white_px[0]), int(yellow_px[1]), int(yellow_px[0]), current_center, diff))
+                #     vOffset.value = int(diff)
+                # elif white_exist and not yellow_exist:
+                #     diff = int(white_px[1]) - 1100
+                #     vOffset.value = int(diff)
+                #     print("White Pixel: x = %d, y = %d\t diff: %d" % (int(white_px[1]), int(white_px[0]), diff))
+                # elif yellow_exist and not white_exist:
+                #     diff = int(yellow_px[1]) - 67
+                #     vOffset.value = int(diff)
+                #     print("Yellow Pixel: x = %d, y = %d\t diff: %d" % (int(yellow_px[1]), int(yellow_px[0]), diff))
 
         except Exception as e:
             traceback.print_exc()
