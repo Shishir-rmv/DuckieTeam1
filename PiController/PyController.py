@@ -10,7 +10,7 @@ rate = 115200
 s1 = serial.Serial()
 s1.port = port
 s1.baudrate = rate
-s1.timeout = 2
+s1.timeout = 1
 
 
 motorL = 0  # motor speeds
@@ -212,6 +212,18 @@ def starter():
     move = True
     print("Starter thread finished")
 
+def serialReader():
+    print("Starting serial thread")
+    while (True):
+        # read the "label" byte
+        r1 = s1.read(1)
+        # read the "data" byte
+        r2 = s1.read(1)
+        arg2 = int.from_bytes(r1, byteorder = 'little', signed = False)
+        print("Label: %s, Data: %i" % (r1, arg2))
+        # this is only for debugging
+    print("Ending serial thread")
+
 def visionController():
     global move
     # Define and split off the computer vision subprocess _________________________________
@@ -229,9 +241,12 @@ def visionController():
 
     print("PyController starting")
 
-    # split off the starter thread so the machine can passively calibrate itself before we start
+    # split off the starter thread & serial reader threads so the machine can passively calibrate itself before we start
     starter_thread = threading.Thread(target=starter)
     starter_thread.start()
+
+    serial_thread = threading.Thread(target=serialReader)
+    serial_thread.start()
 
     # open the serial port to the Arduino & initialize
     s1.flushInput()
@@ -263,9 +278,6 @@ def visionController():
                     # TODO: ASK WHAT'S A GOOD VREF.
                     print("SENDING: srt0000%s" % str(vRef).zfill(4))
                     write("srt0000%s\n" % str(vRef).zfill(4))
-                    r1 = s1.read(1)
-                    arg2 = int.from_bytes(r1, byteorder = 'little', signed = False)
-                    print(arg2)
                     flag = False
 
                 # check for visual error changes
@@ -287,8 +299,12 @@ def visionController():
     s1.close()
     # once we're all done, send the kill switch to the inner vision loop and join the vision process
     see.value = False
+
+    # join the starter and serial threads, kill vision
     starter_thread.join()
     print("Starter thread joined")
+    serial_thread.terminate()
+    print("Serial thread joined")
     vision_process.terminate() 
     print("Vision process terminated")
 
