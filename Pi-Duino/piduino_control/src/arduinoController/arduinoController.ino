@@ -115,12 +115,12 @@ void loop() {
   static char input[15];
   static char opStrA[3];
   static char arg1A[4];
-  static char arg2A[5];
+  static char arg2A[4];
   static double prevmillis_L = micros();
   static double prevmillis_R = micros();
 
   if(Serial.available()){
-    Serial.readBytesUntil('\n', input, 11);
+    Serial.readBytesUntil('\n', input, 12);
     opStrA[0] = input[0];
     opStrA[1] = input[1];
     opStrA[2] = input[2];
@@ -181,6 +181,7 @@ void loop() {
       break;
     
     case start :
+      Serial.write(lowByte(arg2));
       rpm_target_L=arg2;//(arg1*60)/(70*3.14);
       rpm_target_R=rpm_target_L;
       pwm_L = (2.2*rpm_target_L + 85);
@@ -206,7 +207,7 @@ void loop() {
   }
   if abs(v_err>0 && fourth!=1){
     error_dot = v_err - prev_error;
-    del_v = -(.0008*v_err) - (0*error_dot);
+    del_v = -(.00008*v_err) - (0*error_dot);
     del_v = (del_v*60)/(70*3.14);
     rpm_target_L = rpm_target_L + del_v;
     rpm_target_R = rpm_target_R - del_v;

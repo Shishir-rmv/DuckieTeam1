@@ -262,7 +262,9 @@ def visionController():
                     # send initial calibration
                     # TODO: ASK WHAT'S A GOOD VREF.
                     print("SENDING: srt0000%s" % str(vRef).zfill(4))
-                    write("srt0000%s" % str(vRef).zfill(4))
+                    write("srt0000%s\n" % str(vRef).zfill(4))
+                    r1 = s1.read(1)
+                    arg2 = int.from_bytes(r1, byteorder = 'little', signed = False)
                     flag = False
 
                 # check for visual error changes
@@ -271,7 +273,7 @@ def visionController():
                     oldVal = now
                     # print("Camera:\t vOffset: %d" % (now))
                     print("SENDING: ver0000%s" % str(now*-1).zfill(4))
-                    write("ver0000%s" % str(now*-1).zfill(4))
+                    write("ver0000%s\n" % str(now*-1).zfill(4))
                 
             
     except KeyboardInterrupt:
