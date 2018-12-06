@@ -113,9 +113,9 @@ void loop() {
   static unsigned int arg1 = 0;
   static unsigned int arg2 = 0;
   static char input[15];
-  static char opStrA[3];
-  static char arg1A[4];
-  static char arg2A[4];
+  static char opStrA[4];
+  static char arg1A[5];
+  static char arg2A[5];
   static double prevmillis_L = micros();
   static double prevmillis_R = micros();
 
@@ -134,7 +134,7 @@ void loop() {
       arg1A[2] = input[5];
       arg1A[3] = input[6];
       // WHY WERE THESE HERE?
-      // arg1A[4] = 0;
+      arg1A[4] = '\0';
     }
 
     // if there's a second argument
@@ -144,7 +144,7 @@ void loop() {
       arg2A[2] = input[9];
       arg2A[3] = input[10];
       // WHY WERE THESE HERE?
-      // arg2A[4] = 0;
+      arg2A[4] = '\0';
     }
 
     String opStr = String(opStrA);
@@ -210,7 +210,9 @@ void loop() {
     del_v = (del_v*60)/(70*3.14);
     rpm_target_L = rpm_target_L + del_v;
     rpm_target_R = rpm_target_R - del_v;
+    Serial.write('a');
     Serial.write(lowByte(rpm_target_L));
+    Serial.write('b');
     Serial.write(lowByte(rpm_target_R));
     pwm_L = (2.2*rpm_target_L + 85);
     pwm_R = (2.1*rpm_target_R + 81);
