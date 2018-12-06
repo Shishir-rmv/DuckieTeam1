@@ -55,7 +55,7 @@ int v_err = 0;
 
 // BELOW VARIABLES NEED TO BE REMOVED FOR NORMAL OPERATION
 // USED ONLY FOR THE DEMO USING ENCODER ODOMETRY
-int update_rate = 16;//set from 1 to PPR or maybe more
+int update_rate = 1;//set from 1 to PPR or maybe more
 int third=0;
 int second = 0;
 int turn = 0;
@@ -88,17 +88,7 @@ void setup() {
 
   enableInterrupt(R_ENC_A, encoder, CHANGE);
   enableInterrupt(R_ENC_B, encoder, CHANGE);
-
-  //setting up pins for ping 
-  pinMode(PING_PIN, OUTPUT);
-  digitalWrite(PING_PIN, LOW);
-  delayMicroseconds(2);
-  digitalWrite(PING_PIN, HIGH);
-  delayMicroseconds(5);
-  digitalWrite(PING_PIN, LOW);
-
-  pinMode(PING_PIN, INPUT);
-
+  
   md.init();
   //md.setM1Speed(pwm_R);
   //md.setM2Speed(pwm_L);
@@ -209,10 +199,10 @@ void loop() {
     del_v = (del_v*60)/(70*3.14);
     rpm_target_L = rpm_target_L + del_v;
     rpm_target_R = rpm_target_R - del_v;
-    Serial.write('a');
-    Serial.write(lowByte((int)rpm_target_L));
-    Serial.write('b');
-    Serial.write(lowByte((int)rpm_target_R));
+//    Serial.write('a');
+//    Serial.write(lowByte((int)rpm_target_L));
+//    Serial.write('b');
+//    Serial.write(lowByte((int)rpm_target_R));
     pwm_L = (2.2*rpm_target_L + 85);
     pwm_R = (2.1*rpm_target_R + 81);
     prev_error = v_err;
@@ -220,9 +210,9 @@ void loop() {
      
   md.setM2Speed(pwm_L);    
   md.setM1Speed(pwm_R);
-  opStr = "none";
-  arg1 = 0;
-  arg2 = 0;
+  //opStr = "none";
+  //arg1 = 0;
+  //arg2 = 0;
 }
 
 
@@ -262,19 +252,26 @@ void encoder() {
   
   if (l_enc_count!= old_l_enc_count){
     old_l_enc_count = l_enc_count;
-    if (l_enc_count%update_rate==0 && l_enc_count>2){
+    if (l_enc_count%update_rate==0){
       duration_L = (micros() - prevmillis_L); // Time difference between revolution in microsecond
+      if(abs(l_enc_count > 2)){
       rpm_target_L = update_rate*(60000000/duration_L)/PPR; // rpm = (1/ time millis)*1000*1000*60;
+      }
       prevmillis_L = micros();
+      Serial.print("L ");
+      Serial.println(l_enc_count);
       }
   }
   if (r_enc_count!= old_r_enc_count){
     old_r_enc_count = r_enc_count;
-    if(r_enc_count%update_rate==0 && r_enc_count>2){
+    if(r_enc_count%update_rate==0 ){
       duration_R = (micros() - prevmillis_R); // Time difference between revolution in microsecond
+      if(abs(r_enc_count > 2)){
       rpm_target_R = update_rate*(60000000/duration_R)/PPR; // rpm = (1/ time millis)*1000*1000*60;
-      old_r_enc_count = r_enc_count;
+      }
       prevmillis_R = micros();
+      Serial.print("R ");
+      Serial.println(r_enc_count);
     }
   }
 }
