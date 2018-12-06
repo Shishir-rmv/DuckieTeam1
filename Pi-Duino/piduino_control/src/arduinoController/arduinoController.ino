@@ -55,7 +55,7 @@ int v_err = 0;
 
 // BELOW VARIABLES NEED TO BE REMOVED FOR NORMAL OPERATION
 // USED ONLY FOR THE DEMO USING ENCODER ODOMETRY
-int update_rate = 4;//set from 1 to PPR or maybe more
+int update_rate = 8;//set from 1 to PPR or maybe more
 int third=0;
 int second = 0;
 int turn = 0;
@@ -78,16 +78,16 @@ void setup() {
   pinMode(L_ENC_B, INPUT);
   digitalWrite(L_ENC_B, HIGH);
    
-  //enableInterrupt(L_ENC_A, encoder, CHANGE);
-  //enableInterrupt(L_ENC_B, encoder, CHANGE);
+  enableInterrupt(L_ENC_A, encoder, CHANGE);
+  enableInterrupt(L_ENC_B, encoder, CHANGE);
 
   pinMode(R_ENC_A, INPUT);
   digitalWrite(R_ENC_A, HIGH);
   pinMode(R_ENC_B, INPUT);
   digitalWrite(R_ENC_B, HIGH);
 
-  //enableInterrupt(R_ENC_A, encoder, CHANGE);
-  //enableInterrupt(R_ENC_B, encoder, CHANGE);
+  enableInterrupt(R_ENC_A, encoder, CHANGE);
+  enableInterrupt(R_ENC_B, encoder, CHANGE);
 
   //setting up pins for ping 
   pinMode(PING_PIN, OUTPUT);
@@ -257,22 +257,7 @@ void encoder() {
    
   
   
-   
-// stop-gap fix for skipping counts   
-//  if ((pwm_R*r_enc)<0 && old_r_enc_count != 0){
-//    r_enc_count -= 2*r_enc;
-//   r_s -= 2*r_enc*WHEEL_CIRCUMFERENCE/PPR;
-//  }else{
-//   r_enc_count += r_enc; 
-//  }
-//  if ((pwm_L*l_enc)<0 && old_l_enc_count != 0){
-//    l_enc_count -= 2*l_enc;
-//    l_s -= 2*l_enc*WHEEL_CIRCUMFERENCE/PPR;
-//  }else{
-//  l_enc_count += l_enc;
-//  }
 
-  
 
 
   
@@ -280,83 +265,19 @@ void encoder() {
     old_l_enc_count = l_enc_count;
     if (l_enc_count%update_rate==0 && l_enc_count>2){
       duration_L = (micros() - prevmillis_L); // Time difference between revolution in microsecond
-      rpm_L = update_rate*(60000000/duration_L)/PPR; // rpm = (1/ time millis)*1000*1000*60;
+      rpm_target_L = update_rate*(60000000/duration_L)/PPR; // rpm = (1/ time millis)*1000*1000*60;
       prevmillis_L = micros();
-        Serial.print("L "); 
-        Serial.print(l_enc_count);
-        Serial.print("   ");  
-        Serial.println(rpm_L);
-        Serial.print("   ");
       }
   }
   if (r_enc_count!= old_r_enc_count){
     old_r_enc_count = r_enc_count;
     if(r_enc_count%update_rate==0 && r_enc_count>2){
       duration_R = (micros() - prevmillis_R); // Time difference between revolution in microsecond
-      rpm_R = update_rate*(60000000/duration_R)/PPR; // rpm = (1/ time millis)*1000*1000*60;
+      rpm_target_R = update_rate*(60000000/duration_R)/PPR; // rpm = (1/ time millis)*1000*1000*60;
       old_r_enc_count = r_enc_count;
       prevmillis_R = micros();
-        Serial.print("  R ");
-        Serial.print(r_enc_count);
-        Serial.print("   ");  
-        Serial.println(rpm_R);
-       Serial.print("   ");
     }
   }
-  
-  if (distance_total<1000){
-    Serial.println("going straight 1");
-    error = (distance_L) - (distance_R);//0.975*
-    error_dot = error - prev_error;
-    Serial.println(error);
-    del_v = -(.0008*error) - (0*error_dot);
-    del_v = (del_v*60)/(70*3.14);
-    rpm_target_L = rpm_L + del_v;
-    rpm_target_R = rpm_R - del_v;
-    pwm_L = (2.114*rpm_target_L + 96.23);
-    pwm_R = (2.02*rpm_target_R + 100.9);
-    prev_error = error;
-  }else if (theta<=-1.84 || third == 1){ 
-    if( theta<=-1.84 && second != 1){
-      Serial.println("finished turn");
-      l_enc_count = 0;
-      r_enc_count = 0;
-      prev_error = 0;
-      distance_L = 0;
-      distance_R = 0;
-      rpm_target_L = ((180/1.3)-96.23)/2.114;
-      rpm_target_R = (180-100.9)/2.02;
-      second = 1;
-      turn = 1;
-      third =1;
-     }
-    Serial.println("going straight");
-    error = (distance_L) - (distance_R);//0.975*
-    error_dot = error - prev_error;
-    del_v = -(0.8*error) - (5.9*error_dot);
-    del_v = (del_v*60)/(70*3.14);
-    rpm_target_L = rpm_target_L + del_v;
-    rpm_target_R = rpm_target_R - del_v;
-    pwm_L = 1.3*(2.114*rpm_target_L + 96.23);
-    pwm_R = (2.02*rpm_target_R + 100.9);
-    prev_error = error;
-  }else if(turn != 1){
-    Serial.println("in turn");
-    C = 1.38;
-    error = (C*distance_L) - (distance_R);
-    error_dot = error - prev_error;
-    del_v = -(0.003*error) - (0.05*error_dot);
-    del_v = (del_v*60)/(70*3.14);
-    rpm_target_L = rpm_target_L + del_v; // i switched this
-    rpm_target_R = rpm_target_R - del_v;
-    prev_error = error;
-    pwm_L = 1.3*(2.114*rpm_target_L + 96.23);
-    pwm_R = (2.02*rpm_target_R + 100.9);
-  }
-  
-   String ret = "";
-   ret =  String(error);
-   //Serial.println(ret);
 }
 
 void ping() {
