@@ -273,8 +273,8 @@ def visionController():
                 if (now != oldVal):
                     oldVal = now
                     # print("Camera:\t vOffset: %d" % (now))
-                    print("SENDING: ver0000%s" % str(now).zfill(4))
-                    write("ver0000%s\n" % str(now).zfill(4))
+                    print("SENDING: ver0000%s" % str(now*-1).zfill(4))
+                    write("ver0000%s\n" % str(now*-1).zfill(4))
                 
             
     except KeyboardInterrupt:
