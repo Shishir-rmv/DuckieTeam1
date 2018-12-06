@@ -55,7 +55,7 @@ int v_err = 0;
 
 // BELOW VARIABLES NEED TO BE REMOVED FOR NORMAL OPERATION
 // USED ONLY FOR THE DEMO USING ENCODER ODOMETRY
-int update_rate = 1;//set from 1 to PPR or maybe more
+int update_rate = 4;//set from 1 to PPR or maybe more
 int third=0;
 int second = 0;
 int turn = 0;
@@ -171,10 +171,10 @@ void loop() {
       break;
     
     case start :
-      rpm_target_L=arg2;//(arg1*60)/(70*3.14);
-      rpm_target_R=rpm_target_L;
-      pwm_L = (2.2*rpm_target_L + 85);
-      pwm_R = (2.1*rpm_target_R + 81);
+      rpm_L=arg2;//(arg1*60)/(70*3.14);
+      rpm_R=rpm_L;
+      pwm_L = (2.2*rpm_L + 85);
+      pwm_R = (2.1*rpm_R + 81);
       break;
     
     case vOffset :
@@ -197,8 +197,8 @@ void loop() {
     error_dot = v_err - prev_error;
     del_v = -(0.000008*v_err) - (0*error_dot);
     del_v = (del_v*60)/(70*3.14);
-    rpm_target_L = rpm_target_L + del_v;
-    rpm_target_R = rpm_target_R - del_v;
+    rpm_target_L = rpm_L + del_v;
+    rpm_target_R = rpm_R - del_v;
 //    Serial.write('a');
 //    Serial.write(lowByte((int)rpm_target_L));
 //    Serial.write('b');
@@ -224,42 +224,34 @@ void encoder() {
   //having different total distance for different state and turns
   l_enc_count += l_enc;
   r_enc_count += r_enc;
-  distance_L = l_enc_count*WHEEL_CIRCUMFERENCE/PPR;
-  distance_R = r_enc_count*WHEEL_CIRCUMFERENCE/PPR;  
-  distance = (distance_L + distance_R)/2;    
+  //distance_L = l_enc_count*WHEEL_CIRCUMFERENCE/PPR;
+  //distance_R = r_enc_count*WHEEL_CIRCUMFERENCE/PPR;  
+  //distance = (distance_L + distance_R)/2;    
    
-  l_enc_count_total += l_enc;
-  r_enc_count_total += r_enc;
-  distance_total_L = l_enc_count_total*WHEEL_CIRCUMFERENCE/PPR;
-  distance_total_R = r_enc_count_total*WHEEL_CIRCUMFERENCE/PPR;
-  distance_total = ((distance_total_L + distance_total_R))/2;
-   
-  
-  r_s = r_enc*WHEEL_CIRCUMFERENCE/PPR;
-  l_s = l_enc*WHEEL_CIRCUMFERENCE/PPR; 
-  delta_x = (l_s + r_s)/2;
-  heading = atan2((l_s-r_s)/2, WHEEL_BASE/2);
-  
-  theta += heading;   
-  x += delta_x*cos(theta);
-  y += delta_x*sin(theta);
+  //l_enc_count_total += l_enc;
+  //r_enc_count_total += r_enc;
+  //distance_total_L = l_enc_count_total*WHEEL_CIRCUMFERENCE/PPR;
+  //distance_total_R = r_enc_count_total*WHEEL_CIRCUMFERENCE/PPR;
+  //distance_total = ((distance_total_L + distance_total_R))/2;
    
   
+  //r_s = r_enc*WHEEL_CIRCUMFERENCE/PPR;
+  //l_s = l_enc*WHEEL_CIRCUMFERENCE/PPR; 
+  //delta_x = (l_s + r_s)/2;
+  //heading = atan2((l_s-r_s)/2, WHEEL_BASE/2);
   
-
-
-
-  
+  //theta += heading;   
+  //x += delta_x*cos(theta);
+  //y += delta_x*sin(theta);
+   
   if (l_enc_count!= old_l_enc_count){
     old_l_enc_count = l_enc_count;
     if (l_enc_count%update_rate==0){
       duration_L = (micros() - prevmillis_L); // Time difference between revolution in microsecond
       if(abs(l_enc_count > 2)){
-      rpm_target_L = update_rate*(60000000/duration_L)/PPR; // rpm = (1/ time millis)*1000*1000*60;
+      rpm_L = update_rate*(60000000/duration_L)/PPR; // rpm = (1/ time millis)*1000*1000*60;
       }
       prevmillis_L = micros();
-      Serial.print("L ");
-      Serial.println(l_enc_count);
       }
   }
   if (r_enc_count!= old_r_enc_count){
@@ -267,11 +259,9 @@ void encoder() {
     if(r_enc_count%update_rate==0 ){
       duration_R = (micros() - prevmillis_R); // Time difference between revolution in microsecond
       if(abs(r_enc_count > 2)){
-      rpm_target_R = update_rate*(60000000/duration_R)/PPR; // rpm = (1/ time millis)*1000*1000*60;
+      rpm_R = update_rate*(60000000/duration_R)/PPR; // rpm = (1/ time millis)*1000*1000*60;
       }
       prevmillis_R = micros();
-      Serial.print("R ");
-      Serial.println(r_enc_count);
     }
   }
 }
