@@ -8,30 +8,30 @@ DG = nx.DiGraph()
 nodes = [1,2,3,4,5,6,7,8,9,10,11,12]
 
 # weights are rough estimates, change to introduce bias later
-wEdges = [(1,12,2, ("fast", False)),
-        (1, 4, 2, ("fast", False)), #to prefer going straight
-        (2, 4, 1.5, ("fast", False)),
-        (2, 8, 2, ("fast", False)),
-        (3, 8, 1.5, ("fast", False)),
-        (3, 12, 2, ("fast", False)),
-        (4, 7, 4, ("fast", False)),
-        (4, 11, 3, ("fast", False)),
-        (5, 3, 2, ("fast", False)),
-        (5, 7, 4, ("fast", False)),
-        (6, 3, 1.5, ("fast", False)),
-        (6, 11, 3.5, ("fast", False)),
-        (7, 10, 8, ("fast", True)),
-        (7, 1, 2, ("fast", False)),
-        (8, 10, 8, ("fast", True)),
-        (8, 6, 3, ("fast", False)),
-        (9, 1, 1.5, ("fast", False)),
-        (9, 6, 3.5, ("fast", False)),
-        (10, 2, 2, ("fast", False)),
-        (10, 5, 4, ("fast", False)),
-        (11, 2, 1.5, ("fast", False)),
-        (11, 9, 7, ("fast", True)),
-        (12, 9, 6.5, ("fast", True)),
-        (12, 5, 4, ("fast", False))]
+wEdges = [(1,12,2, [("fast", False), ("light", False)],
+        (1, 4, 2, [("fast", False), ("light", False)], #to prefer going straight
+        (2, 4, 1.5, [("fast", False), ("light", False)],
+        (2, 8, 2, [("fast", False), ("light", False)],
+        (3, 8, 1.5, [("fast", False), ("light", False)],
+        (3, 12, 2, [("fast", False), ("light", False)],
+        (4, 7, 4, [("fast", False), ("light", False)],
+        (4, 11, 3, [("fast", False), ("light", False)],
+        (5, 3, 2, [("fast", False), ("light", False)],
+        (5, 7, 4, [("fast", False), ("light", False)],
+        (6, 3, 1.5, [("fast", False), ("light", False)],
+        (6, 11, 3.5, [("fast", False), ("light", False)],
+        (7, 10, 8, [("fast", True), ("light", False)],
+        (7, 1, 2, [("fast", False), ("light", False)],
+        (8, 10, 8, [("fast", True), ("light", False)],
+        (8, 6, 3, [("fast", False), ("light", False)],
+        (9, 1, 1.5, [("fast", False), ("light", False)],
+        (9, 6, 3.5, [("fast", False), ("light", False)],
+        (10, 2, 2, [("fast", False), ("light", False)],
+        (10, 5, 4, [("fast", False), ("light", False)],
+        (11, 2, 1.5, [("fast", False), ("light", False)],
+        (11, 9, 7, [("fast", True), ("light", False)],
+        (12, 9, 6.5, [("fast", True), ("light", False)],
+        (12, 5, 4, [("fast", False)])
 
 
 
