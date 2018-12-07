@@ -92,7 +92,7 @@ void setup() {
   md.init();
   //md.setM1Speed(pwm_R);
   //md.setM2Speed(pwm_L);
-  Serial.begin(115200);
+  Serial.begin(9600);
   // Serial.println("Start");
   delay(000);
 }
