@@ -78,16 +78,16 @@ void setup() {
   pinMode(L_ENC_B, INPUT);
   digitalWrite(L_ENC_B, HIGH);
    
-  enableInterrupt(L_ENC_A, encoder, CHANGE);
-  enableInterrupt(L_ENC_B, encoder, CHANGE);
+ //enableInterrupt(L_ENC_A, encoder, CHANGE);
+ //enableInterrupt(L_ENC_B, encoder, CHANGE);
 
   pinMode(R_ENC_A, INPUT);
   digitalWrite(R_ENC_A, HIGH);
   pinMode(R_ENC_B, INPUT);
   digitalWrite(R_ENC_B, HIGH);
 
-  enableInterrupt(R_ENC_A, encoder, CHANGE);
-  enableInterrupt(R_ENC_B, encoder, CHANGE);
+  //enableInterrupt(R_ENC_A, encoder, CHANGE);
+  //enableInterrupt(R_ENC_B, encoder, CHANGE);
   
   md.init();
   //md.setM1Speed(pwm_R);
@@ -195,7 +195,7 @@ void loop() {
   }
   if abs(v_err>0 && fourth!=1){
     error_dot = v_err - prev_error;
-    del_v = -(0.000008*v_err) - (0*error_dot);
+    del_v = -(0.001*v_err) - (0.0005*error_dot);
     del_v = (del_v*60)/(70*3.14);
     rpm_target_L = rpm_L_ref + del_v;
     rpm_target_R = rpm_R_ref - del_v;
