@@ -12,7 +12,7 @@ s1.port = port
 s1.baudrate = rate
 s1.timeout = 1
 
-doSerial = True
+goSerial = True
 
 
 motorL = 0  # motor speeds
