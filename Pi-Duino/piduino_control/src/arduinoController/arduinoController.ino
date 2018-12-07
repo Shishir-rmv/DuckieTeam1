@@ -108,7 +108,7 @@ void loop() {
   static char arg2A[5];
   static double prevmillis_L = micros();
   static double prevmillis_R = micros();
-  Serial.println("HI MOM!");
+  // Serial.println("HI MOM!");
 
   if(Serial.available()){
     Serial.readBytesUntil('\n', input, 12);
