@@ -223,8 +223,8 @@ def serialReader():
         r1 = s1.read(1)
         # read the "data" byte
         r2 = s1.read(1)
-        arg2 = int.from_bytes(r1, byteorder = 'little', signed = False)
-        print("Label: %s, Data: %i" % (r1.decode("utf-8"), arg2.decode("utf-8")))
+        arg2 = int.from_bytes(r2, byteorder = 'little', signed = False)
+        print("Label: %s, Data: %i" % (r1.decode("utf-8"), arg2))
         # print("SERIAL: %s" % r1)
         # this is only for debugging
     print("Ending serial thread")
