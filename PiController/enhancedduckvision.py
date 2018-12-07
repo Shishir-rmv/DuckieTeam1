@@ -1,5 +1,6 @@
 import traceback
 
+import datetime
 import picamera, io, cv2, time
 import numpy as np
 import warnings
@@ -96,17 +97,18 @@ def process(stream, vOffset):
                 if white_exist and yellow_exist:
                     current_center = (white_px[1] + yellow_px[1]) / 2
                     diff = expected_center - current_center
-                    print("White Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
-                        int(white_px[1]), int(white_px[0]), int(yellow_px[1]), int(yellow_px[0]), current_center, diff))
+                    print("%s\tWhite Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
+                        datetime.datetime.now(), int(white_px[1]), int(white_px[0]), int(yellow_px[1]),
+                        int(yellow_px[0]), current_center, diff))
                     vOffset.value = int(diff)
                 elif white_exist and not yellow_exist:
                     diff = 1100 - int(white_px[1])
                     vOffset.value = int(diff)
-                    print("White Pixel: x = %d, y = %d\t diff: %d" % (int(white_px[1]), int(white_px[0]), diff))
+                    print("%s\tWhite Pixel: x = %d, y = %d\t diff: %d" % (datetime.datetime.now(), int(white_px[1]), int(white_px[0]), diff))
                 elif yellow_exist and not white_exist:
                     diff = 67 - int(yellow_px[1])
                     vOffset.value = int(diff)
-                    print("Yellow Pixel: x = %d, y = %d\t diff: %d" % (int(yellow_px[1]), int(yellow_px[0]), diff))
+                    print("%s\tYellow Pixel: x = %d, y = %d\t diff: %d" % (datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
 
         except Exception as e:
             traceback.print_exc()
