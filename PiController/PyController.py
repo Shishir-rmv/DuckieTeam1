@@ -12,6 +12,8 @@ s1.port = port
 s1.baudrate = rate
 s1.timeout = 1
 
+doSerial = True
+
 
 motorL = 0  # motor speeds
 motorR = 0
@@ -214,8 +216,9 @@ def starter():
     print("Starter thread finished")
 
 def serialReader():
+    global goSerial
     print("Starting serial thread")
-    while (True):
+    while (goSerial):
         # read the "label" byte
         r1 = s1.read(12)
         # read the "data" byte
@@ -306,7 +309,8 @@ def visionController():
     # join the starter and serial threads, kill vision
     starter_thread.join()
     print("Starter thread joined")
-    serial_thread.terminate()
+    goSerial = False
+    serial_thread.join()
     print("Serial thread joined")
     vision_process.terminate() 
     print("Vision process terminated")
