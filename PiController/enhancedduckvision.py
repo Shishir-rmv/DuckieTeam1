@@ -5,9 +5,9 @@ import picamera, io, cv2, time
 import numpy as np
 import warnings
 
-WIDTH = 1280
-HEIGHT = 720
-expected_center = 575
+WIDTH = 640
+HEIGHT = 480
+expected_center = 287
 
 
 def region_of_interest(img, vertices):
@@ -102,11 +102,11 @@ def process(stream, vOffset):
                         int(yellow_px[0]), current_center, diff))
                     vOffset.value = int(diff)
                 elif white_exist and not yellow_exist:
-                    diff = (1100 - int(white_px[1]))/2
+                    diff = (550 - int(white_px[1]))/2
                     vOffset.value = int(diff)
                     print("%s\tWhite Pixel: x = %d, y = %d\t diff: %d" % (datetime.datetime.now(), int(white_px[1]), int(white_px[0]), diff))
                 elif yellow_exist and not white_exist:
-                    diff = -1 * ((67 - int(yellow_px[1]))/2)
+                    diff = -1 * ((34 - int(yellow_px[1]))/2)
                     vOffset.value = int(diff)
                     print("%s\tYellow Pixel: x = %d, y = %d\t diff: %d" % (datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
 
