@@ -117,8 +117,8 @@ void loop() {
     opStrA[2] = input[2];
     // WHY WERE THESE HERE?
     opStrA[3] ='\0';
-    Serial.println("opStrA");
-    Serial.println(opStrA);
+    // Serial.println("opStrA");
+    // Serial.println(opStrA);
 
     // if there's a first argument
     if (strlen(input) >= 7){
@@ -128,8 +128,8 @@ void loop() {
       arg1A[3] = input[6];
       // WHY WERE THESE HERE?
       arg1A[4] = '\0';
-      Serial.println("arg1A");
-      Serial.println(arg1A);
+      // Serial.println("arg1A");
+      // Serial.println(arg1A);
     }
 
     // if there's a second argument
@@ -140,8 +140,8 @@ void loop() {
       arg2A[3] = input[10];
       // WHY WERE THESE HERE?
       arg2A[4] = '\0';
-      Serial.println("arg2A");
-      Serial.println(arg2A);
+      // Serial.println("arg2A");
+      // Serial.println(arg2A);
     }
 
     String opStr = String(opStrA);
@@ -206,10 +206,10 @@ void loop() {
     del_v = (del_v*60)/(70*3.14);
     rpm_target_L = rpm_L_ref + del_v;
     rpm_target_R = rpm_R_ref - del_v;
-//    Serial.write('a');
-//    Serial.write(lowByte((int)rpm_target_L));
-//    Serial.write('b');
-//    Serial.write(lowByte((int)rpm_target_R));
+   Serial.write('a');
+   Serial.write(lowByte((int)rpm_target_L));
+   Serial.write('b');
+   Serial.write(lowByte((int)rpm_target_R));
     pwm_L = (2.2*rpm_target_L + 85);
     pwm_R = (2.1*rpm_target_R + 81);
     prev_error = v_err;
