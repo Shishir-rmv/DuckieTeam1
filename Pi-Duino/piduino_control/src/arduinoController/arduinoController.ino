@@ -108,7 +108,7 @@ void loop() {
   static char arg2A[5];
   static double prevmillis_L = micros();
   static double prevmillis_R = micros();
-  Serial.println("HI MOM!");
+//  Serial.println("HI MOM!");/
 
   if(Serial.available()){
     Serial.readBytesUntil('\n', input, 12);
@@ -328,4 +328,3 @@ int8_t read_encoderR(int8_t new_val)
   enc_valR |= new_val; //add new value to last 2 LSB 
   return (enc_statesR[enc_valR & 0b1111]); //get state and remove old values
 }
-
