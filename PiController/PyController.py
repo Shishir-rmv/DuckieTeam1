@@ -50,6 +50,7 @@ WHEEL_CIRCUMFERENCE = 219.9115
 def write(cmd):
     print("writing method")
     encoded = cmd.encode()
+    print("finished encoding")
     s1.write(encoded)
     print("finished writing")
     s1.flush()
