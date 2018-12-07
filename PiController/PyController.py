@@ -278,6 +278,7 @@ def visionController():
                     # TODO: ASK WHAT'S A GOOD VREF.
                     print("SENDING: srt0000%s" % str(vRef).zfill(4))
                     write("srt0000%s\n" % str(vRef).zfill(4))
+                    print("Finished writing start")
                     flag = False
 
                 # check for visual error changes
@@ -287,6 +288,7 @@ def visionController():
                     # print("Camera:\t vOffset: %d" % (now))
                     print("SENDING: ver0000%s" % str(now).zfill(4))
                     write("ver0000%s\n" % str(now).zfill(4))
+                    print("Finished writing update")
                 
             
     except KeyboardInterrupt:
