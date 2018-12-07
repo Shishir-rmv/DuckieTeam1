@@ -48,8 +48,11 @@ WHEEL_CIRCUMFERENCE = 219.9115
 
 # to prevent the Pi from getting too far ahead of the arduino
 def write(cmd):
+    print("writing method")
     s1.write(cmd.encode())
+    print("finished writing")
     s1.flush()
+    print("finished the whole write method")
 
 def read():
     bytesToRead = s1.inWaiting()
