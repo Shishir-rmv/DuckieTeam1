@@ -251,8 +251,8 @@ def visionController():
     starter_thread = threading.Thread(target=starter)
     starter_thread.start()
 
-    serial_thread = threading.Thread(target=serialReader)
-    serial_thread.start()
+    # serial_thread = threading.Thread(target=serialReader)
+    # serial_thread.start()
 
     # open the serial port to the Arduino & initialize
     s1.flushInput()
@@ -312,7 +312,7 @@ def visionController():
     starter_thread.join()
     print("Starter thread joined")
     goSerial = False
-    serial_thread.join()
+    # serial_thread.join()
     print("Serial thread joined")
     vision_process.terminate() 
     print("Vision process terminated")
