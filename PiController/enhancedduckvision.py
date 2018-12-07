@@ -55,9 +55,9 @@ def process(stream, vOffset):
 
         # Defines Region of Interest
         # Bottom right quadrant of the image for white line
-        region_of_interest_white = [(width / 2, height), (width / 2, height / 2), (width, height / 2), (width, height)]
+        region_of_interest_vert = [(0, height), (0, height / 2), (width, height / 2), (width, height)]
         # Bottom left quadrant of the image for yellow line
-        region_of_interest_yellow = [(0, height), (0, height / 2), (width / 2, height / 2), (width, height)]
+        # region_of_interest_yellow = [(0, height), (0, height / 2), (width / 2, height / 2), (width, height)]
 
         try:
             with warnings.catch_warnings():
@@ -68,8 +68,8 @@ def process(stream, vOffset):
                 yellow_image = select_yellow(image)
 
                 #
-                cropped_white_img = region_of_interest(white_image, np.array([region_of_interest_white], np.int32))
-                cropped_yellow_img = region_of_interest(yellow_image, np.array([region_of_interest_yellow], np.int32))
+                cropped_white_img = region_of_interest(white_image, np.array([region_of_interest_vert], np.int32))
+                cropped_yellow_img = region_of_interest(yellow_image, np.array([region_of_interest_vert], np.int32))
 
                 white_px = np.mean(np.where(np.any(cropped_white_img != [0, 0, 0], axis=-1)), axis=1)
                 white_exist = not np.all(np.isnan(white_px))
