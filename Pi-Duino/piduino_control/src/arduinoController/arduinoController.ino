@@ -115,7 +115,7 @@ void loop() {
     opStrA[1] = input[1];
     opStrA[2] = input[2];
     // WHY WERE THESE HERE?
-    //opStrA[3] ='\0';
+    opStrA[3] ='\0';
 
     // if there's a first argument
     if (strlen(input) >= 7){
