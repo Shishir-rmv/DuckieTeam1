@@ -206,7 +206,7 @@ void loop() {
     del_v = (del_v*60)/(70*3.14);
     rpm_target_L = rpm_L_ref + del_v;
     rpm_target_R = rpm_R_ref - del_v;
-    if(micros()%2 == 0 ){
+    if(millis()%1000 == 0 ){
         Serial.write('a');
         Serial.write(lowByte((int)rpm_target_L));
         Serial.write('b');
