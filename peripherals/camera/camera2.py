@@ -2,8 +2,8 @@ from picamera import PiCamera
 from time import sleep
 import sys
 camera = PiCamera()
-
+camera.resolution = (1280, 720)
 camera.start_preview()
-sleep(5)
+sleep(1)
 camera.capture(sys.argv[1])
 camera.stop_preview()

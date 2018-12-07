@@ -6,7 +6,7 @@ from enhancedduckvision import vision
 
 #global variables
 port = "/dev/ttyACM0"
-rate = 115200
+rate = 9600
 s1 = serial.Serial()
 s1.port = port
 s1.baudrate = rate
@@ -260,7 +260,7 @@ def visionController():
     running, stateChange, odometry, flag = True, False, True, True
 
     # in mm/sec
-    vRef = 0
+    vRef = 200
 
     if s1.isOpen():
         s1.flush()

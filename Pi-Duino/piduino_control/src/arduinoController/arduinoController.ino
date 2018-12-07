@@ -115,7 +115,7 @@ void loop() {
     opStrA[1] = input[1];
     opStrA[2] = input[2];
     // WHY WERE THESE HERE?
-    // opStrA[3] = 0;
+    //opStrA[3] ='\0';
 
     // if there's a first argument
     if (strlen(input) >= 7){
@@ -321,3 +321,4 @@ int8_t read_encoderR(int8_t new_val)
   enc_valR |= new_val; //add new value to last 2 LSB 
   return (enc_statesR[enc_valR & 0b1111]); //get state and remove old values
 }
+
