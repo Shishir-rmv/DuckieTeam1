@@ -116,6 +116,8 @@ void loop() {
     opStrA[2] = input[2];
     // WHY WERE THESE HERE?
     opStrA[3] ='\0';
+    Serial.println("opStrA");
+    Serial.println(opStrA);
 
     // if there's a first argument
     if (strlen(input) >= 7){
@@ -125,6 +127,8 @@ void loop() {
       arg1A[3] = input[6];
       // WHY WERE THESE HERE?
       arg1A[4] = '\0';
+      Serial.println("arg1A");
+      Serial.println(arg1A);
     }
 
     // if there's a second argument
@@ -135,6 +139,8 @@ void loop() {
       arg2A[3] = input[10];
       // WHY WERE THESE HERE?
       arg2A[4] = '\0';
+      Serial.println("arg2A");
+      Serial.println(arg2A);
     }
 
     String opStr = String(opStrA);

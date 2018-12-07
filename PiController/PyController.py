@@ -217,9 +217,9 @@ def serialReader():
     print("Starting serial thread")
     while (True):
         # read the "label" byte
-        r1 = s1.read(1)
+        r1 = s1.read(12)
         # read the "data" byte
-        r2 = s1.read(1)
+        r2 = s1.read(12)
         arg2 = int.from_bytes(r1, byteorder = 'little', signed = False)
         print("Label: %s, Data: %i" % (r1, arg2))
         # this is only for debugging
