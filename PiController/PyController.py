@@ -229,7 +229,8 @@ def serialReader():
     print("Ending serial thread")
 
 def visionController():
-    global move, goSerial
+    global move
+    global goSerial
     # Define and split off the computer vision subprocess _________________________________
     # define doubles
     vOffset = Value('i', 0)
