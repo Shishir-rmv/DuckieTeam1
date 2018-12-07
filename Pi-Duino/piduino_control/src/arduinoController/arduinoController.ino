@@ -328,4 +328,3 @@ int8_t read_encoderR(int8_t new_val)
   enc_valR |= new_val; //add new value to last 2 LSB 
   return (enc_statesR[enc_valR & 0b1111]); //get state and remove old values
 }
-
