@@ -45,7 +45,7 @@ double distance = 0, distance_R = 0, distance_L = 0, distance_total=0, distance_
 double duration_L, duration_R, prevmillis_L = micros(), prevmillis_R = micros();
 
 // errors
-double prev_error = .001, error = 0, error_dot = 0, del_v = 0;
+double prev_error = 0, error = 0, error_dot = 0, del_v = 0;
 int fourth;
 
 // rpm's
@@ -202,7 +202,7 @@ void loop() {
   }
   if (v_err != prev_error && fourth!=1){
     error_dot = v_err - prev_error;
-    del_v = -(2*v_err) - (0.5*error_dot);
+    del_v = -(0.5*v_err) - (0*error_dot);
     del_v = (del_v*60)/(70*3.14);
     rpm_target_L = rpm_L_ref + del_v;
     rpm_target_R = rpm_R_ref - del_v;
