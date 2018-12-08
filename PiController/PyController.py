@@ -13,8 +13,9 @@ s1.baudrate = rate
 s1.timeout = 1
 
 goSerial = True
+serial_msg_counter = 0
 
-
+#print("Write Timeout: %d" % s1.write_timeout)
 motorL = 0  # motor speeds
 motorR = 0
 #ping distance
@@ -50,9 +51,13 @@ WHEEL_CIRCUMFERENCE = 219.9115
 
 # to prevent the Pi from getting too far ahead of the arduino
 def write(cmd):
+    print("Write - Before Encoding")
     encoded = cmd.encode()
+    print("Write - Before Writing")
     s1.write(encoded)
+    print("Write - After Writing")
     s1.flush()
+    print("Write - After Flush")
 
 def read():
     bytesToRead = s1.inWaiting()
@@ -232,6 +237,8 @@ def serialReader():
 def visionController():
     global move
     global goSerial
+    global serial_msg_counter
+    start = time.time()
     # Define and split off the computer vision subprocess _________________________________
     # define doubles
     vOffset = Value('i', 0)
@@ -251,8 +258,8 @@ def visionController():
     starter_thread = threading.Thread(target=starter)
     starter_thread.start()
 
-    # serial_thread = threading.Thread(target=serialReader)
-    # serial_thread.start()
+    serial_thread = threading.Thread(target=serialReader)
+    serial_thread.start()
 
     # open the serial port to the Arduino & initialize
     s1.flushInput()
@@ -293,7 +300,12 @@ def visionController():
                     oldVal = now
                     # print("Camera:\t vOffset: %d" % (now))
                     print("SENDING: ver0000%s" % str(now).zfill(4))
+                    serial_msg_counter += 1
+                    print("SENT %d Messages to Arduino" % serial_msg_counter)
+                    end = time.time()
+                    print("%d seconds elapsed" % (end - start))
                     write("ver0000%s\n" % str(now).zfill(4))
+                    print("inWaiting: %i, outWaiting %i" % (s1.in_waiting, s1.out_waiting))
                     # print("Finished writing update")
                 
             
@@ -312,7 +324,7 @@ def visionController():
     starter_thread.join()
     print("Starter thread joined")
     goSerial = False
-    # serial_thread.join()
+    serial_thread.join()
     print("Serial thread joined")
     vision_process.terminate() 
     print("Vision process terminated")
