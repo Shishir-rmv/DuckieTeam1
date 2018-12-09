@@ -101,7 +101,7 @@ def process(stream, vOffset):
                         datetime.datetime.now(), int(white_px[1]), int(white_px[0]), int(yellow_px[1]),
                         int(yellow_px[0]), current_center, diff))
                     # Deal with glare:
-                    if diff < 200:
+                    if abs(white_px[1] - yellow_px[1]) > 200:
                         current_center = int(yellow_px[1]) - 261
                         diff = expected_center - current_center
                         vOffset.value = int(diff)
