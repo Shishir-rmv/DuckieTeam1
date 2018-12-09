@@ -1,5 +1,5 @@
 from multiprocessing import Process, Value
-from duckvision import vision
+from enhancedduckvision import vision
 
 if __name__ == '__main__':
     try:
