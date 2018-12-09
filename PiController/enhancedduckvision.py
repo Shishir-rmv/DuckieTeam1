@@ -100,7 +100,15 @@ def process(stream, vOffset):
                     print("%s\tWhite Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
                         datetime.datetime.now(), int(white_px[1]), int(white_px[0]), int(yellow_px[1]),
                         int(yellow_px[0]), current_center, diff))
-                    vOffset.value = int(diff)
+                    # Deal with glare:
+                    if diff < 200:
+                        current_center = int(yellow_px[1]) - 261
+                        diff = expected_center - current_center
+                        vOffset.value = int(diff)
+                        print("%s\t It is probably glare\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
+                        datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
+                    else:
+                        vOffset.value = int(diff)
                 elif white_exist and not yellow_exist:
                     current_center = int(white_px[1]) - 261
                     diff = expected_center - current_center
