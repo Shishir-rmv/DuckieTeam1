@@ -73,7 +73,6 @@ def process(stream, vOffset, vIntersection):
                 red_img = select_red(image)
                 cropped_red_img = region_of_interest(red_img, np.array([region_of_interest_red], np.int32))
                 red_px = np.mean(np.where(np.any(cropped_red_img != [0, 0, 0], axis=-1)), axis=1)
-                print(red_px)
                 red_exist = not np.all(np.isnan(red_px))
                 if not red_exist:
                     # Filters White and Yellow colors in the image
