@@ -23,7 +23,7 @@ def convert_hls(image):
 
 
 def select_red(image):
-    converted = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+    converted = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     lower = np.uint8([160, 100, 100])
     upper = np.uint8([179, 255, 255])
     red_mask = cv2.inRange(converted, lower, upper)
