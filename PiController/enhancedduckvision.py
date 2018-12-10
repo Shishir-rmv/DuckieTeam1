@@ -143,6 +143,7 @@ def process(stream, vOffset, vIntersection):
 
                 else:
                     if green_exist:
+                        print("FOUND GREEN")
                         vIntersection.value = 2
                     else:
                         print("Approaching intersection")
