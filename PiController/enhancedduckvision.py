@@ -22,6 +22,14 @@ def convert_hls(image):
     return cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
 
 
+def select_green(image):
+    converted = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    lower = np.uint8([50, 0, 225])
+    upper = np.uint8([60, 255, 255])
+    green_mask = cv2.inRange(converted, lower, upper)
+    return cv2.bitwise_and(image, image, mask=green_mask)
+
+
 def select_red(image):
     converted = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     lower = np.uint8([160, 100, 100])
@@ -74,6 +82,12 @@ def process(stream, vOffset, vIntersection):
                 cropped_red_img = region_of_interest(red_img, np.array([region_of_interest_red], np.int32))
                 red_px = np.mean(np.where(np.any(cropped_red_img != [0, 0, 0], axis=-1)), axis=1)
                 red_exist = not np.all(np.isnan(red_px))
+
+                green_img = select_green(image)
+                cropped_green_img = region_of_interest(green_img, np.array([region_of_interest_red], np.int32))
+                green_px = np.mean(np.where(np.any(cropped_green_img != [0, 0, 0], axis=-1)), axis=1)
+                green_exist = not np.all(np.isnan(green_px))
+
                 if not red_exist:
                     # Filters White and Yellow colors in the image
                     hls_image = convert_hls(image)
@@ -128,8 +142,12 @@ def process(stream, vOffset, vIntersection):
                         datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
 
                 else:
-                    print("Approaching intersection")
-                    vIntersection.value = 1
+                    if green_exist:
+                        vIntersection.value = 2
+                    else:
+                        print("Approaching intersection")
+                        vIntersection.value = 1
+
 
         except Exception as e:
             traceback.print_exc()
