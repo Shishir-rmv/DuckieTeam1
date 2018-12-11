@@ -219,7 +219,7 @@ long last_ping = 0, curr_ping = 0;
     prev_error = v_err;
   }
   curr_ping = micros();
-  if( (curr_ping-last_ping) > 330000){ //test every .33 s
+  if( (curr_ping-last_ping) > 1000000){ //test every .33 s
     ping();
     last_ping = curr_ping;   
   }
@@ -292,8 +292,8 @@ void ping() {
   pinMode(PING_PIN, INPUT);
   ping_duration = pulseIn(PING_PIN, HIGH, 3000);
     
-  if( (ping_duration >= 100) || (ping_duration <= 800) ){
-    while( (ping_duration >= 100) || (ping_duration <= 800) ){
+  if( (ping_duration >= 100) && (ping_duration <= 800) ){
+    while( (ping_duration >= 100) && (ping_duration <= 800) ){
       md.setM2Speed(0);    
       md.setM1Speed(0);
       pinMode(PING_PIN, OUTPUT);
@@ -307,9 +307,9 @@ void ping() {
       ping_duration = pulseIn(PING_PIN, HIGH, 3000);
     }
   }
-  else if( (ping_duration > 800) || (ping_duration <= 1600) ){
-    ping_slowdown = ping_duration/1600;
-  }
+//  else if( (ping_duration > 800) && (ping_duration <= 1600) ){
+//    ping_slowdown = ping_duration/1600;
+//  }
   else{
     ping_slowdown = 1;
   }
