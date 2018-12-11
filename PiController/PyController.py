@@ -316,8 +316,6 @@ def visionController():
                 #if (stp == 2):
                 #    print("SENDING: srt0000%s" % str(vRef).zfill(4))
                 #    write("srt0000%s\n" % str(vRef).zfill(4))
-
-
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
         running = False
