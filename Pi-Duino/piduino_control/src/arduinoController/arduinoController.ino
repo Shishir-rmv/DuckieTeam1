@@ -26,7 +26,7 @@
 
 DualMC33926MotorShield md;
 long ping_duration;
-double ping_slowdown;
+double ping_slowdown = 1;
 
 // positional variables
 double theta = 0, x = 0, y = 0, C = 1;
@@ -99,6 +99,7 @@ void setup() {
 }
 
 void loop() {
+long last_ping = 0, curr_ping = 0;
 //stopIfFault();
   static String opStr;
   static unsigned int arg1 = 0;
@@ -217,7 +218,11 @@ void loop() {
     pwm_R = (2.1*rpm_target_R + 81);
     prev_error = v_err;
   }
-  ping();   
+  curr_ping = micros();
+  if( (curr_ping-last_ping) > 330000){ //test every .33 s
+    ping();
+    last_ping = curr_ping;   
+  }
   md.setM2Speed(pwm_L*ping_slowdown);    
   md.setM1Speed(pwm_R*ping_slowdown);
   //opStr = "none";
