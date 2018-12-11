@@ -25,7 +25,8 @@
 #define PPR 32 //pulses per revolution is = to # of lines per revoluion aka number of white segments which is half of the total segments, this is assumig 32 segments
 
 DualMC33926MotorShield md;
-double ping_duration;
+long ping_duration;
+double ping_slowdown;
 
 // positional variables
 double theta = 0, x = 0, y = 0, C = 1;
@@ -216,9 +217,9 @@ void loop() {
     pwm_R = (2.1*rpm_target_R + 81);
     prev_error = v_err;
   }
-     
-  md.setM2Speed(pwm_L);    
-  md.setM1Speed(pwm_R);
+  ping();   
+  md.setM2Speed(pwm_L*ping_slowdown);    
+  md.setM1Speed(pwm_R*ping_slowdown);
   //opStr = "none";
   //arg1 = 0;
   //arg2 = 0;
@@ -284,8 +285,29 @@ void ping() {
   digitalWrite(PING_PIN, LOW);
 
   pinMode(PING_PIN, INPUT);
-  ping_duration = pulseIn(PING_PIN, HIGH);
-  Serial.println(ping_duration);
+  ping_duration = pulseIn(PING_PIN, HIGH, 3000);
+    
+  if( (ping_duration >= 100) || (ping_duration <= 800) ){
+    while( (ping_duration >= 100) || (ping_duration <= 800) ){
+      md.setM2Speed(0);    
+      md.setM1Speed(0);
+      pinMode(PING_PIN, OUTPUT);
+      digitalWrite(PING_PIN, LOW);
+      delayMicroseconds(2);
+      digitalWrite(PING_PIN, HIGH);
+      delayMicroseconds(5);
+      digitalWrite(PING_PIN, LOW);
+
+      pinMode(PING_PIN, INPUT);
+      ping_duration = pulseIn(PING_PIN, HIGH, 3000);
+    }
+  }
+  else if( (ping_duration > 800) || (ping_duration <= 1600) ){
+    ping_slowdown = ping_duration/1600;
+  }
+  else{
+    ping_slowdown = 1;
+  }
 }
 
 
