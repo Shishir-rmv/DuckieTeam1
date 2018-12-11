@@ -242,14 +242,14 @@ def visionController():
     # Define and split off the computer vision subprocess _________________________________
     # define doubles
     vOffset = Value('i', 0)
-    vIntersection = Value('i', 0)
+    #vIntersection = Value('i', 0)
 
     
     # define boolean to act as an off switch
     see = Value('b', True)
 
     # define and start the computer vision process
-    vision_process = Process(target=vision, args=(vOffset, see, vIntersection))
+    vision_process = Process(target=vision, args=(vOffset, see))
     vision_process.start()
     # _____________________________________________________________________________________
 
@@ -309,13 +309,13 @@ def visionController():
                     print("inWaiting: %i, outWaiting %i" % (s1.in_waiting, s1.out_waiting))
                     # print("Finished writing update")
 
-                stp = vIntersection.value
-                if (stp == 1):
-                    print("SENDING: stp")
-                    write("stp")
-                if (stp == 2):
-                    print("SENDING: srt0000%s" % str(vRef).zfill(4))
-                    write("srt0000%s\n" % str(vRef).zfill(4))
+                #stp = vIntersection.value
+                #if (stp == 1):
+                #    print("SENDING: stp")
+                #    write("stp")
+                #if (stp == 2):
+                #    print("SENDING: srt0000%s" % str(vRef).zfill(4))
+                #    write("srt0000%s\n" % str(vRef).zfill(4))
 
 
     except KeyboardInterrupt:

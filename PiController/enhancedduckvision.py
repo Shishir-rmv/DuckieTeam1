@@ -22,39 +22,25 @@ def convert_hls(image):
     return cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
 
 
-def select_green(image):
-    converted = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    lower = np.uint8([50, 0, 225])
-    upper = np.uint8([60, 255, 255])
-    green_mask = cv2.inRange(converted, lower, upper)
-    return cv2.bitwise_and(image, image, mask=green_mask)
-
-
-def select_red(image):
-    converted = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    lower = np.uint8([160, 100, 100])
-    upper = np.uint8([179, 255, 255])
-    red_mask = cv2.inRange(converted, lower, upper)
-    return cv2.bitwise_and(image, image, mask=red_mask)
-
-
-def select_white(hls_image, image):
+def select_white(image):
+    converted = convert_hls(image)
     # white color mask
     lower = np.uint8([0, 215, 0])
     upper = np.uint8([255, 255, 255])
-    white_mask = cv2.inRange(hls_image, lower, upper)
+    white_mask = cv2.inRange(converted, lower, upper)
     return cv2.bitwise_and(image, image, mask=white_mask)
 
 
-def select_yellow(hls_image, image):
+def select_yellow(image):
+    converted = convert_hls(image)
     # yellow color mask
     lower = np.uint8([50, 100, 130])
     upper = np.uint8([100, 200, 255])
-    yellow_mask = cv2.inRange(hls_image, lower, upper)
+    yellow_mask = cv2.inRange(converted, lower, upper)
     return cv2.bitwise_and(image, image, mask=yellow_mask)
 
 
-def process(stream, vOffset, vIntersection):
+def process(stream, vOffset):
     global expected_center
 
     if (True):
@@ -72,82 +58,67 @@ def process(stream, vOffset, vIntersection):
         region_of_interest_vert = [(0, height), (0, height / 2), (width, height / 2), (width, height)]
         # Bottom left quadrant of the image for yellow line
         # region_of_interest_yellow = [(0, height), (0, height / 2), (width / 2, height / 2), (width, height)]
-        region_of_interest_red = [(0, height), (0, 400), (width, 400), (width, height)]
 
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
 
-                red_img = select_red(image)
-                cropped_red_img = region_of_interest(red_img, np.array([region_of_interest_red], np.int32))
-                red_px = np.mean(np.where(np.any(cropped_red_img != [0, 0, 0], axis=-1)), axis=1)
-                red_exist = not np.all(np.isnan(red_px))
+                # Filters White and Yellow colors in the image
+                white_image = select_white(image)
+                yellow_image = select_yellow(image)
 
-                green_img = select_green(image)
-                cropped_green_img = region_of_interest(green_img, np.array([region_of_interest_red], np.int32))
-                green_px = np.mean(np.where(np.any(cropped_green_img != [0, 0, 0], axis=-1)), axis=1)
-                green_exist = not np.all(np.isnan(green_px))
+                #
+                cropped_white_img = region_of_interest(white_image, np.array([region_of_interest_vert], np.int32))
+                cropped_yellow_img = region_of_interest(yellow_image, np.array([region_of_interest_vert], np.int32))
 
-                if not red_exist:
-                    # Filters White and Yellow colors in the image
-                    hls_image = convert_hls(image)
-                    white_image = select_white(hls_image, image)
-                    yellow_image = select_yellow(hls_image, image)
+                white_px = np.mean(np.where(np.any(cropped_white_img != [0, 0, 0], axis=-1)), axis=1)
+                white_exist = not np.all(np.isnan(white_px))
+                # Check if white pixels are found
+                if not white_exist:
+                    white_px = np.array([-1, -1])
+                    print("No white pixels found")
 
-                    #
-                    cropped_white_img = region_of_interest(white_image, np.array([region_of_interest_vert], np.int32))
-                    cropped_yellow_img = region_of_interest(yellow_image, np.array([region_of_interest_vert], np.int32))
+                yellow_px = np.mean(np.where(np.any(cropped_yellow_img != [0, 0, 0], axis=-1)), axis=1)
+                yellow_exist = not np.all(np.isnan(yellow_px))
+                # Check if yellow pixels are found
+                if not yellow_exist:
+                    yellow_px = np.array([-1, -1])
+                    print("No yellow pixels found")
 
-                    white_px = np.mean(np.where(np.any(cropped_white_img != [0, 0, 0], axis=-1)), axis=1)
-                    white_exist = not np.all(np.isnan(white_px))
-                    # Check if white pixels are found
-                    if not white_exist:
-                        white_px = np.array([-1, -1])
-                        print("No white pixels found")
+                # if white_exist:
+                #     diff = int(white_px[1]) - 1100
+                #     vOffset.value = int(diff)
+                #     print("White Pixel: x = %d, y = %d\t diff: %d" % (int(white_px[1]), int(white_px[0]), diff))
+                # elif yellow_exist:
+                #     diff = int(yellow_px[1]) - 65
+                #     vOffset.value = int(diff)
+                #     print("Yellow Pixel: x = %d, y = %d\t diff: %d" % (int(yellow_px[1]), int(yellow_px[0]), diff))
 
-                    yellow_px = np.mean(np.where(np.any(cropped_yellow_img != [0, 0, 0], axis=-1)), axis=1)
-                    yellow_exist = not np.all(np.isnan(yellow_px))
-                    # Check if yellow pixels are found
-                    if not yellow_exist:
-                        yellow_px = np.array([-1, -1])
-                        print("No yellow pixels found")
-
-                    if white_exist and yellow_exist:
-                        current_center = (white_px[1] + yellow_px[1]) / 2
-                        diff = expected_center - current_center
-                        print(
-                            "%s\tWhite Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
-                                datetime.datetime.now(), int(white_px[1]), int(white_px[0]), int(yellow_px[1]),
-                                int(yellow_px[0]), current_center, diff))
-                        # Deal with glare:
-                        if abs(white_px[1] - yellow_px[1]) < 300:
-                            current_center = int(yellow_px[1]) - 261
-                            diff = expected_center - current_center
-                            vOffset.value = int(diff)
-                            print("%s\t It is probably glare\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
-                                datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
-                        else:
-                            vOffset.value = int(diff)
-                    elif white_exist and not yellow_exist:
-                        current_center = int(white_px[1]) - 261
+                if white_exist and yellow_exist:
+                    current_center = (white_px[1] + yellow_px[1]) / 2
+                    diff = expected_center - current_center
+                    print("%s\tWhite Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
+                        datetime.datetime.now(), int(white_px[1]), int(white_px[0]), int(yellow_px[1]),
+                        int(yellow_px[0]), current_center, diff))
+                    # Deal with glare:
+                    if abs(white_px[1] - yellow_px[1]) < 300:
+                        current_center = int(yellow_px[1]) - 261
                         diff = expected_center - current_center
                         vOffset.value = int(diff)
-                        print("%s\tWhite Pixel: x = %d, y = %d\t diff: %d" % (
-                        datetime.datetime.now(), int(white_px[1]), int(white_px[0]), diff))
-                    elif yellow_exist and not white_exist:
-                        current_center = 261 - int(yellow_px[1])
-                        diff = current_center - expected_center
-                        vOffset.value = int(diff)
-                        print("%s\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
+                        print("%s\t It is probably glare\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
                         datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
-
-                else:
-                    if green_exist:
-                        vIntersection.value = 2
                     else:
-                        print("Approaching intersection")
-                        vIntersection.value = 1
-
+                        vOffset.value = int(diff)
+                elif white_exist and not yellow_exist:
+                    current_center = int(white_px[1]) - 261
+                    diff = expected_center - current_center
+                    vOffset.value = int(diff)
+                    print("%s\tWhite Pixel: x = %d, y = %d\t diff: %d" % (datetime.datetime.now(), int(white_px[1]), int(white_px[0]), diff))
+                elif yellow_exist and not white_exist:
+                    current_center = 261 - int(yellow_px[1])
+                    diff = current_center - expected_center
+                    vOffset.value = int(diff)
+                    print("%s\tYellow Pixel: x = %d, y = %d\t diff: %d" % (datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
 
         except Exception as e:
             traceback.print_exc()
@@ -156,17 +127,17 @@ def process(stream, vOffset, vIntersection):
         stream.truncate()
 
 
-def gen_seq(vOffset, go, vIntersection):
+def gen_seq(vOffset, go):
     stream = io.BytesIO()
     while go.value:
         # print("VISION going")
         yield stream
-        process(stream, vOffset, vIntersection)
+        process(stream, vOffset)
 
 
 # this will be the process that we split off for Dmitry to do computer vision work in
 # we use shared memory to make passing information back and fourth
-def vision(vOffset, go, vIntersection):
+def vision(vOffset, go):
     global WIDTH, HEIGHT
     print("Starting Vision")
     with picamera.PiCamera() as camera:
@@ -176,5 +147,5 @@ def vision(vOffset, go, vIntersection):
         camera.framerate = 30
         camera.start_preview()
         time.sleep(1)
-        camera.capture_sequence(gen_seq(vOffset, go, vIntersection), format='jpeg', use_video_port=True)
+        camera.capture_sequence(gen_seq(vOffset, go), format='jpeg', use_video_port=True)
     print("Vision Finished")
