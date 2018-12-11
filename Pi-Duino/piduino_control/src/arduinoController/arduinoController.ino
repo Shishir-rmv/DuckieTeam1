@@ -178,8 +178,8 @@ void loop() {
       break;
     
     case start :
-      rpm_L_ref=arg2;//(arg1*60)/(70*3.14);
-      rpm_R_ref=rpm_L_ref;
+      rpm_R_ref=arg2;//(arg1*60)/(70*3.14);
+      rpm_L_ref=rpm_R_ref;//Vref = 45 C = 0.2  small right turn 0.45 big turn
       pwm_L = (2.2*rpm_L_ref + 85);
       pwm_R = (2.1*rpm_R_ref + 81);
       break;
