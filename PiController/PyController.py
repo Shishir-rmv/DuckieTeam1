@@ -315,6 +315,7 @@ def visionController():
                     write("stp")
                     stopped = True
                 elif stopped and not vIntersection.value:
+                    stopped = False
                     print("Its green, Starting again")
                     print("SENDING: stp")
                     write("srt0000%s\n" % str(vRef).zfill(4))
