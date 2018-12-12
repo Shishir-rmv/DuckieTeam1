@@ -219,12 +219,14 @@ void loop() {
     prev_error = v_err;
   }
   curr_ping = micros();
-  if( (curr_ping-last_ping) > 1000000){ //test every .33 s
+  if( (curr_ping-last_ping) > 500000){ //test every 2 s
     ping();
+    Serial.println(ping_slowdown);
     last_ping = curr_ping;   
   }
-  md.setM2Speed(pwm_L);    
-  md.setM1Speed(pwm_R);
+  
+  md.setM2Speed(pwm_L*ping_slowdown);    
+  md.setM1Speed(pwm_R*ping_slowdown);
   //opStr = "none";
   //arg1 = 0;
   //arg2 = 0;

@@ -68,6 +68,7 @@ str_code hashit (String inString) {
    if (inString == "stp") return stopp;
    if (inString == "upd") return update;
    if (inString == "none") return none;
+   if (inString == "state1") return state1;
 }
 
 void setup() {
@@ -186,7 +187,32 @@ void loop() {
     case vOffset :
       v_err = arg2;
       break;
-    
+
+    case ltn :
+      C = arg1;
+      rpm_R_ref=arg2;//(arg1*60)/(70*3.14);
+      rpm_L_ref=C*rpm_L_ref;
+      pwm_L = (2.2*rpm_L_ref + 85);
+      pwm_R = (2.1*rpm_R_ref + 81);
+      break;
+            
+    case rtn :
+      C = arg1;
+      rpm_L_ref=arg2;//(arg1*60)/(70*3.14);
+      rpm_R_ref=C*rpm_L_ref;
+      pwm_L = (2.2*rpm_L_ref + 85);
+      pwm_R = (2.1*rpm_R_ref + 81);
+      break;
+
+    case state1 :
+
+      if y = 
+      
+       
+      
+    default:
+      break;
+  }
     case stopp :
       Stop();
       break;
@@ -194,10 +220,6 @@ void loop() {
     case irSensor :
       encoder();
       break;
- 
-    default:
-      break;
-  }
   }
   if (v_err != prev_error && fourth!=1){
     error_dot = v_err - prev_error;
@@ -205,12 +227,12 @@ void loop() {
     del_v = (del_v*60)/(70*3.14);
     rpm_target_L = rpm_L_ref + del_v;
     rpm_target_R = rpm_R_ref - del_v;
-    if(millis()%1000 == 0 ){
-        Serial.write('a');
-        Serial.write(lowByte((int)rpm_target_L));
-        Serial.write('b');
-        Serial.write(lowByte((int)rpm_target_R));
-    }
+//    if(millis()%1000 == 0 ){
+//        Serial.write('a');
+//        Serial.write(lowByte((int)rpm_target_L));
+//        Serial.write('b');
+//        Serial.write(lowByte((int)rpm_target_R));
+//    }
     pwm_L = (2.2*rpm_target_L + 85);
     pwm_R = (2.1*rpm_target_R + 81);
     prev_error = v_err;
@@ -219,22 +241,27 @@ void loop() {
 
 
  duration_L = micros()-prevmillis_L;
- if (duration_L == 1000000){
-      l_s = (l_enc_count-prev_l_enc_count)*WHEEL_CIRCUMFERENCE/(PPR*duration_L);
-      r_s = (r_enc_count-prev_r_enc_count)*WHEEL_CIRCUMFERENCE/(PPR*duration_L); 
+ if (duration_L > 2000000){
+      l_s = (l_enc_count-prev_l_enc_count)*WHEEL_CIRCUMFERENCE*2000000/(PPR*duration_L);
+      r_s = (r_enc_count-prev_r_enc_count)*WHEEL_CIRCUMFERENCE*2000000/(PPR*duration_L); 
       delta_x = (l_s + r_s)/2;
       heading = atan2((l_s-r_s)/2, WHEEL_BASE/2);
-      x += delta_x*cos(theta);
-      String ret = "x "+String(x)+" y "+String(y);
-      y += delta_x*sin(theta);
       theta += heading;
+      x += delta_x*cos(theta);
+      y += delta_x*sin(theta);
+      
+      String ret = "x "+String(x)+" y "+String(y)+" "+String(l_s)+" "+String(r_s);
+      Serial.println(ret);
+      prev_l_enc_count = l_enc_count;
+      prev_r_enc_count = r_enc_count;
+      prevmillis_L = micros();
   }    
    
   if (x>0 && y>0 && x<1000 && y<1000){
   ref = 0;
   act = y;
   straight();
-  del_v = -(0.3*v_err) - (0.01*error_dot);
+  del_v = -(0.3*error) - (0.01*error_dot);
   del_v = (del_v*60)/(70*3.14);
   rpm_target_L = rpm_L_ref + del_v;
   rpm_target_R = rpm_R_ref - del_v;
@@ -250,6 +277,8 @@ void loop() {
    rpm_target_R = rpm_R_ref - del_v;
    pwm_L = (2.2*rpm_target_L + 85);
    pwm_R = (2.1*rpm_target_R + 81);
+  }else{
+    Stop()
   }
          
   md.setM2Speed(pwm_L);    
@@ -282,6 +311,7 @@ void encoder() {
   //having different total distance for different state and turns
   l_enc_count += l_enc;
   r_enc_count += r_enc;
+  //Serial.println(l_enc_count);
   //distance_L = l_enc_count*WHEEL_CIRCUMFERENCE/PPR;
   //distance_R = r_enc_count*WHEEL_CIRCUMFERENCE/PPR;  
   //distance = (distance_L + distance_R)/2;    
