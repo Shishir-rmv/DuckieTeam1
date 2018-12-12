@@ -244,14 +244,14 @@ def visionController():
     # Define and split off the computer vision subprocess _________________________________
     # define doubles
     vOffset = Value('i', 0)
-    #vIntersection = Value('i', 0)
+    vIntersection = Value('b', False)
 
     
     # define boolean to act as an off switch
     see = Value('b', True)
 
     # define and start the computer vision process
-    vision_process = Process(target=vision, args=(vOffset, see))
+    vision_process = Process(target=vision, args=(vOffset, see, vIntersection))
     vision_process.start()
     # _____________________________________________________________________________________
 
@@ -310,13 +310,11 @@ def visionController():
                     print("inWaiting: %i, outWaiting %i" % (s1.in_waiting, s1.out_waiting))
                     # print("Finished writing update")
 
-                #stp = vIntersection.value
-                #if (stp == 1):
-                #    print("SENDING: stp")
-                #    write("stp")
-                #if (stp == 2):
-                #    print("SENDING: srt0000%s" % str(vRef).zfill(4))
-                #    write("srt0000%s\n" % str(vRef).zfill(4))
+               
+                if (vIntersection.value):
+                    print("SENDING: stp")
+                    write("stp")
+
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
         running = False
@@ -429,7 +427,7 @@ def runController(mapNum):
 
             while (move):
                 # traverse the different segments on the path between these states
-                for action in 
+                #for action in 
                 if (stateChange):
                     state = machine[state]["next"]
                     # set our controller mode for this state

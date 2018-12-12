@@ -21,9 +21,14 @@ def region_of_interest(img, vertices):
 def convert_hls(image):
     return cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
 
+def select_red(image):
+    converted = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    lower = np.uint8([160, 100, 100])
+    upper = np.uint8([179, 255, 255])
+    red_mask = cv2.inRange(converted, lower, upper)
+    return cv2.bitwise_and(image, image, mask=red_mask)
 
-def select_white(image):
-    converted = convert_hls(image)
+def select_white(image, converted):
     # white color mask
     lower = np.uint8([0, 215, 0])
     upper = np.uint8([255, 255, 255])
@@ -31,8 +36,7 @@ def select_white(image):
     return cv2.bitwise_and(image, image, mask=white_mask)
 
 
-def select_yellow(image):
-    converted = convert_hls(image)
+def select_yellow(image, converted):
     # yellow color mask
     lower = np.uint8([50, 100, 130])
     upper = np.uint8([100, 200, 255])
@@ -40,7 +44,7 @@ def select_yellow(image):
     return cv2.bitwise_and(image, image, mask=yellow_mask)
 
 
-def process(stream, vOffset):
+def process(stream, vOffset, vIntersection):
     global expected_center
 
     if (True):
@@ -55,44 +59,50 @@ def process(stream, vOffset):
 
         # Defines Region of Interest
         # Bottom right quadrant of the image for white line
-        region_of_interest_vert = [(0, height), (0, height / 2), (width, height / 2), (width, height)]
+        #region_of_interest_vert = [(0, height), (0, height / 2), (width, height / 2), (width, height)]
+        #region_of_interest_red = [(0, height), (0, 460), (width, 460), (width, height)]
+
         # Bottom left quadrant of the image for yellow line
         # region_of_interest_yellow = [(0, height), (0, height / 2), (width / 2, height / 2), (width, height)]
 
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
+                cropped_for_white_yellow = image[280:480, 0:640].copy()
+                hls_image = convert_hls(cropped_for_white_yellow)
 
                 # Filters White and Yellow colors in the image
-                white_image = select_white(image)
-                yellow_image = select_yellow(image)
+                white_image = select_white(cropped_for_white_yellow, hls_image)
+                yellow_image = select_yellow(cropped_for_white_yellow, hls_image)
 
-                #
-                cropped_white_img = region_of_interest(white_image, np.array([region_of_interest_vert], np.int32))
-                cropped_yellow_img = region_of_interest(yellow_image, np.array([region_of_interest_vert], np.int32))
+                cropped_for_red = image[475:480, 0:width].copy()
+                red_image = select_red(cropped_for_red)
+                red_px = np.mean(np.where(np.any(red_image != [0, 0, 0], axis=-1)), axis=1)
+                red_exist = not np.all(np.isnan(red_px))
+                print(red_px)
+                if not red_exist:
+                    red_px = np.array([-1, -1])
+                elif 280 < red_px[1] < 360:
+                    vIntersection.value = True
+                    print("FOUND RED: Stopping at red")
 
-                white_px = np.mean(np.where(np.any(cropped_white_img != [0, 0, 0], axis=-1)), axis=1)
+                
+                #cropped_white_img = region_of_interest(white_image, np.array([region_of_interest_vert], np.int32))
+                #cropped_yellow_img = region_of_interest(yellow_image, np.array([region_of_interest_vert], np.int32))
+
+                white_px = np.mean(np.where(np.any(white_image != [0, 0, 0], axis=-1)), axis=1)
                 white_exist = not np.all(np.isnan(white_px))
                 # Check if white pixels are found
                 if not white_exist:
                     white_px = np.array([-1, -1])
                     print("No white pixels found")
 
-                yellow_px = np.mean(np.where(np.any(cropped_yellow_img != [0, 0, 0], axis=-1)), axis=1)
+                yellow_px = np.mean(np.where(np.any(yellow_image != [0, 0, 0], axis=-1)), axis=1)
                 yellow_exist = not np.all(np.isnan(yellow_px))
                 # Check if yellow pixels are found
                 if not yellow_exist:
                     yellow_px = np.array([-1, -1])
                     print("No yellow pixels found")
-
-                # if white_exist:
-                #     diff = int(white_px[1]) - 1100
-                #     vOffset.value = int(diff)
-                #     print("White Pixel: x = %d, y = %d\t diff: %d" % (int(white_px[1]), int(white_px[0]), diff))
-                # elif yellow_exist:
-                #     diff = int(yellow_px[1]) - 65
-                #     vOffset.value = int(diff)
-                #     print("Yellow Pixel: x = %d, y = %d\t diff: %d" % (int(yellow_px[1]), int(yellow_px[0]), diff))
 
                 if white_exist and yellow_exist:
                     current_center = (white_px[1] + yellow_px[1]) / 2
@@ -127,25 +137,25 @@ def process(stream, vOffset):
         stream.truncate()
 
 
-def gen_seq(vOffset, go):
+def gen_seq(vOffset, go, vIntersection):
     stream = io.BytesIO()
     while go.value:
         # print("VISION going")
         yield stream
-        process(stream, vOffset)
+        process(stream, vOffset, vIntersection)
 
 
 # this will be the process that we split off for Dmitry to do computer vision work in
 # we use shared memory to make passing information back and fourth
-def vision(vOffset, go):
+def vision(vOffset, go, vIntersection):
     global WIDTH, HEIGHT
     print("Starting Vision")
     with picamera.PiCamera() as camera:
         camera.resolution = (WIDTH, HEIGHT)
         # Set the framerate appropriately; too fast and the image processors
         # will stall the image pipeline and crash the script
-        camera.framerate = 30
+        camera.framerate = 50
         camera.start_preview()
         time.sleep(1)
-        camera.capture_sequence(gen_seq(vOffset, go), format='jpeg', use_video_port=True)
+        camera.capture_sequence(gen_seq(vOffset, go, vIntersection), format='jpeg', use_video_port=True)
     print("Vision Finished")
