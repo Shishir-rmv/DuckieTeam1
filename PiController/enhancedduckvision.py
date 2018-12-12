@@ -81,14 +81,14 @@ def process(stream, vOffset, vIntersection):
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
-                cropped_for_white_yellow = image[280:480, 0:640].copy()
+                cropped_for_white_yellow = image[380:480, 0:640].copy()
                 hls_image = convert_hls(cropped_for_white_yellow)
 
                 # Filters White and Yellow colors in the image
                 white_image = select_white(cropped_for_white_yellow, hls_image)
                 yellow_image = select_yellow(cropped_for_white_yellow, hls_image)
 
-                cropped_for_red = image[475:480, 0:width].copy()
+                cropped_for_red = image[450:480, 0:width].copy()
                 red_image = select_red(cropped_for_red)
                 red_px = np.mean(np.where(np.any(red_image != [0, 0, 0], axis=-1)), axis=1)
                 red_exist = not np.all(np.isnan(red_px))
@@ -176,7 +176,7 @@ def vision(vOffset, go, vIntersection):
         camera.resolution = (WIDTH, HEIGHT)
         # Set the framerate appropriately; too fast and the image processors
         # will stall the image pipeline and crash the script
-        camera.framerate = 50
+        camera.framerate = 40
         camera.start_preview()
         time.sleep(1)
         camera.capture_sequence(gen_seq(vOffset, go, vIntersection), format='jpeg', use_video_port=True)

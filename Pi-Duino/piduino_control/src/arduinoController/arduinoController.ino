@@ -220,7 +220,7 @@ void loop() {
   }
   curr_ping = micros();
   if( (curr_ping-last_ping) > 500000){ //test every 2 s
-    ping();
+    //ping();
     Serial.println(ping_slowdown);
     last_ping = curr_ping;   
   }
