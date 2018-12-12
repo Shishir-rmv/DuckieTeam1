@@ -312,7 +312,7 @@ void ping() {
     }
   }
   else if( (ping_duration > 800) && (ping_duration <= 1600) ){
-    ping_slowdown = ping_duration/1600;
+    ping_slowdown = (double)ping_duration/1600.0;
   }
   else{
     ping_slowdown = 1;
