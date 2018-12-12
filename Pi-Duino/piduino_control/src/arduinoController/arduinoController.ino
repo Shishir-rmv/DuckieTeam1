@@ -25,7 +25,8 @@
 #define PPR 32 //pulses per revolution is = to # of lines per revoluion aka number of white segments which is half of the total segments, this is assumig 32 segments
 
 DualMC33926MotorShield md;
-double ping_duration;
+long ping_duration;
+double ping_slowdown = 1;
 
 // positional variables
 double theta = 0, x = 0, y = 0, C = 1;
@@ -98,6 +99,7 @@ void setup() {
 }
 
 void loop() {
+  static long last_ping = 0, curr_ping = 0;
 //stopIfFault();
   static String opStr;
   static unsigned int arg1 = 0;
@@ -178,8 +180,8 @@ void loop() {
       break;
     
     case start :
-      rpm_L_ref=arg2;//(arg1*60)/(70*3.14);
-      rpm_R_ref=rpm_L_ref;
+      rpm_R_ref=arg2;//(arg1*60)/(70*3.14);
+      rpm_L_ref=rpm_R_ref;//Vref = 45 C = 0.2  small right turn 0.45 big turn
       pwm_L = (2.2*rpm_L_ref + 85);
       pwm_R = (2.1*rpm_R_ref + 81);
       break;
@@ -212,11 +214,15 @@ void loop() {
         Serial.write('b');
         Serial.write(lowByte((int)rpm_target_R));
     }
-    pwm_L = (2.2*rpm_target_L + 85);
-    pwm_R = (2.1*rpm_target_R + 81);
+    pwm_L = (2.2*rpm_target_L + 85)*ping_slowdown;
+    pwm_R = (2.1*rpm_target_R + 81)*ping_slowdown;
     prev_error = v_err;
   }
-     
+  curr_ping = micros();
+  if( (curr_ping-last_ping) > 1000000){ //test every .33 s
+    ping();
+    last_ping = curr_ping;   
+  }
   md.setM2Speed(pwm_L);    
   md.setM1Speed(pwm_R);
   //opStr = "none";
@@ -284,8 +290,33 @@ void ping() {
   digitalWrite(PING_PIN, LOW);
 
   pinMode(PING_PIN, INPUT);
-  ping_duration = pulseIn(PING_PIN, HIGH);
+  ping_duration = pulseIn(PING_PIN, HIGH, 3000);
+  
   Serial.println(ping_duration);
+  
+  if( (ping_duration >= 100) && (ping_duration <= 800) ){
+    while( (ping_duration >= 100) && (ping_duration <= 800) ){
+      Serial.print("start");
+      md.setM2Speed(0);    
+      md.setM1Speed(0);
+      delay(1000);
+      pinMode(PING_PIN, OUTPUT);
+      digitalWrite(PING_PIN, LOW);
+      delayMicroseconds(2);
+      digitalWrite(PING_PIN, HIGH);
+      delayMicroseconds(5);
+      digitalWrite(PING_PIN, LOW);
+
+      pinMode(PING_PIN, INPUT);
+      ping_duration = pulseIn(PING_PIN, HIGH, 3000);
+    }
+  }
+  else if( (ping_duration > 800) && (ping_duration <= 1600) ){
+    ping_slowdown = (double)ping_duration/1600.0;
+  }
+  else{
+    ping_slowdown = 1;
+  }
 }
 
 
