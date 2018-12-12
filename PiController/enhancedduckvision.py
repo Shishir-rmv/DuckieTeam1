@@ -1,9 +1,12 @@
-import traceback
-
 import datetime
-import picamera, io, cv2, time
-import numpy as np
+import traceback
 import warnings
+
+import cv2
+import io
+import numpy as np
+import picamera
+import time
 
 WIDTH = 640
 HEIGHT = 480
@@ -21,12 +24,22 @@ def region_of_interest(img, vertices):
 def convert_hls(image):
     return cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
 
+
+def select_green(image):
+    converted = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    lower = np.uint8([44, 54, 63])
+    upper = np.uint8([71, 255, 255])
+    green_mask = cv2.inRange(converted, lower, upper)
+    return cv2.bitwise_and(image, image, mask=green_mask)
+
+
 def select_red(image):
     converted = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     lower = np.uint8([160, 100, 100])
     upper = np.uint8([179, 255, 255])
     red_mask = cv2.inRange(converted, lower, upper)
     return cv2.bitwise_and(image, image, mask=red_mask)
+
 
 def select_white(image, converted):
     # white color mask
@@ -59,8 +72,8 @@ def process(stream, vOffset, vIntersection):
 
         # Defines Region of Interest
         # Bottom right quadrant of the image for white line
-        #region_of_interest_vert = [(0, height), (0, height / 2), (width, height / 2), (width, height)]
-        #region_of_interest_red = [(0, height), (0, 460), (width, 460), (width, height)]
+        # region_of_interest_vert = [(0, height), (0, height / 2), (width, height / 2), (width, height)]
+        # region_of_interest_red = [(0, height), (0, 460), (width, 460), (width, height)]
 
         # Bottom left quadrant of the image for yellow line
         # region_of_interest_yellow = [(0, height), (0, height / 2), (width / 2, height / 2), (width, height)]
@@ -86,9 +99,16 @@ def process(stream, vOffset, vIntersection):
                     vIntersection.value = True
                     print("FOUND RED: Stopping at red")
 
-                
-                #cropped_white_img = region_of_interest(white_image, np.array([region_of_interest_vert], np.int32))
-                #cropped_yellow_img = region_of_interest(yellow_image, np.array([region_of_interest_vert], np.int32))
+                if vIntersection.value:
+                    cropped_for_green = image[400:height, 0:width].copy()
+                    green_img = select_green(cropped_for_green)
+                    green_px = np.mean(np.where(np.any(green_img != [0, 0, 0], axis=-1)), axis=1)
+                    green_exist = not np.all(np.isnan(green_px))
+                    if green_exist:
+                        vIntersection.value = False
+
+                # cropped_white_img = region_of_interest(white_image, np.array([region_of_interest_vert], np.int32))
+                # cropped_yellow_img = region_of_interest(yellow_image, np.array([region_of_interest_vert], np.int32))
 
                 white_px = np.mean(np.where(np.any(white_image != [0, 0, 0], axis=-1)), axis=1)
                 white_exist = not np.all(np.isnan(white_px))
@@ -116,19 +136,21 @@ def process(stream, vOffset, vIntersection):
                         diff = expected_center - current_center
                         vOffset.value = int(diff)
                         print("%s\t It is probably glare\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
-                        datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
+                            datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
                     else:
                         vOffset.value = int(diff)
                 elif white_exist and not yellow_exist:
                     current_center = int(white_px[1]) - 261
                     diff = expected_center - current_center
                     vOffset.value = int(diff)
-                    print("%s\tWhite Pixel: x = %d, y = %d\t diff: %d" % (datetime.datetime.now(), int(white_px[1]), int(white_px[0]), diff))
+                    print("%s\tWhite Pixel: x = %d, y = %d\t diff: %d" % (
+                        datetime.datetime.now(), int(white_px[1]), int(white_px[0]), diff))
                 elif yellow_exist and not white_exist:
                     current_center = 261 - int(yellow_px[1])
                     diff = current_center - expected_center
                     vOffset.value = int(diff)
-                    print("%s\tYellow Pixel: x = %d, y = %d\t diff: %d" % (datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
+                    print("%s\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
+                        datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
 
         except Exception as e:
             traceback.print_exc()

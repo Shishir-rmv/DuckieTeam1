@@ -245,8 +245,8 @@ def visionController():
     # define doubles
     vOffset = Value('i', 0)
     vIntersection = Value('b', False)
+    stopped = False
 
-    
     # define boolean to act as an off switch
     see = Value('b', True)
 
@@ -310,10 +310,14 @@ def visionController():
                     print("inWaiting: %i, outWaiting %i" % (s1.in_waiting, s1.out_waiting))
                     # print("Finished writing update")
 
-               
-                if (vIntersection.value):
+                if vIntersection.value and not stopped:
                     print("SENDING: stp")
                     write("stp")
+                    stopped = True
+                elif stopped and not vIntersection.value:
+                    print("Its green, Starting again")
+                    print("SENDING: stp")
+                    write("srt0000%s\n" % str(vRef).zfill(4))
 
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
