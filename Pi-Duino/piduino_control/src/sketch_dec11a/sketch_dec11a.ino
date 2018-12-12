@@ -68,7 +68,9 @@ str_code hashit (String inString) {
    if (inString == "stp") return stopp;
    if (inString == "upd") return update;
    if (inString == "none") return none;
-   if (inString == "state1") return state1;
+   if (inString == "st1") return state1;
+   if (inString == "rtn") return rtn;
+   if (inString == "ltn") return ltn;
 }
 
 void setup() {
@@ -140,13 +142,16 @@ void loop() {
       arg2A[3] = input[10];
       // WHY WERE THESE HERE?
       arg2A[4] = '\0';
+
+    }
       // Serial.println("arg2A");
       // Serial.println(arg2A);
-    }
-
+    
+  
     String opStr = String(opStrA);
     int arg1 = atoi(arg1A);
     int arg2 = atoi(arg2A);
+    
 ////  }else if(distance_total>1100 && distance_total<1345){//&& micros()>1000000
 ////    //Serial.println(micros());
 ////    //
@@ -157,8 +162,8 @@ void loop() {
 //    //Serial.println(distance);
 //    Stop(); 
 //  
-  
-
+  if opStr ==
+  Serial.print(opStr);
   switch(hashit(opStr)){
     case none :
       Serial.println("none");
@@ -205,14 +210,31 @@ void loop() {
       break;
 
     case state1 :
-
-      if y = 
-      
+        static double rpm_L_ref = 0;
+        static double rpm_R_ref = 0;
+        ref = 0;
+        act = y;
+        straight();
+        del_v = -(0.3*error) - (0.01*error_dot);
+        del_v = (del_v*60)/(70*3.14);
+        rpm_target_L = rpm_L_ref + del_v;
+        rpm_target_R = rpm_R_ref - del_v;
+        pwm_L = (2.2*rpm_target_L + 85);
+        pwm_R = (2.1*rpm_target_R + 81);
+        Serial.print("State1");
+      if (x <500){
+        opStr = "st1";
+        
+      }else{
+        opStr = "stp";
+      }
+      break;
        
       
     default:
+      opStr="";
       break;
-  }
+      
     case stopp :
       Stop();
       break;
@@ -220,6 +242,7 @@ void loop() {
     case irSensor :
       encoder();
       break;
+  }
   }
   if (v_err != prev_error && fourth!=1){
     error_dot = v_err - prev_error;
@@ -256,31 +279,31 @@ void loop() {
       prev_r_enc_count = r_enc_count;
       prevmillis_L = micros();
   }    
-   
-  if (x>0 && y>0 && x<1000 && y<1000){
-  ref = 0;
-  act = y;
-  straight();
-  del_v = -(0.3*error) - (0.01*error_dot);
-  del_v = (del_v*60)/(70*3.14);
-  rpm_target_L = rpm_L_ref + del_v;
-  rpm_target_R = rpm_R_ref - del_v;
-  pwm_L = (2.2*rpm_target_L + 85);
-  pwm_R = (2.1*rpm_target_R + 81);
-  }else if(x>1000 && y>1000 && x<1200 && y<200){
-   ref = 100;
-   act = pow((x-1000),2) + pow(y,2);
-   turn();
-   del_v = -(0.3*v_err) - (0.01*error_dot);
-   del_v = (del_v*60)/(70*3.14);
-   rpm_target_L = rpm_L_ref + del_v;
-   rpm_target_R = rpm_R_ref - del_v;
-   pwm_L = (2.2*rpm_target_L + 85);
-   pwm_R = (2.1*rpm_target_R + 81);
-  }else{
-    Stop()
-  }
-         
+//   
+//  if (x>0 && y>0 && x<1000 && y<1000){
+//  ref = 0;
+//  act = y;
+//  straight();
+//  del_v = -(0.3*error) - (0.01*error_dot);
+//  del_v = (del_v*60)/(70*3.14);
+//  rpm_target_L = rpm_L_ref + del_v;
+//  rpm_target_R = rpm_R_ref - del_v;
+//  pwm_L = (2.2*rpm_target_L + 85);
+//  pwm_R = (2.1*rpm_target_R + 81);
+//  }else if(x>1000 && y>1000 && x<1200 && y<200){
+//   ref = 100;
+//   act = pow((x-1000),2) + pow(y,2);
+//   turn();
+//   del_v = -(0.3*v_err) - (0.01*error_dot);
+//   del_v = (del_v*60)/(70*3.14);
+//   rpm_target_L = rpm_L_ref + del_v;
+//   rpm_target_R = rpm_R_ref - del_v;
+//   pwm_L = (2.2*rpm_target_L + 85);
+//   pwm_R = (2.1*rpm_target_R + 81);
+//  }else{
+//    Stop()
+//  }
+//         
   md.setM2Speed(pwm_L);    
   md.setM1Speed(pwm_R);
   //opStr = "none";

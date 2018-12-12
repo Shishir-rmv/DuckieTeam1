@@ -9,5 +9,8 @@ enum str_code{
   calibrat,
   visual,
   update,
+  state1,
+  ltn,
+  rtn,
   none
 };
