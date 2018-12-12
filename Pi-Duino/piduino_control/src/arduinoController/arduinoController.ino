@@ -99,7 +99,7 @@ void setup() {
 }
 
 void loop() {
-static long last_ping = 0, curr_ping = 0;
+  static long last_ping = 0, curr_ping = 0;
 //stopIfFault();
   static String opStr;
   static unsigned int arg1 = 0;
@@ -214,12 +214,12 @@ static long last_ping = 0, curr_ping = 0;
         Serial.write('b');
         Serial.write(lowByte((int)rpm_target_R));
     }
-    pwm_L = (2.2*rpm_target_L + 85);
-    pwm_R = (2.1*rpm_target_R + 81);
+    pwm_L = (2.2*rpm_target_L + 85)*ping_slowdown;
+    pwm_R = (2.1*rpm_target_R + 81)*ping_slowdown;
     prev_error = v_err;
   }
   curr_ping = micros();
-  if( (curr_ping-last_ping) > 2000000){ //test every .33 s
+  if( (curr_ping-last_ping) > 1000000){ //test every .33 s
     ping();
     last_ping = curr_ping;   
   }
@@ -291,14 +291,15 @@ void ping() {
 
   pinMode(PING_PIN, INPUT);
   ping_duration = pulseIn(PING_PIN, HIGH, 3000);
-  Serial.println(ping_duration)  ;
+  
+  Serial.println(ping_duration);
+  
   if( (ping_duration >= 100) && (ping_duration <= 800) ){
-    
-    
     while( (ping_duration >= 100) && (ping_duration <= 800) ){
       Serial.print("start");
       md.setM2Speed(0);    
       md.setM1Speed(0);
+      delay(1000);
       pinMode(PING_PIN, OUTPUT);
       digitalWrite(PING_PIN, LOW);
       delayMicroseconds(2);
@@ -309,11 +310,10 @@ void ping() {
       pinMode(PING_PIN, INPUT);
       ping_duration = pulseIn(PING_PIN, HIGH, 3000);
     }
-    Serial.print("done");
   }
-//  else if( (ping_duration > 800) && (ping_duration <= 1600) ){
-//    ping_slowdown = ping_duration/1600;
-//  }
+  else if( (ping_duration > 800) && (ping_duration <= 1600) ){
+    ping_slowdown = ping_duration/1600;
+  }
   else{
     ping_slowdown = 1;
   }
