@@ -15,7 +15,7 @@
 #define L_ENC_B 13 //check that pins mathc up with right sensors and encoder init
 #define R_ENC_A 5
 #define R_ENC_B 6
-#define PING_PIN 8
+#define PING_PIN 11
 
 #define ENC_PORT PIND
 #define ENC_PORT2 PINB
@@ -102,8 +102,8 @@ void loop() {
   static long last_ping = 0, curr_ping = 0;
 //stopIfFault();
   static String opStr;
-  static unsigned int arg1 = 0;
-  static unsigned int arg2 = 0;
+  static int arg1 = 0;
+  static int arg2 = 0;
   static char input[15];
   static char opStrA[4];
   static char arg1A[5];
@@ -146,9 +146,9 @@ void loop() {
       // Serial.println(arg2A);
     }
 
-    String opStr = String(opStrA);
-    int arg1 = atoi(arg1A);
-    int arg2 = atoi(arg2A);
+    opStr = String(opStrA);
+    arg1 = atoi(arg1A);
+    arg2 = atoi(arg2A);
 ////  }else if(distance_total>1100 && distance_total<1345){//&& micros()>1000000
 ////    //Serial.println(micros());
 ////    //
@@ -175,7 +175,6 @@ void loop() {
       break;
 
     case png :
-      Serial.print("ping duration: ");
       ping();
       break;
     
@@ -214,17 +213,17 @@ void loop() {
         Serial.write('b');
         Serial.write(lowByte((int)rpm_target_R));
     }
-    pwm_L = (2.2*rpm_target_L + 85)*ping_slowdown;
-    pwm_R = (2.1*rpm_target_R + 81)*ping_slowdown;
+    pwm_L = (2.2*rpm_target_L + 85);
+    pwm_R = (2.1*rpm_target_R + 81);
     prev_error = v_err;
   }
   curr_ping = micros();
-  if( (curr_ping-last_ping) > 500000){ //test every 2 s
-    //ping();
+  if( (curr_ping-last_ping) > 1000000){ //test every 2 s
+    ping();
     Serial.println(ping_slowdown);
+    Serial.println(pwm_L);
     last_ping = curr_ping;   
   }
-  
   md.setM2Speed(pwm_L*ping_slowdown);    
   md.setM1Speed(pwm_R*ping_slowdown);
   //opStr = "none";
@@ -294,24 +293,11 @@ void ping() {
   pinMode(PING_PIN, INPUT);
   ping_duration = pulseIn(PING_PIN, HIGH, 3000);
   
+  
   Serial.println(ping_duration);
   
   if( (ping_duration >= 100) && (ping_duration <= 800) ){
-    while( (ping_duration >= 100) && (ping_duration <= 800) ){
-      Serial.print("start");
-      md.setM2Speed(0);    
-      md.setM1Speed(0);
-      delay(1000);
-      pinMode(PING_PIN, OUTPUT);
-      digitalWrite(PING_PIN, LOW);
-      delayMicroseconds(2);
-      digitalWrite(PING_PIN, HIGH);
-      delayMicroseconds(5);
-      digitalWrite(PING_PIN, LOW);
-
-      pinMode(PING_PIN, INPUT);
-      ping_duration = pulseIn(PING_PIN, HIGH, 3000);
-    }
+    ping_slowdown = 0;
   }
   else if( (ping_duration > 800) && (ping_duration <= 1600) ){
     ping_slowdown = (double)ping_duration/1600.0;
