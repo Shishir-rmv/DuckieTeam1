@@ -2,6 +2,7 @@ from multiprocessing import Process, Value
 import serial, json, math, threading, time, pdb
 from datetime import datetime
 from enhancedduckvision import vision
+import networkx as nx
 
 
 #global variables
@@ -51,13 +52,14 @@ WHEEL_CIRCUMFERENCE = 219.9115
 
 # to prevent the Pi from getting too far ahead of the arduino
 def write(cmd):
-    print("Write - Before Encoding")
+    print("SENDING: %s" % cmd)
+    # print("Write - Before Encoding")
     encoded = cmd.encode()
-    print("Write - Before Writing")
+    # print("Write - Before Writing")
     s1.write(encoded)
-    print("Write - After Writing")
+    # print("Write - After Writing")
     s1.flush()
-    print("Write - After Flush")
+    # print("Write - After Flush")
 
 def read():
     bytesToRead = s1.inWaiting()
@@ -290,7 +292,6 @@ def visionController():
                 if(flag):
                     # send initial calibration
                     # TODO: ASK WHAT'S A GOOD VREF.
-                    print("SENDING: srt0000%s" % str(vRef).zfill(4))
                     write("srt0000%s\n" % str(vRef).zfill(4))
                     # print("Finished writing start")
                     flag = False
@@ -300,7 +301,7 @@ def visionController():
                 if (now != oldVal):
                     oldVal = now
                     # print("Camera:\t vOffset: %d" % (now))
-                    print("SENDING: ver0000%s" % str(now).zfill(4))
+                    # print("SENDING: ver0000%s" % str(now).zfill(4))
                     serial_msg_counter += 1
                     print("SENT %d Messages to Arduino" % serial_msg_counter)
                     end = time.time()
@@ -337,6 +338,7 @@ def visionController():
     print("Vision process terminated")
 
 def runController(mapNum):
+    global move
     # Define and split off the computer vision subprocess _________________________________
     # define doubles
     vOffset = Value('i', 0)
@@ -345,21 +347,45 @@ def runController(mapNum):
     # define boolean to act as an off switch
     see = Value('b', True)
 
+    # to tell us if we're stopped
+    stopped = Value('b', True)
+    # if we see a green light
+    greenLight = Value('b', False)
+
     # define and start the computer vision process
     vision_process = Process(target=vision, args=(vOffset, see))
     vision_process.start()
     # _____________________________________________________________________________________
-
     print("PyController starting")
+
+    # to be given to us by instructors before the demo
+    path = [1,5,7,2,9,3,12,6,8,10,1]
+    pathCounter = 0
+
+    vRef = 30
+    fastVRef = 60
+    # big left turn
+    bigRadius = 0.45
+    # small right turn
+    smallRadius = -0.2
+
+    # read in the state machine graph
+    with open("../peripherals/graph.json", 'r') as f:
+        read = json.load(f)
+
+    # re-convert to graph
+    DG = nx.node_link_graph(read, directed=True, multigraph=False, attrs=None)
 
     # split off the starter thread so the machine can passively calibrate itself before we start
     starter_thread = threading.Thread(target=starter)
     starter_thread.start()
 
+    serial_thread = threading.Thread(target=serialReader)
+    serial_thread.start()
+
     # open the serial port to the Arduino & initialize
     s1.flushInput()
-    response, state = "", "0"
-    count, e, oldR, oldL = 0, 0, 0, 0
+
     running, stateChange, odometry = True, False, True
 
     if s1.isOpen():
@@ -371,75 +397,105 @@ def runController(mapNum):
 
     # this is the main logic loop where we put all our controlling equations/code
     try:
-        while (running):
-            # only do this if we have changed state in our state machine
+        # loop overall segments in our given route
+        for segment in range(len(path1)-1):
+            route = nx.dijkstra_path(DG, segment, segment+1)
 
-            if (stateChange):
-                state = machine[state]["next"]
-                # set our controller mode for this state
-                if(machine[state]["mode"] == "odometry"):
-                    odometry = True
-                    # communicate the mode down to the arduino
-                    write("odo\n")
-                else:
-                    odometry = False
-                    # communicate the mode down to the arduino
-                    write("vis\n")
+            # navigate the current segment's route
+            for startState in range(len(route)-1):
+                # by performing all of the actions in the route
+                actionMap = edges[str(startState)+","+str(startState+1)]["attrs"]["map"]
+                for action in range(len(actionMap)):
+                    # go straight
+                    if (actionMap[action] == "S"):
+                        # using vision, start moving. Args: dist, initial vRef
+                        write("srt0000%s\n" % str(vRef).zfill(4))
 
-                # send speed calibration words down to arduino
-                #TODO: calculate what value to start motors at
-                #cmd = "cal"+"0"+str(motorStartL)+"0"+str(motorStartdR)+'\n'
-                write(cmd)
-                stateChange = False
+                        # if we're on the last action
+                        if (action == len(actionMap)-1):
+                            pass
 
-            # for debugging:
-            print("Camera:\t vOffset: %d" % (vOffset.value))
-            # vDist = 0
-            # vSlope = 0
-            # print("Time elapsed: %d" % datetime.now().total_seconds())
-            # print("IR:\tpos: (%f,%f), angle: %f" % (X, Y, THETA))
-            # print("Camera:\t xDst: %d, slope:%d" % (vDist, vSlope))
+                    elif (actionMap[action] == "R"):
+                        # blind turn
+                        write("trn%s0045" % str(smallRadius).zfill(4))
+                        # wait for arduino to respond?
+                    elif (actionMap[action] == "L"):
+                        # blind turn
+                        write("trn%s0045" % str(bigRadius).zfill(4))
+                        # wait for arduino to respond?
+                    elif (actionMap[action] == "F"):
+                        # fast vision
+                        write("srt0000%s\n" % str(fastVRef).zfill(4))
 
-            # if we're using an odometer-based controller
-            if (odometry):
-                #pdb.set_trace()
-                if (machine[state]["act"] == "laneFollow"):
-                    # if we've reached our stop condition (total distance forward)
-                    if (Y >= machine[state]["stopCondition"]):
-                        write("stp\n")
-                        stateChange = True
+            while (move):
+                # traverse the different segments on the path between these states
+                for action in 
+                if (stateChange):
+                    state = machine[state]["next"]
+                    # set our controller mode for this state
+                    if(machine[state]["mode"] == "odometry"):
+                        odometry = True
+                        # communicate the mode down to the arduino
+                        write("odo\n")
                     else:
-                        # query the QE
-                        getEncoder()
+                        odometry = False
+                        # communicate the mode down to the arduino
+                        write("vis\n")
 
-                        # calculate the error based on the distance deltas and state machine specified curve constant
-                        e = (R_ENC_DIST - oldR) - machine[state]["c"]*(L_ENC_DIST - oldL)
+                    # send speed calibration words down to arduino
+                    #TODO: calculate what value to start motors at
+                    #cmd = "cal"+"0"+str(motorStartL)+"0"+str(motorStartdR)+'\n'
+                    write(cmd)
+                    stateChange = False
 
-                        # send computed error down to the arduino
-                        cmd = "err%s0000\n" % str(e).zfill(4)
+                # for debugging:
+                print("Camera:\t vOffset: %d" % (vOffset.value))
+                # vDist = 0
+                # vSlope = 0
+                # print("Time elapsed: %d" % datetime.now().total_seconds())
+                # print("IR:\tpos: (%f,%f), angle: %f" % (X, Y, THETA))
+                # print("Camera:\t xDst: %d, slope:%d" % (vDist, vSlope))
+
+                # if we're using an odometer-based controller
+                if (odometry):
+                    #pdb.set_trace()
+                    if (machine[state]["act"] == "laneFollow"):
+                        # if we've reached our stop condition (total distance forward)
+                        if (Y >= machine[state]["stopCondition"]):
+                            write("stp\n")
+                            stateChange = True
+                        else:
+                            # query the QE
+                            getEncoder()
+
+                            # calculate the error based on the distance deltas and state machine specified curve constant
+                            e = (R_ENC_DIST - oldR) - machine[state]["c"]*(L_ENC_DIST - oldL)
+
+                            # send computed error down to the arduino
+                            cmd = "err%s0000\n" % str(e).zfill(4)
+                            write(cmd)
+                            
+                            # update x and y values to compute delta next iteration
+                            oldR, oldL = X, Y
+
+                    # else, we're doing a blind turn
+                    else:
+                        cmd = "trn%s0000\n" % str(machine[state]["c"]).zfill(4)
                         write(cmd)
                         
-                        # update x and y values to compute delta next iteration
-                        oldR, oldL = X, Y
 
-                # else, we're doing a blind turn
+
+                # if we're using a visual controller
                 else:
-                    cmd = "trn%s0000\n" % str(machine[state]["c"]).zfill(4)
-                    write(cmd)
-                    
+                    i = 0; #delete this
+                    # check current visual positions
+                    # compute error of vehicle in lane
 
-
-            # if we're using a visual controller
-            else:
-                i = 0; #delete this
-                # check current visual positions
-                # compute error of vehicle in lane
-
-            #check distance to lines on either side & angle in lane
-            #compute wheel speed adjustments based off of current speed and required corrections
-            #set wheels to corrected speed
-            #consider sleeping until a timeDelta has passed?
-            # compare state machine data to current data and see if we need to initiate a turn?
+                #check distance to lines on either side & angle in lane
+                #compute wheel speed adjustments based off of current speed and required corrections
+                #set wheels to corrected speed
+                #consider sleeping until a timeDelta has passed?
+                # compare state machine data to current data and see if we need to initiate a turn?
             
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
@@ -452,8 +508,11 @@ def runController(mapNum):
     s1.close()
     # once we're all done, send the kill switch to the inner vision loop and join the vision process
     see.value = False
+    goSerial = False
     starter_thread.join()
     print("Starter thread joined")
+    serial_thread.join()
+    print("Serial thread joined")
     vision_process.join() 
     print("Vision Process joined")
 
