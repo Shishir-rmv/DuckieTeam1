@@ -443,10 +443,9 @@ def visionController():
 # this will visually navigate until the stop condition is reached
 def vNav():
     global vOffset
-    # global oldValue
+    global vOffsetOld
     global stopLine
     
-    oldVal = 0
     stopped = False
     
     while (not stopped):
@@ -457,9 +456,11 @@ def vNav():
 
         else:
             # check for visual error changes
+            old = vOffsetOld.value
             now = vOffset.value
-            if (now != oldVal):
-                oldVal = now
+
+            if (now != old):
+                old = now
                 write("ver0000%s\n" % str(now).zfill(4))
 
 
@@ -607,6 +608,7 @@ def smallTest():
 
     # vision variables to share between processes
     global vOffset
+    global vOffsetOld
     global stopLine
     global greenLight
     global see
@@ -620,7 +622,7 @@ def smallTest():
     stopped = False
 
     # define and start the computer vision process
-    vision_process = Process(target=vision, args=(vOffset, see, stopLine, greenLight))
+    vision_process = Process(target=vision, args=(vOffset, vOffsetOld, see, stopLine, greenLight))
     vision_process.start()
     # _____________________________________________________________________________________
 
