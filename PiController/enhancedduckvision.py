@@ -80,16 +80,14 @@ def process(stream, vOffset, stopLine, greenLight):
                     num_of_green_px = np.where(np.any(green_img != [0, 0, 0], axis=-1))[1].size
                     if num_of_green_px > 50:
                         greenLight.value = True
-                        stopLine.value = False
                         print("%s\tFOUND Green: Starting Now" % (datetime.datetime.now()))
                 else:
                     cropped_for_red = image[200:480, 0:width].copy()
                     red_image = select_red(cropped_for_red)
                     red_px = np.mean(np.where(np.any(red_image != [0, 0, 0], axis=-1)), axis=1)
                     red_exist = not np.all(np.isnan(red_px))
-                    if red_exist:
-                        stopLine.value = True
-                        print("%s\tFOUND RED at (%d,%d): Stop Now" % (datetime.datetime.now(), red_px[1], red_px[0]))
+                    stopLine.value = red_exist
+                    print("%s\tFOUND RED at (%d,%d): Stop Now" % (datetime.datetime.now(), red_px[1], red_px[0]))
 
                 cropped_for_white_yellow = image[380:480, 0:640].copy()
                 hls_image = convert_hls(cropped_for_white_yellow)
