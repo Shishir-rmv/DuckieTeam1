@@ -126,16 +126,6 @@ def speed():
     last_X = X
 
 
-def comm_speed_test():
-    i = 0
-    while (i < 20):
-        start_time = datetime.now()
-        getEncoder()
-        end_time = datetime.now()
-        print("time for comm: %s" % str(end_time - start_time))
-        i = i + 1
-
-
 # get ping distance
 def getPing():
     write('png\n')
@@ -228,6 +218,11 @@ def runTracker():
     stop()
     s1.close()
 
+def greenChanger():
+    global greenLight
+
+    time.sleep(1)
+    greenLight.value = False
 
 def starter(vRef):
     global move
@@ -299,6 +294,21 @@ def makeGraph():
     for edge in edges:
         wEdges.append((edge[0], edge[1], edge[2]))
 
+    xyts = {0: {'X': 0, 'Y': 0, 'T': 0}, 
+            1: {'X': 0, 'Y': 0, 'T': 0}, 
+            2: {'X': 0, 'Y': 0, 'T': 0}, 
+            3: {'X': 0, 'Y': 0, 'T': 0}, 
+            4: {'X': 0, 'Y': 0, 'T': 0}, 
+            5: {'X': 0, 'Y': 0, 'T': 0}, 
+            6: {'X': 0, 'Y': 0, 'T': 0}, 
+            7: {'X': 0, 'Y': 0, 'T': 0}, 
+            8: {'X': 0, 'Y': 0, 'T': 0}, 
+            9: {'X': 0, 'Y': 0, 'T': 0}, 
+            10: {'X': 0, 'Y': 0, 'T': 0}, 
+            11: {'X': 0, 'Y': 0, 'T': 0} 
+            12: {'X': 0, 'Y': 0, 'T': 0}}
+    # nx.set_node_attributes(G, attrs)
+
 
     # construct graph
     DG.add_nodes_from(nodes)
@@ -346,7 +356,7 @@ def visionController():
     s1.flushInput()
     response, state = "", "0"
     oldVal, now = -999, 0
-    running, stateChange, odometry, flag = True, False, True, True
+    running, flag = True, True
 
     if s1.isOpen():
         s1.flush()
@@ -429,17 +439,27 @@ def visionController():
 # this will visually navigate until the stop condition is reached
 def vNav():
     global vOffset
+    # global oldValue
     global stopLine
     
     oldVal = 0
-    while (not stopLine.value):
-        now = vOffset.value
-        if (now != oldVal):
-            oldVal = now
-            write("ver0000%s\n" % str(now).zfill(4))
+    stopped = False
+    
+    while (not stopped):
+        if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 2):
+            print("Red line detected by vNav()")
+            write("stp")
+            stopped = True
+
+        else:
+            # check for visual error changes
+            now = vOffset.value
+            if (now != oldVal):
+                oldVal = now
+                write("ver0000%s\n" % str(now).zfill(4))
 
 
-def runController(mapNum):
+def runController():
     global move
     # Define and split off the computer vision subprocess _________________________________
     # vision variables to share between processes
@@ -462,6 +482,7 @@ def runController(mapNum):
 
     vRef = 30
     fastVRef = 60
+
     # big left turn
     bigRadius = 0.45
     # small right turn
@@ -484,7 +505,7 @@ def runController(mapNum):
     # open the serial port to the Arduino & initialize
     s1.flushInput()
 
-    running, stateChange, odometry = True, False, True
+    running = True
 
     if s1.isOpen():
         s1.flush()
@@ -500,6 +521,8 @@ def runController(mapNum):
 
     # this is the main logic loop where we put all our controlling equations/code
     try:
+        # calibrate the robot
+        write("cal%s%s\n" % str(vRef).zfill(4), str(vRef).zfill(4))
 
         # wait until we want the robot to move
         while (not move):
@@ -546,79 +569,6 @@ def runController(mapNum):
                         # blind turn
                         write("ltn%s0045" % str(bigRadius).zfill(4))
                         # wait for arduino to respond?
-                    # elif (actionMap[action] == "F"):
-                    #     # fast vision
-                    #     write("srt0000%s\n" % str(fastVRef).zfill(4))
-
-            while (move):
-                # traverse the different segments on the path between these states
-                # for action in
-                if (stateChange):
-                    state = machine[state]["next"]
-                    # set our controller mode for this state
-                    if (machine[state]["mode"] == "odometry"):
-                        odometry = True
-                        # communicate the mode down to the arduino
-                        write("odo\n")
-                    else:
-                        odometry = False
-                        # communicate the mode down to the arduino
-                        write("vis\n")
-
-                    # send speed calibration words down to arduino
-                    # TODO: calculate what value to start motors at
-                    # cmd = "cal"+"0"+str(motorStartL)+"0"+str(motorStartdR)+'\n'
-                    write(cmd)
-                    stateChange = False
-
-                # for debugging:
-                print("Camera:\t vOffset: %d" % (vOffset.value))
-                # vDist = 0
-                # vSlope = 0
-                # print("Time elapsed: %d" % datetime.now().total_seconds())
-                # print("IR:\tpos: (%f,%f), angle: %f" % (X, Y, THETA))
-                # print("Camera:\t xDst: %d, slope:%d" % (vDist, vSlope))
-
-                # if we're using an odometer-based controller
-                if (odometry):
-                    # pdb.set_trace()
-                    if (machine[state]["act"] == "laneFollow"):
-                        # if we've reached our stop condition (total distance forward)
-                        if (Y >= machine[state]["stopCondition"]):
-                            write("stp\n")
-                            stateChange = True
-                        else:
-                            # query the QE
-                            getEncoder()
-
-                            # calculate the error based on the distance deltas and state machine specified curve constant
-                            e = (R_ENC_DIST - oldR) - machine[state]["c"] * (L_ENC_DIST - oldL)
-
-                            # send computed error down to the arduino
-                            cmd = "err%s0000\n" % str(e).zfill(4)
-                            write(cmd)
-
-                            # update x and y values to compute delta next iteration
-                            oldR, oldL = X, Y
-
-                    # else, we're doing a blind turn
-                    else:
-                        cmd = "trn%s0000\n" % str(machine[state]["c"]).zfill(4)
-                        write(cmd)
-
-
-
-                # if we're using a visual controller
-                else:
-                    i = 0;  # delete this
-                    # check current visual positions
-                    # compute error of vehicle in lane
-
-                # check distance to lines on either side & angle in lane
-                # compute wheel speed adjustments based off of current speed and required corrections
-                # set wheels to corrected speed
-                # consider sleeping until a timeDelta has passed?
-                # compare state machine data to current data and see if we need to initiate a turn?
 
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
@@ -639,6 +589,118 @@ def runController(mapNum):
     vision_process.join()
     print("Vision Process joined")
 
+def turn(rTurn, radius):
+    if (rTurn):
+        write("rtn%s0045" % str(radius).zfill(4))
+    else:
+    write("ltn%s0045" % str(radius).zfill(4))
+
+def smallTest():
+    global move
+    global goSerial
+    global serial_msg_counter
+    global lastStart
+
+    # vision variables to share between processes
+    global vOffset
+    global stopLine
+    global greenLight
+    global see
+
+    lastStart = datetime.now()
+    starterThreads = []
+    start = time.time()
+    # Define and split off the computer vision subprocess _________________________________
+    # define doubles
+
+    stopped = False
+
+    # define and start the computer vision process
+    vision_process = Process(target=vision, args=(vOffset, see, stopLine, greenLight))
+    vision_process.start()
+    # _____________________________________________________________________________________
+
+    print("PyController starting")
+
+    # in mm/sec
+    vRef = 30
+
+    # split off the starter thread & serial reader threads so the machine can passively calibrate itself before we start
+    starterThreads.append(threading.Thread(target=starter, args=(vRef,)))
+    starterThreads[0].start()
+
+    serial_thread = threading.Thread(target=serialReader)
+    serial_thread.start()
+
+    # rtn00.20045
+
+    # open the serial port to the Arduino & initialize
+    s1.flushInput()
+    response, state = "", "0"
+    oldVal, now = -999, 0
+    running, flag = True, True
+
+    if s1.isOpen():
+        s1.flush()
+
+    # assume "stp" and "srt" and then "vrf" similar to "mtr".
+    # Pass "vrf" and two 4 character numbers afterwards. 
+    # So cast the vOfset to a 4 character string, and pad up to 8 characters total with 0's.
+
+    # this is the main logic loop where we put all our controlling equations/code
+    try:
+        # wait until we want the robot to move
+        print("CONTROLLER: waiting for user to permit movement")
+        while (not move):
+            pass
+
+        # begin visual navigation. This will stop at a red line
+        print("CONTROLLER: Starting vNav()")
+        vnav()
+
+        # wait until we see a green light to go again
+        print("CONTROLLER: waiting until we see a green light")
+        while (not greenLight.value):
+            pass
+
+        # spawn a thread to switch greenLight off 1 second from now
+        print("CONTROLLER: spawning greenLight changer thread")
+        greenChanger.append(threading.Thread(target=greenChanger))
+        greenChanger.start()
+
+        # change turn radius here
+        print("CONTROLLER: performing turn")
+        radius = .2
+        # args: [rTurn (boolean, if this is a right turn. False = left turn)], [radius of turn]
+        turn(True, .2)
+
+        # continue visually navigating afterwards (you'll probably want to kill it gracefully eventually)
+        print("CONTROLLER: Starting vNav()")
+        vNav()
+
+    except KeyboardInterrupt:
+        print("Keyboard interrupt detected, gracefully exiting...")
+        running = False
+
+    # stop vehicle process. Set motor speeds to 0, close down serial port, and kill vision thread.
+    # print("SENDING: stp")
+    write("stp")
+    s1.close()
+    # once we're all done, send the kill switch to the inner vision loop and join the vision process
+    see.value = False
+
+    # join the starter and serial threads, kill vision
+    for starterThread in starterThreads:
+        starterThread.join()
+    print("Starter threads joined")
+    goSerial = False
+    serial_thread.join()
+    print("Serial thread joined")
+    greenChanger.join()
+    print("Green thread joined")
+    vision_process.terminate()
+    print("Vision process terminated")
+
 
 # main method
 if __name__ == '__main__':
@@ -646,36 +708,25 @@ if __name__ == '__main__':
     time.sleep(1)
 
     mode = int(input("Which mode would you like to run? " +
-                     "\n 1 or 2: Hard-coded " +
-                     "\n 3: Tracker " +
-                     "\n 4: Manual " +
-                     "\n 5: Controller " +
-                     "\n 6: Basic Vision Controller " +
-                     "\n 7: Comm speed test \n"))
+                     "\n 1: Main Controller " +
+                     "\n 2: Vision Controller " +
+                     "\n 3: Manual Mode " +
+                     "\n 4: test Mode\n"))
     # run lane navigation
-    if (mode == 1 or mode == 2):
-        # runController(mode)
-        pass
+    if (mode == 1):
+        runController()
 
     # run tracker mode
-    elif (mode == 3):
-        runTracker()
-
-    # run manual mode
-    elif (mode == 4):
-        runManual()
-
-    # run manual mode
-    elif (mode == 5):
-        # hardCoded(mode)
-        runController(str(mode - 4))
-
-    # run basic vision tester
-    elif (mode == 6):
+    elif (mode == 2):
         visionController()
 
-    elif (mode == 7):
-        comm_speed_test()
+    # run manual mode
+    elif (mode == 3):
+        runManual()
+
+    # run test
+    elif (mode == 4):
+        smallTest()
 
     else:
         print("Wat")
