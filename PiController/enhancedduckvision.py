@@ -75,15 +75,15 @@ def process(stream, vOffset, stopLine, greenLight):
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
                 if stopLine.value and not greenLight.value:
-                    cropped_for_green = image[400:height, 0:width].copy()
+                    cropped_for_green = image[200:height, 0:width].copy()
                     green_img = select_green(cropped_for_green)
                     num_of_green_px = np.where(np.any(green_img != [0, 0, 0], axis=-1))[1].size
                     print("%s\tNumber of Green pixels: %d" % (datetime.datetime.now(), num_of_green_px))
-                    if num_of_green_px > 1000:
+                    if num_of_green_px > 100:
                         greenLight.value = True
                         print("%s\tFOUND Green: Starting Now" % (datetime.datetime.now()))
                 else:
-                    cropped_for_red = image[400:height, 0:width].copy()
+                    cropped_for_red = image[350:height, 0:width].copy()
                     red_image = select_red(cropped_for_red)
                     red_px = np.mean(np.where(np.any(red_image != [0, 0, 0], axis=-1)), axis=1)
                     red_exist = not np.all(np.isnan(red_px))
