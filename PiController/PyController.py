@@ -272,7 +272,7 @@ def visionController():
     running, stateChange, odometry, flag = True, False, True, True
 
     # in mm/sec
-    vRef = 30
+    vRef = 40
 
     if s1.isOpen():
         s1.flush()
