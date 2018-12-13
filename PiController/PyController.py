@@ -216,11 +216,12 @@ def runTracker():
     s1.close()
 
 
-def starter():
+def starter(vRef):
     global move
     global lastStart
     # use this to make it start moving when we want it to
     input("\nPress Enter to start\n")
+    write("srt0000%s\n" % str(vRef).zfill(4))
     move = True
     lastStart = datetime.now()
     print("Starter thread finished")
@@ -262,7 +263,7 @@ def visionController():
     print("PyController starting")
 
     # split off the starter thread & serial reader threads so the machine can passively calibrate itself before we start
-    starterThreads[0] = threading.Thread(target=starter)
+    starterThreads[0] = threading.Thread(target=starter, args=(vRef))
     starterThreads[0].start()
 
     serial_thread = threading.Thread(target=serialReader)
@@ -319,7 +320,7 @@ def visionController():
                     stopped = True
 
                     # spawn off a starter thread to only let the bot move again if we want it to
-                    sThread = threading.Thread(target=starter)
+                    sThread = threading.Thread(target=starter, args=(vRef))
                     starterThreads.append(sThread)
                     move = False
                     sThread.start()
@@ -410,7 +411,7 @@ def runController(mapNum):
     DG = nx.node_link_graph(read, directed=True, multigraph=False, attrs=None)
 
     # split off the starter thread so the machine can passively calibrate itself before we start
-    starter_thread = threading.Thread(target=starter)
+    starter_thread = threading.Thread(target=starter, args=(vRef))
     starter_thread.start()
 
     serial_thread = threading.Thread(target=serialReader)
@@ -582,7 +583,7 @@ def hardCoded(mapNum):
     print("HardController starting")
 
     # split off the starter thread so the machine can passively calibrate itself before we start
-    starter_thread = threading.Thread(target=starter)
+    starter_thread = threading.Thread(target=starter, args=(vRef))
     starter_thread.start()
 
     # open the serial port to the Arduino & initialize variables
