@@ -230,7 +230,7 @@ def serialReader():
     global goSerial
     print("Starting serial thread")
     while (goSerial):
-        if(in_waiting):
+        if(s1.in_waiting):
             # read the "label" byte
             serialIn = s1.read(20)
             # read the "data" byte
