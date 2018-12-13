@@ -37,6 +37,7 @@ last_time = datetime.now()
 
 # vision variables
 vOffset = Value('i', 0)
+vOffsetOld = Value('i', 0)
 stopLine = Value('b', False)
 greenLight = Value('b', False)
 see = Value('b', True)
@@ -315,6 +316,7 @@ def visionController():
 
     # vision variables to share between processes
     global vOffset
+    global vOffsetOld
     global stopLine
     global greenLight
     global see
@@ -328,7 +330,7 @@ def visionController():
     stopped = False
 
     # define and start the computer vision process
-    vision_process = Process(target=vision, args=(vOffset, see, stopLine, greenLight))
+    vision_process = Process(target=vision, args=(vOffset, vOffsetOld, see, stopLine, greenLight))
     vision_process.start()
     # _____________________________________________________________________________________
 

@@ -58,7 +58,7 @@ def select_yellow(image, converted):
     return cv2.bitwise_and(image, image, mask=yellow_mask)
 
 
-def process(stream, vOffset, stopLine, greenLight):
+def process(stream, vOffset, vOffsetOld, stopLine, greenLight):
     global expected_center
 
     if (True):
@@ -140,6 +140,9 @@ def process(stream, vOffset, stopLine, greenLight):
                     vOffset.value = int(diff)
                     print("%s\tNo white pixel found!\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
                         datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
+
+                if vOffset.value != vOffsetOld.value:
+                    vOffsetOld.value = vOffset.value
         except Exception as e:
             traceback.print_exc()
 
@@ -147,17 +150,17 @@ def process(stream, vOffset, stopLine, greenLight):
         stream.truncate()
 
 
-def gen_seq(vOffset, go, stopLine, greenLight):
+def gen_seq(vOffset, vOffsetOld, go, stopLine, greenLight):
     stream = io.BytesIO()
     while go.value:
         # print("VISION going")
         yield stream
-        process(stream, vOffset, stopLine, greenLight)
+        process(stream, vOffset, vOffsetOld, stopLine, greenLight)
 
 
 # this will be the process that we split off for Dmitry to do computer vision work in
 # we use shared memory to make passing information back and fourth
-def vision(vOffset, go, stopLine, greenLight):
+def vision(vOffset, vOffsetOld, go, stopLine, greenLight):
     global WIDTH, HEIGHT
     print("Starting Vision")
     with picamera.PiCamera() as camera:
@@ -167,5 +170,5 @@ def vision(vOffset, go, stopLine, greenLight):
         camera.framerate = 40
         camera.start_preview()
         time.sleep(1)
-        camera.capture_sequence(gen_seq(vOffset, go, stopLine, greenLight), format='jpeg', use_video_port=True)
+        camera.capture_sequence(gen_seq(vOffset, vOffsetOld, go, stopLine, greenLight), format='jpeg', use_video_port=True)
     print("Vision Finished")
