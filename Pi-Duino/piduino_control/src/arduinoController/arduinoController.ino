@@ -104,7 +104,7 @@ void setup() {
 void loop() {
   static long last_ping = 0, curr_ping = 0;
 //stopIfFault();
-  static String opStr;
+  static String opStr,opStrB;
   static float arg1 = 0;
   static int arg2 = 0;
   static char input[15];
@@ -187,6 +187,7 @@ void loop() {
             
     case rtn :
     turn_micros = micros();
+    opStrB = "rtn";
     break;
 
     case vOffset :
@@ -206,7 +207,7 @@ void loop() {
   }
   }
 
-    switch(hashit(opStr)){    
+    switch(hashit(opStrB)){    
       case rtn :
 
       C = arg1;
@@ -215,10 +216,12 @@ void loop() {
       rpm_R_ref=C*rpm_L_ref;
       pwm_L = (2.2*rpm_L_ref + 85);
       pwm_R = (2.1*rpm_R_ref + 81);
+      prev_error = 0;
+      v_err == prev_error;
       if (micros()-turn_micros > 4000000){
       Serial.print(C);
       Serial.write('d');
-      opStr="";
+      opStrB="";
       Stop();
       }
       break;
@@ -229,10 +232,13 @@ void loop() {
       rpm_L_ref=C*rpm_R_ref;
       pwm_L = (2.2*rpm_L_ref + 85);
       pwm_R = (2.1*rpm_R_ref + 81);
+      prev_error = 0;
+      v_err == prev_error;
       if (micros()-turn_micros > 5500000){
       Serial.write('d');
-      opStr="";
+      opStrB="";
       Stop();
+
       }
       break;
       
@@ -278,8 +284,6 @@ void loop() {
   curr_ping = micros();
   if( (curr_ping-last_ping) > 1000000){ //test every 2 s
     ping();
-    //Serial.println(ping_slowdown);
-    //Serial.println(pwm_L);
     last_ping = curr_ping;   
   }
   md.setM2Speed(pwm_L*ping_slowdown);    
