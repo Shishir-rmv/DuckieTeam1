@@ -197,7 +197,7 @@ void loop() {
         pwm_R = (2.1*local_R_ref + 81);
         if (micros()-turn_micros > 4000000){
           // Serial.print(C);
-          Serial.write('tD');
+          Serial.write('D');
           opStrB="";
           turning = 0;
         }
@@ -211,7 +211,7 @@ void loop() {
         pwm_L = (2.2*local_L_ref + 85);
         pwm_R = (2.1*local_R_ref + 81);
         if (micros()-turn_micros > 5500000){
-          Serial.write('tD');
+          Serial.write('D');
           opStrB="";
           turning = 0;
         }
