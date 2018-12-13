@@ -337,7 +337,6 @@ def visionController():
                     greenLight.value = False
 
                 else:
-                    print("in else")
                     # check for visual error changes
                     now = vOffset.value
                     if (now != oldVal):
