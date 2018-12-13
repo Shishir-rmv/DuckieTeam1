@@ -59,7 +59,7 @@ def select_yellow(image, converted):
     return cv2.bitwise_and(image, image, mask=yellow_mask)
 
 
-def process(stream, vOffset, vIntersection):
+def process(stream, vOffset, stopLine, greenLight):
     global expected_center
 
     if (True):
@@ -83,13 +83,14 @@ def process(stream, vOffset, vIntersection):
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
-                if vIntersection.value:
+                if stopLine.value and not greenLight.value:
                     cropped_for_green = image[400:height, 0:width].copy()
                     green_img = select_green(cropped_for_green)
                     # green_px = np.mean(np.where(np.any(green_img != [0, 0, 0], axis=-1)), axis=1)
                     num_of_green_px = np.where(np.any(green_img != [0, 0, 0], axis=-1))[1].size
                     if num_of_green_px > 50:
-                        vIntersection.value = False
+                        greenLight.value = True
+                        stopLine.value = False
                         print("%s\tFOUND Green: Starting Now" % (datetime.datetime.now()))
                 else:
                     cropped_for_red = image[200:480, 0:width].copy()
@@ -97,7 +98,7 @@ def process(stream, vOffset, vIntersection):
                     red_px = np.mean(np.where(np.any(red_image != [0, 0, 0], axis=-1)), axis=1)
                     red_exist = not np.all(np.isnan(red_px))
                     if red_exist:
-                        vIntersection.value = True
+                        stopLine.value = True
                         print("%s\tFOUND RED at (%d,%d): Stop Now" % (datetime.datetime.now(), red_px[1], red_px[0]))
 
                 cropped_for_white_yellow = image[380:480, 0:640].copy()
@@ -157,17 +158,17 @@ def process(stream, vOffset, vIntersection):
         stream.truncate()
 
 
-def gen_seq(vOffset, go, vIntersection):
+def gen_seq(vOffset, go, stopLine, greenLight):
     stream = io.BytesIO()
     while go.value:
         # print("VISION going")
         yield stream
-        process(stream, vOffset, vIntersection)
+        process(stream, vOffset, stopLine, greenLight)
 
 
 # this will be the process that we split off for Dmitry to do computer vision work in
 # we use shared memory to make passing information back and fourth
-def vision(vOffset, go, vIntersection):
+def vision(vOffset, go, stopLine, greenLight):
     global WIDTH, HEIGHT
     print("Starting Vision")
     with picamera.PiCamera() as camera:
@@ -177,5 +178,5 @@ def vision(vOffset, go, vIntersection):
         camera.framerate = 40
         camera.start_preview()
         time.sleep(1)
-        camera.capture_sequence(gen_seq(vOffset, go, vIntersection), format='jpeg', use_video_port=True)
+        camera.capture_sequence(gen_seq(vOffset, go, stopLine, greenLight), format='jpeg', use_video_port=True)
     print("Vision Finished")
