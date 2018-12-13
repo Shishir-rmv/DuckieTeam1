@@ -240,26 +240,27 @@ def visionController():
     global move
     global goSerial
     global serial_msg_counter
+    starterThreads = []
     start = time.time()
     # Define and split off the computer vision subprocess _________________________________
     # define doubles
     vOffset = Value('i', 0)
-    vIntersection = Value('b', False)
+    stopLine = Value('b', False)
     stopped = False
 
     # define boolean to act as an off switch
     see = Value('b', True)
 
     # define and start the computer vision process
-    vision_process = Process(target=vision, args=(vOffset, see, vIntersection))
+    vision_process = Process(target=vision, args=(vOffset, see, stopLine))
     vision_process.start()
     # _____________________________________________________________________________________
 
     print("PyController starting")
 
     # split off the starter thread & serial reader threads so the machine can passively calibrate itself before we start
-    starter_thread = threading.Thread(target=starter)
-    starter_thread.start()
+    starterThreads[0] = threading.Thread(target=starter)
+    starterThreads[0].start()
 
     serial_thread = threading.Thread(target=serialReader)
     serial_thread.start()
@@ -291,7 +292,6 @@ def visionController():
             if (move):
                 if(flag):
                     # send initial calibration
-                    # TODO: ASK WHAT'S A GOOD VREF.
                     write("srt0000%s\n" % str(vRef).zfill(4))
                     # print("Finished writing start")
                     flag = False
@@ -301,20 +301,27 @@ def visionController():
                 if (now != oldVal):
                     oldVal = now
                     # print("Camera:\t vOffset: %d" % (now))
-                    # print("SENDING: ver0000%s" % str(now).zfill(4))
+                    print("SENDING: ver0000%s" % str(now).zfill(4))
                     serial_msg_counter += 1
-                    print("SENT %d Messages to Arduino" % serial_msg_counter)
+                    # print("SENT %d Messages to Arduino" % serial_msg_counter)
                     end = time.time()
-                    print("%d seconds elapsed" % (end - start))
+                    # print("%d seconds elapsed" % (end - start))
                     write("ver0000%s\n" % str(now).zfill(4))
-                    print("inWaiting: %i, outWaiting %i" % (s1.in_waiting, s1.out_waiting))
+                    # print("inWaiting: %i, outWaiting %i" % (s1.in_waiting, s1.out_waiting))
                     # print("Finished writing update")
 
-                if vIntersection.value and not stopped:
+                if stopLine.value and not stopped:
                     print("SENDING: stp")
                     write("stp")
                     stopped = True
-                elif stopped and not vIntersection.value:
+
+                    # spawn off a starter thread to only let the bot move again if we want it to
+                    sThread = threading.Thread(target=starter)
+                    starterThreads.append(sThread)
+                    move = False
+                    sThread.start()
+
+                elif stopped and not stopLine.value:
                     stopped = False
                     print("Its green, Starting again")
                     print("SENDING: stp")
@@ -332,13 +339,33 @@ def visionController():
     see.value = False
 
     # join the starter and serial threads, kill vision
-    starter_thread.join()
-    print("Starter thread joined")
+    for starterThread in starterThreads:
+        starterThread.join()
+    print("Starter threads joined")
     goSerial = False
     serial_thread.join()
     print("Serial thread joined")
     vision_process.terminate() 
     print("Vision process terminated")
+
+# this will visually navigate until the stop condition is reached
+def vNav(vOffset, stopLine):
+    oldVal = 0
+    while (not stopLine.value):
+        now = vOffset.value
+        if (now != oldVal):
+                    oldVal = now
+                    # print("Camera:\t vOffset: %d" % (now))
+                    print("SENDING: ver0000%s" % str(now).zfill(4))
+                    serial_msg_counter += 1
+                    # print("SENT %d Messages to Arduino" % serial_msg_counter)
+                    end = time.time()
+                    # print("%d seconds elapsed" % (end - start))
+                    write("ver0000%s\n" % str(now).zfill(4))
+                    # print("inWaiting: %i, outWaiting %i" % (s1.in_waiting, s1.out_waiting))
+                    # print("Finished writing update")
+
+
 
 def runController(mapNum):
     global move
@@ -351,12 +378,12 @@ def runController(mapNum):
     see = Value('b', True)
 
     # to tell us if we're stopped
-    stopped = Value('b', True)
+    stopLine = Value('b', False)
     # if we see a green light
     greenLight = Value('b', False)
 
     # define and start the computer vision process
-    vision_process = Process(target=vision, args=(vOffset, see))
+    vision_process = Process(target=vision, args=(vOffset, see, stopLine, greenLight))
     vision_process.start()
     # _____________________________________________________________________________________
     print("PyController starting")
@@ -370,7 +397,7 @@ def runController(mapNum):
     # big left turn
     bigRadius = 0.45
     # small right turn
-    smallRadius = -0.2
+    smallRadius = 0.2
 
     # read in the state machine graph
     with open("../peripherals/graph.json", 'r') as f:
@@ -398,37 +425,62 @@ def runController(mapNum):
     with open("StateMachine/map%s.json" % mapNum, 'r') as f:
         machine = json.load(f)
 
+    # TODO: Calibrating
+    # calibrate what X and Y we are at according to our initial state
+    # print("calibrating position now")
+    # write("cal%s%s" % (stateX, stateY))
+
     # this is the main logic loop where we put all our controlling equations/code
     try:
-        # loop overall segments in our given route
-        for segment in range(len(path1)-1):
-            route = nx.dijkstra_path(DG, segment, segment+1)
 
+        # wait until we want the robot to move
+        while (not move):
+            pass
+
+        # loop overall segments in our given route
+        for segment in range(len(path)-1):
+            # debugging
+            print("About to navigate %s to %s" % (path[segment], path[segment+1]))
+
+            # compute the path from the segment start state to its finish state
+            route = nx.dijkstra_path(DG, path[segment], path[segment+1])
             # navigate the current segment's route
-            for startState in range(len(route)-1):
+            
+            # debugging
+            print("Path plan is: %s" % str(route))
+            for currentState in range(len(route)-1):
                 # by performing all of the actions in the route
-                actionMap = edges[str(startState)+","+str(startState+1)]["attrs"]["map"]
+                # when the last action is completed, the next state will happen in the parent for loop
+                actionMap = edges[str(currentState)+","+str(currentState+1)]["attrs"]["map"]
+                
+                # wait until we see a green light to begin our action sequence
+                while (not greenLight.value):
+                    time.sleep(.2)
+
                 for action in range(len(actionMap)):
                     # go straight
-                    if (actionMap[action] == "S"):
+                    if (actionMap[action] == "S" or actionMap[action] == "F"):
                         # using vision, start moving. Args: dist, initial vRef
                         write("srt0000%s\n" % str(vRef).zfill(4))
 
+                        # navigate visually until the stop condition
+                        vNav(vOffset, stopLine)
+
                         # if we're on the last action
                         if (action == len(actionMap)-1):
-                            pass
+                            vNav(vOffset, stopLine)
 
                     elif (actionMap[action] == "R"):
                         # blind turn
-                        write("trn%s0045" % str(smallRadius).zfill(4))
+                        write("rtn%s0045" % str(smallRadius).zfill(4))
                         # wait for arduino to respond?
                     elif (actionMap[action] == "L"):
                         # blind turn
-                        write("trn%s0045" % str(bigRadius).zfill(4))
+                        write("ltn%s0045" % str(bigRadius).zfill(4))
                         # wait for arduino to respond?
-                    elif (actionMap[action] == "F"):
-                        # fast vision
-                        write("srt0000%s\n" % str(fastVRef).zfill(4))
+                    # elif (actionMap[action] == "F"):
+                    #     # fast vision
+                    #     write("srt0000%s\n" % str(fastVRef).zfill(4))
 
             while (move):
                 # traverse the different segments on the path between these states
