@@ -310,7 +310,8 @@ def visionController():
 
             # if the starter thread has changed this global variable to allow movement
             if (move):
-                print("LOOPING HERE")
+                if (greenLight.value):
+                    print("LOOPING HERE")
                 # if(flag):
                 #     # send initial calibration
                 #     write("srt0000%s\n" % str(vRef).zfill(4))
