@@ -198,8 +198,8 @@ void loop() {
       case rtn :
         blocking = 1;
         C = arg1;
-        local_L_ref=arg2;//C=0.2 V45 C2 22.5
-        local_R_ref=C*rpm_L_ref;
+        local_L_ref = arg2;//C=0.2 V45 C2 22.5
+        local_R_ref = C*local_L_ref;
         pwm_L = (2.2*local_L_ref + 85);
         pwm_R = (2.1*local_R_ref + 81);
         if (micros()-blind_micros > 4000000){
@@ -213,8 +213,8 @@ void loop() {
       case ltn :
         blocking = 1;
         C = arg1;
-        local_R_ref=arg2;//C=0.2 V45 C2 22.5
-        local_L_ref=C*rpm_R_ref;
+        local_R_ref = arg2;//C=0.2 V45 C2 22.5
+        local_L_ref = C*local_R_ref;
         pwm_L = (2.2*local_L_ref + 85);
         pwm_R = (2.1*local_R_ref + 81);
         if (micros()-blind_micros > 5500000){
@@ -227,7 +227,7 @@ void loop() {
       case fwd :
         blocking = 1;
         local_R_ref=arg2;//V30
-        local_L_ref=rpm_R_ref;
+        local_L_ref=local_R_ref;
         pwm_L = (2.2*local_L_ref + 85);
         pwm_R = (2.1*local_R_ref + 81);
         if (micros()-blind_micros > 4000000){
