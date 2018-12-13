@@ -230,14 +230,15 @@ def serialReader():
     global goSerial
     print("Starting serial thread")
     while (goSerial):
-        # read the "label" byte
-        serialIn = s1.read(20)
-        # read the "data" byte
-        # r2 = s1.read(20)
-        # arg2 = int.from_bytes(r2, byteorder = 'little', signed = False)
-        print("From Arduino: " + serialIn)
-        # print("SERIAL: %s" % r1)
-        # this is only for debugging
+        if(in_waiting):
+            # read the "label" byte
+            serialIn = s1.read(20)
+            # read the "data" byte
+            # r2 = s1.read(20)
+            # arg2 = int.from_bytes(r2, byteorder = 'little', signed = False)
+            print("From Arduino: " + serialIn)
+            # print("SERIAL: %s" % r1)
+            # this is only for debugging
     print("Ending serial thread")
 
 def visionController():
