@@ -47,7 +47,7 @@ double duration_L, duration_R, prevmillis_L = micros(), prevmillis_R = micros(),
 
 // errors
 double prev_error = 0, error = 0, error_dot = 0, del_v = 0,act,ref;
-int fourth;
+int turning;
 int v_err = 0;
 // rpm's
 double rpm_target_L = 0, rpm_target_R = 0, rpm_R = 0, rpm_L = 0,rpm_R_ref = 0, rpm_L_ref = 0, pwm_L = 0, pwm_R = 0;
@@ -225,33 +225,33 @@ void loop() {
 
     switch(hashit(opStrB)){    
       case rtn :
+      turning = 1;
       C = arg1;
       rpm_L_ref=arg2;//C=0.2 V45 C2 22.5
       rpm_R_ref=C*rpm_L_ref;
       pwm_L = (2.2*rpm_L_ref + 85);
       pwm_R = (2.1*rpm_R_ref + 81);
-      prev_error = 0;
-      v_err == prev_error;
       if (micros()-turn_micros > 4000000){
       Serial.print(C);
       Serial.write('d');
       opStrB="";
       Stop();
+      turning = 0;
       }
       break;
 
       case ltn :
+      turning = 1;
       C = arg1;
       rpm_R_ref=arg2;//C=0.2 V45 C2 22.5
       rpm_L_ref=C*rpm_R_ref;
       pwm_L = (2.2*rpm_L_ref + 85);
       pwm_R = (2.1*rpm_R_ref + 81);
-      prev_error = 0;
-      v_err == prev_error;
       if (micros()-turn_micros > 5500000){
       Serial.write('d');
       opStrB="";
       Stop();
+      turning = 0;
 
       }
       break;
@@ -273,7 +273,7 @@ void loop() {
       opStr = "";
       break; 
   }
-  if (v_err != prev_error){
+  if (v_err != prev_error && turning != 1){
     error_dot = v_err - prev_error;
     del_v = -(0.3*v_err) - (0.01*error_dot);
     del_v = (del_v*60)/(70*3.14);
@@ -381,7 +381,6 @@ void Stop() {
   v_err=0;
   md.setM2Speed(pwm_L);    
   md.setM1Speed(pwm_R);
-  fourth = 1;
   String opStrB = "";
 }
 
