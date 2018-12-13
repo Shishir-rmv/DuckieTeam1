@@ -274,6 +274,7 @@ def visionController():
     global greenLight
     global see
 
+    lastStart = datetime.now()
     starterThreads = []
     start = time.time()
     # Define and split off the computer vision subprocess _________________________________
