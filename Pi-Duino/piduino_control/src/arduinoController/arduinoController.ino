@@ -199,8 +199,6 @@ void loop() {
           // Serial.print(C);
           Serial.write('tD');
           opStrB="";
-          rpm_L_ref = 30;
-          rpm_L_ref = 30;
           turning = 0;
         }
         break;
@@ -215,7 +213,6 @@ void loop() {
         if (micros()-turn_micros > 5500000){
           Serial.write('tD');
           opStrB="";
-          Stop();
           turning = 0;
         }
         break;
