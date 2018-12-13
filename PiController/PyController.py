@@ -449,7 +449,7 @@ def vNav():
     stopped = False
     
     while (not stopped):
-        if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 2):
+        if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1):
             print("Red line detected by vNav()")
             write("stp")
             stopped = True
@@ -668,6 +668,7 @@ def smallTest():
         print("CONTROLLER: waiting until we see a green light")
         while (not greenLight.value):
             pass
+        lastStart = datetime.now()
 
         # spawn a thread to switch greenLight off 1 second from now
         print("CONTROLLER: spawning greenLight changer thread")
@@ -678,7 +679,7 @@ def smallTest():
         print("CONTROLLER: performing turn")
         radius = .2
         # args: [rTurn (boolean, if this is a right turn. False = left turn)], [radius of turn]
-        turn(True, .2)
+        turn(True, radius)
 
         # continue visually navigating afterwards (you'll probably want to kill it gracefully eventually)
         print("CONTROLLER: Starting vNav()")
@@ -717,7 +718,7 @@ if __name__ == '__main__':
                      "\n 1: Main Controller " +
                      "\n 2: Vision Controller " +
                      "\n 3: Manual Mode " +
-                     "\n 4: test Mode\n"))
+                     "\n 4: Test Mode\n"))
     # run lane navigation
     if (mode == 1):
         runController()
