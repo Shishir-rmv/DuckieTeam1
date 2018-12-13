@@ -207,6 +207,7 @@ void loop() {
           Serial.write('D');
           opStrB="";
           blocking = 0;
+ 
         }
         break;
 
@@ -214,10 +215,15 @@ void loop() {
         blocking = 1;
         C = arg1;
         local_R_ref = arg2;//C=0.2 V45 C2 22.5
+        local_L_ref = local_R_ref;
+        pwm_L = (2.2*local_L_ref + 85);
+        pwm_R = (2.1*local_R_ref + 81);
+        if (((micros()-blind_micros) > 500000) && ((micros()-blind_micros) <= 5500000)){
+        local_R_ref = arg2;//C=0.2 V45 C2 22.5
         local_L_ref = C*local_R_ref;
         pwm_L = (2.2*local_L_ref + 85);
         pwm_R = (2.1*local_R_ref + 81);
-        if (micros()-blind_micros > 5500000){
+        }else if(micros()-blind_micros > 5500000){
           Serial.write('D');
           opStrB="";
           blocking = 0;

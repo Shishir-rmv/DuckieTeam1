@@ -81,7 +81,7 @@ def process(stream, vOffset, vOffsetOld, stopLine, greenLight):
                     print("%s\tNumber of Green pixels: %d" % (datetime.datetime.now(), num_of_green_px))
                     if num_of_green_px > 100:
                         greenLight.value = True
-                        print("%s\tFOUND Green: Starting Now" % (datetime.datetime.now()))
+                        print("%s\tFOUND GREEN>>>: Starting Now" % (datetime.datetime.now()))
                 else:
                     cropped_for_red = image[350:height, 0:width].copy()
                     red_image = select_red(cropped_for_red)
@@ -91,9 +91,9 @@ def process(stream, vOffset, vOffsetOld, stopLine, greenLight):
                     # red_exist = not np.all(np.isnan(red_px))
                     if num_of_red_px > 100:
                         stopLine.value = True
-                        print("%s\tFOUND RED at (%d,%d): Stop Now" % (datetime.datetime.now()))
+                        print("%s\tFOUND RED!!!: Stop Now" % (datetime.datetime.now()))
 
-                cropped_for_white_yellow = image[380:480, 0:640].copy()
+                cropped_for_white_yellow = image[360:480, 0:640].copy()
                 hls_image = convert_hls(cropped_for_white_yellow)
 
                 # Filters White and Yellow colors in the image
@@ -116,26 +116,26 @@ def process(stream, vOffset, vOffsetOld, stopLine, greenLight):
                     current_center = (white_px[1] + yellow_px[1]) / 2
                     diff = expected_center - current_center
                     # Deal with glare:
-                    if abs(white_px[1] - yellow_px[1]) < 300:
-                        current_center = int(yellow_px[1]) - 300
-                        diff = expected_center - current_center
-                        vOffset.value = int(diff)
-                        print("%s\tProbably seeing glare\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
-                            datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
-                    else:
-                        print(
-                            "%s\tWhite Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
-                                datetime.datetime.now(), int(white_px[1]), int(white_px[0]), int(yellow_px[1]),
-                                int(yellow_px[0]), current_center, diff))
-                        vOffset.value = int(diff)
+                    #if abs(white_px[1] - yellow_px[1]) < 300:
+                    #    current_center = int(yellow_px[1]) - 300
+                    #    diff = expected_center - current_center
+                    #    vOffset.value = int(diff)
+                    #    print("%s\tProbably seeing glare\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
+                    #        datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
+                    #else:
+                    print(
+                        "%s\tWhite Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
+                            datetime.datetime.now(), int(white_px[1]), int(white_px[0]), int(yellow_px[1]),
+                            int(yellow_px[0]), current_center, diff))
+                    vOffset.value = int(diff)
                 elif white_exist and not yellow_exist:
-                    current_center = int(white_px[1]) - 300
+                    current_center = int(white_px[1]) - 261
                     diff = expected_center - current_center
                     vOffset.value = int(diff)
                     print("%s\tNo yellow pixel found!\tWhite Pixel: x = %d, y = %d\t diff: %d" % (
                         datetime.datetime.now(), int(white_px[1]), int(white_px[0]), diff))
                 elif yellow_exist and not white_exist:
-                    current_center = 300 - int(yellow_px[1])
+                    current_center = 261 - int(yellow_px[1])
                     diff = current_center - expected_center
                     vOffset.value = int(diff)
                     print("%s\tNo white pixel found!\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
