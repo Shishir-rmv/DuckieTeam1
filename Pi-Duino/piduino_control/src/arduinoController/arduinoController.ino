@@ -130,7 +130,6 @@ void loop() {
       arg1A[2] = input[5];
       arg1A[3] = input[6];
       arg1A[4] = '\0';
-      Serial.println("arg1");
     }
 
     // if there's a second argument
@@ -202,6 +201,7 @@ void loop() {
     case state1 :
       rpm_R_ref=arg2;//(arg1*60)/(70*3.14);
       rpm_L_ref=rpm_R_ref;//Vref = 45 C = 0.2  small right turn 0.45 big turn
+      opStrB = "st1";
       break;
       
     case irSensor :
@@ -256,8 +256,6 @@ void loop() {
       break;
 
       case state1 :
-      rpm_R_ref=arg2;//(arg1*60)/(70*3.14);
-      rpm_L_ref=rpm_R_ref;//Vref = 45 C = 0.2  small right turn 0.45 big turn
       ref = 0;
       act = y;
       straight();
@@ -268,6 +266,8 @@ void loop() {
       ref = 100;
       act = pow((x-1000),2) + pow(y,2);
       turn();
+      break;
+      
       default :
       opStr = "";
       break; 
@@ -381,6 +381,7 @@ void Stop() {
   md.setM2Speed(pwm_L);    
   md.setM1Speed(pwm_R);
   fourth = 1;
+  opStrB = "";
 }
 
 int8_t read_encoderL(int8_t new_val)

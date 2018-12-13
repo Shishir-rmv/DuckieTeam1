@@ -263,7 +263,7 @@ def visionController():
     print("PyController starting")
 
     # split off the starter thread & serial reader threads so the machine can passively calibrate itself before we start
-    starterThreads[0] = threading.Thread(target=starter, args=(vRef))
+    starterThreads.append(threading.Thread(target=starter, args=(vRef)))
     starterThreads[0].start()
 
     serial_thread = threading.Thread(target=serialReader)
@@ -276,7 +276,7 @@ def visionController():
     running, stateChange, odometry, flag = True, False, True, True
 
     # in mm/sec
-    vRef = 40
+    vRef = 30
 
     if s1.isOpen():
         s1.flush()

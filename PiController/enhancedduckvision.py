@@ -26,16 +26,17 @@ def convert_hls(image):
 
 
 def select_green(image):
-    converted = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
-    lower = np.uint8([60, 250, 250])
-    upper = np.uint8([65, 255, 255])
-    green_mask = cv2.inRange(converted, lower, upper)
-    return cv2.bitwise_and(image, image, mask=green_mask)
+    lower = np.array([0, 200, 0], dtype = "uint8")
+    upper = np.array([200, 255, 200], dtype = "uint8")
+    mask = cv2.inRange(image, lower, upper)
+    output = cv2.bitwise_and(image, image, mask = mask)
+    return output
+
 
 
 def select_red(image):
     lower = np.array([0, 0, 200], dtype = "uint8")
-    upper = np.array([150, 150, 250], dtype = "uint8")
+    upper = np.array([150, 150, 255], dtype = "uint8")
     mask = cv2.inRange(image, lower, upper)
     output = cv2.bitwise_and(image, image, mask = mask)
     return output
@@ -82,7 +83,6 @@ def process(stream, vOffset, vIntersection):
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
-
                 if vIntersection.value:
                     cropped_for_green = image[400:height, 0:width].copy()
                     green_img = select_green(cropped_for_green)
@@ -92,11 +92,11 @@ def process(stream, vOffset, vIntersection):
                         vIntersection.value = False
                         print("%s\tFOUND Green: Starting Now" % (datetime.datetime.now()))
                 else:
-                    cropped_for_red = image[450:480, 0:width].copy()
+                    cropped_for_red = image[200:480, 0:width].copy()
                     red_image = select_red(cropped_for_red)
                     red_px = np.mean(np.where(np.any(red_image != [0, 0, 0], axis=-1)), axis=1)
                     red_exist = not np.all(np.isnan(red_px))
-                    if red_exist and 280 < red_px[1] < 360:
+                    if red_exist:
                         vIntersection.value = True
                         print("%s\tFOUND RED at (%d,%d): Stop Now" % (datetime.datetime.now(), red_px[1], red_px[0]))
 
