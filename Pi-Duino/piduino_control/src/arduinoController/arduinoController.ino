@@ -33,7 +33,7 @@ double theta = 0, x = 0, y = 0, C = 1;
 double delta_x, heading, l_s, r_s; //left & right distance changed
 
 // encoder counts
-int l_enc_count, r_enc_count, prev_l_enc_count = 0, prev_r_enc_count = 0, turning, v_err = 0;
+int l_enc_count, r_enc_count, prev_l_enc_count = 0, prev_r_enc_count = 0, blocking = 0, v_err = 0;
 
 // durations?
 double duration, prevmillis, turn_micros;
@@ -142,6 +142,7 @@ void loop() {
       break;
     
     case start :
+      blocking = 0;
       rpm_R_ref=arg2;//(arg1*60)/(70*3.14);
       rpm_L_ref=rpm_R_ref;//Vref = 45 C = 0.2  small right turn 0.45 big turn
       pwm_L = (2.2*rpm_L_ref + 85);
@@ -189,7 +190,7 @@ void loop() {
 
     switch(hashit(opStrB)){    
       case rtn :
-        turning = 1;
+        blocking = 1;
         C = arg1;
         local_L_ref=arg2;//C=0.2 V45 C2 22.5
         local_R_ref=C*rpm_L_ref;
@@ -199,12 +200,12 @@ void loop() {
           // Serial.print(C);
           Serial.write('D');
           opStrB="";
-          turning = 0;
+          blocking = 0;
         }
         break;
 
       case ltn :
-        turning = 1;
+        blocking = 1;
         C = arg1;
         local_R_ref=arg2;//C=0.2 V45 C2 22.5
         local_L_ref=C*rpm_R_ref;
@@ -213,7 +214,7 @@ void loop() {
         if (micros()-turn_micros > 5500000){
           Serial.write('D');
           opStrB="";
-          turning = 0;
+          blocking = 0;
         }
         break;
 
@@ -234,7 +235,7 @@ void loop() {
         opStr = "";
         break; 
   }
-  if (v_err != prev_error && turning != 1){
+  if (v_err != prev_error && blocking != 1){
     error_dot = v_err - prev_error;
     del_v = -(0.3*v_err) - (0.01*error_dot);
     del_v = (del_v*60)/(70*3.14);
@@ -341,6 +342,7 @@ void stopIfFault(){
 
 void Stop() {
   Serial.write("STOPPING");
+  blocking = 1;
   pwm_R = 0;
   pwm_L = 0;
   rpm_target_R = 0;
