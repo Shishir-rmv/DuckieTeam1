@@ -224,11 +224,18 @@ def runTracker():
 def starter(vRef):
     global move
     global lastStart
+    global greenLight
+
     # use this to make it start moving when we want it to
     input("\nPress Enter to start\n")
     write("srt0000%s\n" % str(vRef).zfill(4))
     move = True
     lastStart = datetime.now()
+
+    # temporary to allow us to test redline detection with enter key
+    time.sleep(3)
+    greenLight.value = False
+
     print("Starter thread finished")
 
 def serialReader():
