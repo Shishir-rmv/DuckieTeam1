@@ -8,6 +8,8 @@ enum str_code{
   odometry,
   calibrat,
   state1,
+  state2,
+  xyt,
   ltn,
   rtn,
   visual,
