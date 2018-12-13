@@ -225,7 +225,6 @@ void loop() {
         break;
 
       case fwd :
-        Serial.println("in fwd");
         blocking = 1;
         local_R_ref=arg2;//V30
         local_L_ref=rpm_R_ref;
