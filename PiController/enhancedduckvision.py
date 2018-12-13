@@ -26,21 +26,19 @@ def convert_hls(image):
 
 
 def select_green(image):
-    lower = np.array([0, 200, 0], dtype = "uint8")
-    upper = np.array([200, 255, 200], dtype = "uint8")
+    lower = np.array([0, 200, 0], dtype="uint8")
+    upper = np.array([200, 255, 200], dtype="uint8")
     mask = cv2.inRange(image, lower, upper)
-    output = cv2.bitwise_and(image, image, mask = mask)
+    output = cv2.bitwise_and(image, image, mask=mask)
     return output
-
 
 
 def select_red(image):
-    lower = np.array([0, 0, 200], dtype = "uint8")
-    upper = np.array([150, 150, 255], dtype = "uint8")
+    lower = np.array([0, 0, 200], dtype="uint8")
+    upper = np.array([150, 150, 255], dtype="uint8")
     mask = cv2.inRange(image, lower, upper)
-    output = cv2.bitwise_and(image, image, mask = mask)
+    output = cv2.bitwise_and(image, image, mask=mask)
     return output
-
 
 
 def select_white(image, converted):
@@ -71,14 +69,6 @@ def process(stream, vOffset, stopLine, greenLight):
         # "Decode" the image from the array, preserving colour
         image = cv2.imdecode(data, 1)
         height, width, temp = image.shape
-
-        # Defines Region of Interest
-        # Bottom right quadrant of the image for white line
-        # region_of_interest_vert = [(0, height), (0, height / 2), (width, height / 2), (width, height)]
-        # region_of_interest_red = [(0, height), (0, 460), (width, 460), (width, height)]
-
-        # Bottom left quadrant of the image for yellow line
-        # region_of_interest_yellow = [(0, height), (0, height / 2), (width / 2, height / 2), (width, height)]
 
         try:
             with warnings.catch_warnings():
@@ -148,9 +138,6 @@ def process(stream, vOffset, stopLine, greenLight):
                     vOffset.value = int(diff)
                     print("%s\tNo white pixel found!\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
                         datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
-
-
-
         except Exception as e:
             traceback.print_exc()
 
