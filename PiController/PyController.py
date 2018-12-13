@@ -318,8 +318,6 @@ def visionController():
             # only do this if we have changed state in our state machine?
             # if the starter thread has changed this global variable to allow movement
             if (move):
-                print("stopped: %r \t greenLight: %r \t stopLine: %r \t laststart: %s" % (
-                stopped, greenLight.value, stopLine.value, lastStart))
                 if (greenLight.value and not stopped):
                     print("LOOPING HERE")
                 # if(flag):
