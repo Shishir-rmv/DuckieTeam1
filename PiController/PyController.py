@@ -266,7 +266,7 @@ def visionController():
     vRef = 30
 
     # split off the starter thread & serial reader threads so the machine can passively calibrate itself before we start
-    starterThreads.append(threading.Thread(target=starter, args=(vRef)))
+    starterThreads.append(threading.Thread(target=starter, args=(vRef,)))
     starterThreads[0].start()
 
     serial_thread = threading.Thread(target=serialReader)
@@ -320,7 +320,7 @@ def visionController():
                     stopped = True
 
                     # spawn off a starter thread to only let the bot move again if we want it to
-                    sThread = threading.Thread(target=starter, args=(vRef))
+                    sThread = threading.Thread(target=starter, args=(vRef,))
                     starterThreads.append(sThread)
                     move = False
                     sThread.start()
