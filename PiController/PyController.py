@@ -15,6 +15,7 @@ s1.timeout = 1
 
 goSerial = True
 serial_msg_counter = 0
+lastStart = 0
 
 #print("Write Timeout: %d" % s1.write_timeout)
 motorL = 0  # motor speeds
@@ -217,9 +218,11 @@ def runTracker():
 
 def starter():
     global move
+    global lastStart
     # use this to make it start moving when we want it to
     input("\nPress Enter to start\n")
     move = True
+    lastStart = time.now()
     print("Starter thread finished")
 
 def serialReader():
@@ -310,7 +313,7 @@ def visionController():
                     # print("inWaiting: %i, outWaiting %i" % (s1.in_waiting, s1.out_waiting))
                     # print("Finished writing update")
 
-                if stopLine.value and not stopped:
+                if (stopLine.value and not stopped and (time.now() - lastStart).seconds > 2):
                     print("SENDING: stp")
                     write("stp")
                     stopped = True
