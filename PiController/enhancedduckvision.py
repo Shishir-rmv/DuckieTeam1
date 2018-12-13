@@ -99,54 +99,54 @@ def process(stream, vOffset, vIntersection):
                     if red_exist and 280 < red_px[1] < 360:
                         vIntersection.value = True
                         print("%s\tFOUND RED at (%d,%d): Stop Now" % (datetime.datetime.now(), red_px[1], red_px[0]))
+
+                cropped_for_white_yellow = image[380:480, 0:640].copy()
+                hls_image = convert_hls(cropped_for_white_yellow)
+
+                # Filters White and Yellow colors in the image
+                white_image = select_white(cropped_for_white_yellow, hls_image)
+                yellow_image = select_yellow(cropped_for_white_yellow, hls_image)
+
+                white_px = np.mean(np.where(np.any(white_image != [0, 0, 0], axis=-1)), axis=1)
+                white_exist = not np.all(np.isnan(white_px))
+                # Check if white pixels are found
+                if not white_exist:
+                    white_px = np.array([-1, -1])
+
+                yellow_px = np.mean(np.where(np.any(yellow_image != [0, 0, 0], axis=-1)), axis=1)
+                yellow_exist = not np.all(np.isnan(yellow_px))
+                # Check if yellow pixels are found
+                if not yellow_exist:
+                    yellow_px = np.array([-1, -1])
+
+                if white_exist and yellow_exist:
+                    current_center = (white_px[1] + yellow_px[1]) / 2
+                    diff = expected_center - current_center
+                    # Deal with glare:
+                    if abs(white_px[1] - yellow_px[1]) < 300:
+                        current_center = int(yellow_px[1]) - 261
+                        diff = expected_center - current_center
+                        vOffset.value = int(diff)
+                        print("%s\tProbably seeing glare\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
+                            datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
                     else:
-                        cropped_for_white_yellow = image[380:480, 0:640].copy()
-                        hls_image = convert_hls(cropped_for_white_yellow)
-
-                        # Filters White and Yellow colors in the image
-                        white_image = select_white(cropped_for_white_yellow, hls_image)
-                        yellow_image = select_yellow(cropped_for_white_yellow, hls_image)
-
-                        white_px = np.mean(np.where(np.any(white_image != [0, 0, 0], axis=-1)), axis=1)
-                        white_exist = not np.all(np.isnan(white_px))
-                        # Check if white pixels are found
-                        if not white_exist:
-                            white_px = np.array([-1, -1])
-
-                        yellow_px = np.mean(np.where(np.any(yellow_image != [0, 0, 0], axis=-1)), axis=1)
-                        yellow_exist = not np.all(np.isnan(yellow_px))
-                        # Check if yellow pixels are found
-                        if not yellow_exist:
-                            yellow_px = np.array([-1, -1])
-
-                        if white_exist and yellow_exist:
-                            current_center = (white_px[1] + yellow_px[1]) / 2
-                            diff = expected_center - current_center
-                            # Deal with glare:
-                            if abs(white_px[1] - yellow_px[1]) < 300:
-                                current_center = int(yellow_px[1]) - 261
-                                diff = expected_center - current_center
-                                vOffset.value = int(diff)
-                                print("%s\tProbably seeing glare\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
-                                    datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
-                            else:
-                                print(
-                                    "%s\tWhite Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
-                                        datetime.datetime.now(), int(white_px[1]), int(white_px[0]), int(yellow_px[1]),
-                                        int(yellow_px[0]), current_center, diff))
-                                vOffset.value = int(diff)
-                        elif white_exist and not yellow_exist:
-                            current_center = int(white_px[1]) - 300
-                            diff = expected_center - current_center
-                            vOffset.value = int(diff)
-                            print("%s\tNo yellow pixel found!\tWhite Pixel: x = %d, y = %d\t diff: %d" % (
-                                datetime.datetime.now(), int(white_px[1]), int(white_px[0]), diff))
-                        elif yellow_exist and not white_exist:
-                            current_center = 261 - int(yellow_px[1])
-                            diff = current_center - expected_center
-                            vOffset.value = int(diff)
-                            print("%s\tNo white pixel found!\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
-                                datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
+                        print(
+                            "%s\tWhite Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
+                                datetime.datetime.now(), int(white_px[1]), int(white_px[0]), int(yellow_px[1]),
+                                int(yellow_px[0]), current_center, diff))
+                        vOffset.value = int(diff)
+                elif white_exist and not yellow_exist:
+                    current_center = int(white_px[1]) - 300
+                    diff = expected_center - current_center
+                    vOffset.value = int(diff)
+                    print("%s\tNo yellow pixel found!\tWhite Pixel: x = %d, y = %d\t diff: %d" % (
+                        datetime.datetime.now(), int(white_px[1]), int(white_px[0]), diff))
+                elif yellow_exist and not white_exist:
+                    current_center = 261 - int(yellow_px[1])
+                    diff = current_center - expected_center
+                    vOffset.value = int(diff)
+                    print("%s\tNo white pixel found!\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
+                        datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
 
 
 
