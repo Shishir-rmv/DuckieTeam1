@@ -294,25 +294,11 @@ def visionController():
 
             # if the starter thread has changed this global variable to allow movement
             if (move):
-                if(flag):
-                    # send initial calibration
-                    write("srt0000%s\n" % str(vRef).zfill(4))
-                    # print("Finished writing start")
-                    flag = False
-
-                # check for visual error changes
-                now = vOffset.value
-                if (now != oldVal):
-                    oldVal = now
-                    print("New vError:\t vOffset: %d" % (now))
-                    # print("SENDING: ver0000%s" % str(now).zfill(4))
-                    serial_msg_counter += 1
-                    # print("SENT %d Messages to Arduino" % serial_msg_counter)
-                    end = time.time()
-                    # print("%d seconds elapsed" % (end - start))
-                    write("ver0000%s\n" % str(now).zfill(4))
-                    # print("inWaiting: %i, outWaiting %i" % (s1.in_waiting, s1.out_waiting))
-                    # print("Finished writing update")
+                # if(flag):
+                #     # send initial calibration
+                #     write("srt0000%s\n" % str(vRef).zfill(4))
+                #     # print("Finished writing start")
+                #     flag = False
 
                 if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 2):
                     print("Stopper middle: stp")
@@ -330,6 +316,25 @@ def visionController():
                     print("Its green, Starting again")
                     # print("SENDING: stp")
                     write("srt0000%s\n" % str(vRef).zfill(4))
+
+                elif:
+                    # check for visual error changes
+                    now = vOffset.value
+                    if (now != oldVal):
+                        oldVal = now
+                        print("New vError:\t vOffset: %d" % (now))
+                        # print("SENDING: ver0000%s" % str(now).zfill(4))
+                        serial_msg_counter += 1
+                        # print("SENT %d Messages to Arduino" % serial_msg_counter)
+                        end = time.time()
+                        # print("%d seconds elapsed" % (end - start))
+                        write("ver0000%s\n" % str(now).zfill(4))
+                        # print("inWaiting: %i, outWaiting %i" % (s1.in_waiting, s1.out_waiting))
+                        # print("Finished writing update")
+
+                elif:
+                    print("this shouldn't happen, visual decision error")
+
 
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
