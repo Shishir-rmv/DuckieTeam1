@@ -291,6 +291,7 @@ void loop() {
   }
  duration_L = micros()-prevmillis_L;
  if (duration_L > 2000000){
+      Serial.write("HI MOMMY");
       l_s = (l_enc_count-prev_l_enc_count)*WHEEL_CIRCUMFERENCE*2000000/(PPR*duration_L);
       r_s = (r_enc_count-prev_r_enc_count)*WHEEL_CIRCUMFERENCE*2000000/(PPR*duration_L); 
       delta_x = (l_s + r_s)/2;
