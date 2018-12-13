@@ -26,9 +26,9 @@ def convert_hls(image):
 
 
 def select_green(image):
-    converted = convert_hls(image)
-    lower = np.uint8([60, 250, 250])
-    upper = np.uint8([65, 255, 255])
+    converted = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    lower = np.uint8([170, 100, 200])
+    upper = np.uint8([179, 255, 225])
     green_mask = cv2.inRange(converted, lower, upper)
     return cv2.bitwise_and(image, image, mask=green_mask)
 
