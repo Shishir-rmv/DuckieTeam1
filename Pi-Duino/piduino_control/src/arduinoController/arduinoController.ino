@@ -33,7 +33,7 @@ double theta = 0, x = 0, y = 0, C = 1;
 double delta_x, heading, l_s, r_s; //left & right distance changed
 
 // encoder counts
-int l_enc_count, r_enc_count, old_l_enc_count = 0, old_r_enc_count = 0;
+int l_enc_count, r_enc_count, prev_l_enc_count = 0, prev_r_enc_count = 0;
 
 // total values can be removed for normal operation
 // used only for demo to segregate distances at different stretches
@@ -43,7 +43,7 @@ double l_enc_count_total = 0, r_enc_count_total = 0;
 double distance = 0, distance_R = 0, distance_L = 0, distance_total=0, distance_total_R = 0, distance_total_L=0;
 
 // durations?
-double duration_L, duration_R, prevmillis_L = micros(), prevmillis_R = micros();
+double duration_L, duration_R, prevmillis_L = micros(), prevmillis_R = micros(),turn_micros;
 
 // errors
 double prev_error = 0, error = 0, error_dot = 0, del_v = 0;
@@ -70,6 +70,9 @@ str_code hashit (String inString) {
    if (inString == "stp") return stopp;
    if (inString == "upd") return update;
    if (inString == "none") return none;
+   if (inString == "st1") return state1;
+   if (inString == "rtn") return rtn;
+   if (inString == "ltn") return ltn;
 }
 
 void setup() {
@@ -102,7 +105,7 @@ void loop() {
   static long last_ping = 0, curr_ping = 0;
 //stopIfFault();
   static String opStr;
-  static int arg1 = 0;
+  static float arg1 = 0;
   static int arg2 = 0;
   static char input[15];
   static char opStrA[4];
@@ -117,21 +120,16 @@ void loop() {
     opStrA[0] = input[0];
     opStrA[1] = input[1];
     opStrA[2] = input[2];
-    // WHY WERE THESE HERE?
     opStrA[3] ='\0';
-    // Serial.println("opStrA");
-    // Serial.println(opStrA);
 
-    // if there's a first argument
+
     if (strlen(input) >= 7){
       arg1A[0] = input[3];
       arg1A[1] = input[4];
       arg1A[2] = input[5];
       arg1A[3] = input[6];
-      // WHY WERE THESE HERE?
       arg1A[4] = '\0';
-      // Serial.println("arg1A");
-      // Serial.println(arg1A);
+      Serial.println("arg1");
     }
 
     // if there's a second argument
@@ -140,14 +138,11 @@ void loop() {
       arg2A[1] = input[8];
       arg2A[2] = input[9];
       arg2A[3] = input[10];
-      // WHY WERE THESE HERE?
       arg2A[4] = '\0';
-      // Serial.println("arg2A");
-      // Serial.println(arg2A);
     }
 
     opStr = String(opStrA);
-    arg1 = atoi(arg1A);
+    arg1 = atof(arg1A);
     arg2 = atoi(arg2A);
 ////  }else if(distance_total>1100 && distance_total<1345){//&& micros()>1000000
 ////    //Serial.println(micros());
@@ -185,6 +180,15 @@ void loop() {
       pwm_R = (2.1*rpm_R_ref + 81);
       break;
     
+   
+    case ltn :
+    turn_micros = micros();
+    break; 
+            
+    case rtn :
+    turn_micros = micros();
+    break;
+
     case vOffset :
       v_err = arg2;
       break;
@@ -201,85 +205,94 @@ void loop() {
       break;
   }
   }
+
+    switch(hashit(opStr)){    
+      case rtn :
+
+      C = arg1;
+      
+      rpm_L_ref=arg2;//C=0.2 V45 C2 22.5
+      rpm_R_ref=C*rpm_L_ref;
+      pwm_L = (2.2*rpm_L_ref + 85);
+      pwm_R = (2.1*rpm_R_ref + 81);
+      if (micros()-turn_micros > 4000000){
+      Serial.print(C);
+      Serial.write('d');
+      opStr="";
+      Stop();
+      }
+      break;
+
+      case ltn :
+      C = arg1;
+      rpm_R_ref=arg2;//C=0.2 V45 C2 22.5
+      rpm_L_ref=C*rpm_R_ref;
+      pwm_L = (2.2*rpm_L_ref + 85);
+      pwm_R = (2.1*rpm_R_ref + 81);
+      if (micros()-turn_micros > 5500000){
+      Serial.write('d');
+      opStr="";
+      Stop();
+      }
+      break;
+      
+      default :
+      opStr = "";
+      break; 
+  }
   if (v_err != prev_error && fourth!=1){
     error_dot = v_err - prev_error;
     del_v = -(0.3*v_err) - (0.01*error_dot);
     del_v = (del_v*60)/(70*3.14);
     rpm_target_L = rpm_L_ref + del_v;
     rpm_target_R = rpm_R_ref - del_v;
-    if(millis()%1000 == 0 ){
-        Serial.write('a');
-        Serial.write(lowByte((int)rpm_target_L));
-        Serial.write('b');
-        Serial.write(lowByte((int)rpm_target_R));
-    }
+//    if(millis()%1000 == 0){
+//        Serial.write('a');
+//        Serial.write(lowByte((int)rpm_target_L));
+//        Serial.write('b');
+//        Serial.write(lowByte((int)rpm_target_R));
+//    }
     pwm_L = (2.2*rpm_target_L + 85);
     pwm_R = (2.1*rpm_target_R + 81);
     prev_error = v_err;
   }
+ duration_L = micros()-prevmillis_L;
+ if (duration_L > 2000000){
+      l_s = (l_enc_count-prev_l_enc_count)*WHEEL_CIRCUMFERENCE*2000000/(PPR*duration_L);
+      r_s = (r_enc_count-prev_r_enc_count)*WHEEL_CIRCUMFERENCE*2000000/(PPR*duration_L); 
+      delta_x = (l_s + r_s)/2;
+      heading = atan2((l_s-r_s)/2, WHEEL_BASE/2);
+      theta += heading;
+      x += delta_x*cos(theta);
+      y += delta_x*sin(theta);
+      //Serial.write('x');
+      //Serial.write(lowByte(int(x)));
+      //Serial.write('y' + lowByte(int(y)));
+      //Serial.write('t' + lowByte(int(theta)));
+      //String ret = "x "+String(x)+" y "+String(y)+" theta "+String(theta);
+      //Serial.println(ret);
+      prev_l_enc_count = l_enc_count;
+      prev_r_enc_count = r_enc_count;
+      prevmillis_L = micros();
+  }    
   curr_ping = micros();
   if( (curr_ping-last_ping) > 1000000){ //test every 2 s
     ping();
-    Serial.println(ping_slowdown);
-    Serial.println(pwm_L);
+    //Serial.println(ping_slowdown);
+    //Serial.println(pwm_L);
     last_ping = curr_ping;   
   }
   md.setM2Speed(pwm_L*ping_slowdown);    
   md.setM1Speed(pwm_R*ping_slowdown);
-  //opStr = "none";
-  //arg1 = 0;
-  //arg2 = 0;
+
 }
 
 
 void encoder() {
   int l_enc = read_encoderL((ENC_PORT2 & 0b110000) >> 4);
   int r_enc = read_encoderR((ENC_PORT & 0b1100000) >> 5);
-
-  //distance and distance_total have just been put in place for
-  //having different total distance for different state and turns
   l_enc_count += l_enc;
   r_enc_count += r_enc;
-  //distance_L = l_enc_count*WHEEL_CIRCUMFERENCE/PPR;
-  //distance_R = r_enc_count*WHEEL_CIRCUMFERENCE/PPR;  
-  //distance = (distance_L + distance_R)/2;    
-   
-  //l_enc_count_total += l_enc;
-  //r_enc_count_total += r_enc;
-  //distance_total_L = l_enc_count_total*WHEEL_CIRCUMFERENCE/PPR;
-  //distance_total_R = r_enc_count_total*WHEEL_CIRCUMFERENCE/PPR;
-  //distance_total = ((distance_total_L + distance_total_R))/2;
-   
-  
-  //r_s = r_enc*WHEEL_CIRCUMFERENCE/PPR;
-  //l_s = l_enc*WHEEL_CIRCUMFERENCE/PPR; 
-  //delta_x = (l_s + r_s)/2;
-  //heading = atan2((l_s-r_s)/2, WHEEL_BASE/2);
-  
-  //theta += heading;   
-  //x += delta_x*cos(theta);
-  //y += delta_x*sin(theta);
-   
-  if (l_enc_count!= old_l_enc_count){
-    old_l_enc_count = l_enc_count;
-    if (l_enc_count%update_rate==0){
-      duration_L = (micros() - prevmillis_L); // Time difference between revolution in microsecond
-      if(abs(l_enc_count > 2)){
-      rpm_L = update_rate*(60000000/duration_L)/PPR; // rpm = (1/ time millis)*1000*1000*60;
-      }
-      prevmillis_L = micros();
-      }
-  }
-  if (r_enc_count!= old_r_enc_count){
-    old_r_enc_count = r_enc_count;
-    if(r_enc_count%update_rate==0 ){
-      duration_R = (micros() - prevmillis_R); // Time difference between revolution in microsecond
-      if(abs(r_enc_count > 2)){
-      rpm_R = update_rate*(60000000/duration_R)/PPR; // rpm = (1/ time millis)*1000*1000*60;
-      }
-      prevmillis_R = micros();
-    }
-  }
 }
 
 void ping() {
@@ -294,7 +307,7 @@ void ping() {
   ping_duration = pulseIn(PING_PIN, HIGH, 3000);
   
   
-  Serial.println(ping_duration);
+  //Serial.println(ping_duration);
   
   if( (ping_duration >= 100) && (ping_duration <= 800) ){
     ping_slowdown = 0;

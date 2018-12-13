@@ -7,6 +7,9 @@ enum str_code{
   vOffset,
   odometry,
   calibrat,
+  state1,
+  ltn,
+  rtn,
   visual,
 	update,
 	none
