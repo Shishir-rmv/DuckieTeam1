@@ -251,13 +251,14 @@ def visionController():
     # define doubles
     vOffset = Value('i', 0)
     stopLine = Value('b', False)
+    greenLight = Value('b', True)
     stopped = False
 
     # define boolean to act as an off switch
     see = Value('b', True)
 
     # define and start the computer vision process
-    vision_process = Process(target=vision, args=(vOffset, see, stopLine))
+    vision_process = Process(target=vision, args=(vOffset, see, stopLine, greenLight))
     vision_process.start()
     # _____________________________________________________________________________________
 
@@ -312,7 +313,7 @@ def visionController():
                     move = False
                     sThread.start()
 
-                elif stopped and not stopLine.value:
+                elif (stopped and greenLight and (datetime.now() - lastStart).seconds > 2):
                     stopped = False
                     print("Its green, Starting again")
                     # print("SENDING: stp")
