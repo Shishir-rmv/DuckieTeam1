@@ -20,6 +20,7 @@ s1.timeout = 1
 goSerial = True
 serial_msg_counter = 0
 lastStart
+DG = nx.DiGraph()
 
 # print("Write Timeout: %d" % s1.write_timeout)
 motorL = 0  # motor speeds
@@ -261,6 +262,48 @@ def serialReader():
             # this is only for debugging
     print("Ending serial thread")
 
+def makeGraph():
+    global DG
+    # initialize graph
+    DG = nx.DiGraph()
+
+    nodes = [1,2,3,4,5,6,7,8,9,10,11,12]
+
+    # weights are rough estimates, change to introduce bias later
+    edges = {"1,12," : {"weight": 2, "attrs" : {"fast", False, "map":{"actions": "S"}}},
+            "1,4," : {"weight": 2, "attrs" : {"fast", False, "map":{"actions": "LS"}}}, #to prefer going straight
+            "2,4," : {"weight": 1.5, "attrs" : {"fast", False, "map":{"actions": "RS"}}},
+            "2,8," : {"weight": 2, "attrs" : {"fast", False, "map":{"actions": "S"}}},
+            "3,8," : {"weight": 1.5, "attrs" : {"fast", False, "map":{"actions": "RS"}}},
+            "3,12" : {"weight": 2, "attrs" : {"fast", False, "map":{"actions": "LS"}}},
+            "4,7," : {"weight": 4, "attrs" : {"fast", False, "map":{"actions": "LSLS"}}},
+            "4,11" : {"weight": 3, "attrs" : {"fast", False, "map":{"actions": "RSRS"}}},
+            "5,3," : {"weight": 2, "attrs" : {"fast", False, "map":{"actions": "LS"}}},
+            "5,7," : {"weight": 4, "attrs" : {"fast", False, "map":{"actions": "SLS"}}},
+            "6,3," : {"weight": 1.5, "attrs" : {"fast", False, "map":{"actions": "RS"}}},
+            "6,11" : {"weight": 3.5, "attrs" : {"fast", False, "map":{"actions": "SRS"}}},
+            "7,10" : {"weight": 8, "attrs" : {"fast", True, "map":{"actions": "SLFLS"}}},
+            "7,1," : {"weight": 2, "attrs" : {"fast", False, "map":{"actions": "LS"}}},
+            "8,10" : {"weight": 8, "attrs" : {"fast", True, "map":{"actions": "LSLFLS"}}},
+            "8,6," : {"weight": 3, "attrs" : {"fast", False, "map":{"actions": "RSRS"}}},
+            "9,1," : {"weight": 1.5, "attrs" : {"fast", False, "map":{"actions": "RS"}}},
+            "9,6," : {"weight": 3.5, "attrs" : {"fast", False, "map":{"actions": "SRS"}}},
+            "10,2" : {"weight": 2, "attrs" : {"fast", False, "map":{"actions": "LS"}}},
+            "10,5" : {"weight": 4, "attrs" : {"fast", False, "map":{"actions": "SLS"}}},
+            "11,2" : {"weight": 1.5, "attrs" : {"fast", False, "map":{"actions": "RS"}}},
+            "11,9" : {"weight": 7, "attrs" : {"fast", True, "map":{"actions": "SRFRS"}}},
+            "12,9" : {"weight": 6.5, "attrs" : {"fast", True, "map":{"actions": "RSRFRS"}}},
+            "12,5" : {"weight": 4, "attrs" : {"fast", False, "map":{"actions": "LSLS"}}}}
+
+    wEdges = []
+    for edge in edges:
+        wEdges.append((edge[0], edge[1], edge[2]))
+
+
+    # construct graph
+    DG.add_nodes_from(nodes)
+    DG.add_weighted_edges_from(wEdges)
+
 
 def visionController():
     global move
@@ -383,21 +426,16 @@ def visionController():
 
 
 # this will visually navigate until the stop condition is reached
-def vNav(vOffset, stopLine):
+def vNav():
+    global vOffset
+    global stopLine
+    
     oldVal = 0
     while (not stopLine.value):
         now = vOffset.value
         if (now != oldVal):
             oldVal = now
-            # print("Camera:\t vOffset: %d" % (now))
-            print("SENDING: ver0000%s" % str(now).zfill(4))
-            serial_msg_counter += 1
-            # print("SENT %d Messages to Arduino" % serial_msg_counter)
-            end = time.time()
-            # print("%d seconds elapsed" % (end - start))
             write("ver0000%s\n" % str(now).zfill(4))
-            # print("inWaiting: %i, outWaiting %i" % (s1.in_waiting, s1.out_waiting))
-            # print("Finished writing update")
 
 
 def runController(mapNum):
@@ -416,7 +454,9 @@ def runController(mapNum):
     print("PyController starting")
 
     # to be given to us by instructors before the demo
-    path = [1, 5, 7, 2, 9, 3, 12, 6, 8, 10, 1]
+    # path = [1, 5, 7, 2, 9, 3, 12, 6, 8, 10, 1]
+    # a test path
+    path = [10,7]
     pathCounter = 0
 
     vRef = 30
@@ -491,7 +531,7 @@ def runController(mapNum):
                         write("srt0000%s\n" % str(vRef).zfill(4))
 
                         # navigate visually until the stop condition
-                        vNav(vOffset, stopLine)
+                        vNav()
 
                         # if we're on the last action
                         if (action == len(actionMap) - 1):
