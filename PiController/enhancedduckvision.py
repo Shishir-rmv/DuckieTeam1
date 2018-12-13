@@ -28,8 +28,8 @@ def convert_hls(image):
 def select_green(image):
     converted = convert_hls(image)
     # yellow color mask
-    lower = np.uint8([60, 230, 230])
-    upper = np.uint8([70, 255, 255])
+    lower = np.uint8([50, 0, 50])
+    upper = np.uint8([70, 100, 80])
     yellow_mask = cv2.inRange(converted, lower, upper)
     return cv2.bitwise_and(image, image, mask=yellow_mask)
 
@@ -77,10 +77,11 @@ def process(stream, vOffset, stopLine, greenLight):
                 if stopLine.value and not greenLight.value:
                     cropped_for_green = image[300:height, 0:width].copy()
                     green_img = select_green(cropped_for_green)
+                    cv2.imwrite("green.jpg", green_img)
                     # green_px = np.mean(np.where(np.any(green_img != [0, 0, 0], axis=-1)), axis=1)
                     num_of_green_px = np.where(np.any(green_img != [0, 0, 0], axis=-1))[1].size
                     print("%s\tNumber of Green pixels: %d" % (datetime.datetime.now(), num_of_green_px))
-                    if num_of_green_px > 200:
+                    if num_of_green_px > 300:
                         greenLight.value = True
                         print("%s\tFOUND Green: Starting Now" % (datetime.datetime.now()))
                 else:
