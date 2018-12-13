@@ -313,12 +313,12 @@ def visionController():
                     move = False
                     sThread.start()
 
-                elif (stopped and greenLight.value and (datetime.now() - lastStart).seconds > 2):
-                    stopped = False
-                    print("Its green, Starting again")
-                    # print("SENDING: stp")
-                    write("srt0000%s\n" % str(vRef).zfill(4))
-                    greenLight.value = False
+                # elif (stopped and greenLight.value and (datetime.now() - lastStart).seconds > 2):
+                #     stopped = False
+                #     print("Its green, Starting again")
+                #     # print("SENDING: stp")
+                #     write("srt0000%s\n" % str(vRef).zfill(4))
+                #     greenLight.value = False
 
                 else:
                     # check for visual error changes
