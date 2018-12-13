@@ -317,7 +317,7 @@ def visionController():
                     # print("SENDING: stp")
                     write("srt0000%s\n" % str(vRef).zfill(4))
 
-                elif:
+                else:
                     # check for visual error changes
                     now = vOffset.value
                     if (now != oldVal):
@@ -330,10 +330,7 @@ def visionController():
                         # print("%d seconds elapsed" % (end - start))
                         write("ver0000%s\n" % str(now).zfill(4))
                         # print("inWaiting: %i, outWaiting %i" % (s1.in_waiting, s1.out_waiting))
-                        # print("Finished writing update")
-
-                elif:
-                    print("this shouldn't happen, visual decision error")
+                        # print("Finished writing update"
 
 
     except KeyboardInterrupt:
