@@ -262,6 +262,9 @@ def visionController():
 
     print("PyController starting")
 
+    # in mm/sec
+    vRef = 30
+
     # split off the starter thread & serial reader threads so the machine can passively calibrate itself before we start
     starterThreads.append(threading.Thread(target=starter, args=(vRef)))
     starterThreads[0].start()
@@ -274,9 +277,6 @@ def visionController():
     response, state = "", "0"
     oldVal, now = -999, 0
     running, stateChange, odometry, flag = True, False, True, True
-
-    # in mm/sec
-    vRef = 30
 
     if s1.isOpen():
         s1.flush()
@@ -575,66 +575,6 @@ def runController(mapNum):
     vision_process.join() 
     print("Vision Process joined")
 
-
-# this is the method that you will edit to do the hard-coded demos on Friday
-# it reads in state information from a JSON file that you can change, 
-# and will pass that down to the arduino to execute the 3 steps to stop on the red line
-def hardCoded(mapNum):
-    print("HardController starting")
-
-    # split off the starter thread so the machine can passively calibrate itself before we start
-    starter_thread = threading.Thread(target=starter, args=(vRef))
-    starter_thread.start()
-
-    # open the serial port to the Arduino & initialize variables
-    s1.flushInput()
-
-    #don't know if we need these variables, depending on whether or not we'll have IR sensors working
-    count, oldR, oldL = 0, 0, 0
-
-    # make sure the serial connection is ready for communication
-    if s1.isOpen():
-        s1.flush()
-
-    # open state machine data for reading
-    with open("StateMachine/map%d.json" % mapNum, 'r') as f:
-        machine = json.load(f)
-
-    # this is the main logic loop where we put all our controlling equations/code
-    try:
-        # this while serves as a delay until the enter key is pressed. Then, the code below will execute
-        while (not move):
-            pass
-
-        #TODO:
-        #start in state 0
-        state = "0"
-        #go the first long stretch based on distance (or time?)
-        print("Running State 1")
-
-
-        #change to the next state
-        state = "1"
-        #navigate a turn
-        print("Running State 2")
-
-
-        #change to the next state
-        state = "2"
-        #go the rest of the straight distance
-        print("Running State 3")
-
-
-    except KeyboardInterrupt:
-        print("Keyboard interrupt detected, gracefully exiting...")
-
-    #stop vehicle process: Set motor speeds to 0, and close down serial port.
-    setMotors(0,0)
-    s1.close()
-    # once we're all done, send the kill switch to the inner vision loop and join the vision process
-    starter_thread.join()
-    print("Starter thread joined")
-
 # main method
 if __name__ == '__main__':
     s1.open()
@@ -650,7 +590,7 @@ if __name__ == '__main__':
     #run lane navigation
     if(mode == 1 or mode == 2):
         # runController(mode)
-        hardCoded(mode)
+        pass
 
     #run tracker mode
     elif(mode == 3):
