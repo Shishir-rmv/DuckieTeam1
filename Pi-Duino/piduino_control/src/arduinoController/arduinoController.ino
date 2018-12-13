@@ -232,8 +232,8 @@ void loop() {
       pwm_L = (2.2*rpm_L_ref + 85);
       pwm_R = (2.1*rpm_R_ref + 81);
       if (micros()-turn_micros > 4000000){
-      Serial.print(C);
-      Serial.write('d');
+      // Serial.print(C);
+      // Serial.write('d');
       opStrB="";
       Stop();
       turning = 0;
@@ -248,7 +248,7 @@ void loop() {
       pwm_L = (2.2*rpm_L_ref + 85);
       pwm_R = (2.1*rpm_R_ref + 81);
       if (micros()-turn_micros > 5500000){
-      Serial.write('d');
+      // Serial.write('d');
       opStrB="";
       Stop();
       turning = 0;
@@ -374,6 +374,7 @@ void stopIfFault(){
 }
 
 void Stop() {
+  Serial.write("STOPPING")
   pwm_R = 0;
   pwm_L = 0;
   rpm_target_R = 0;
