@@ -32,7 +32,7 @@ last_time = datetime.now()
 # vision variables
 vOffset = Value('i', 0)
 stopLine = Value('b', False)
-greenLight = Value('b', True)
+greenLight = Value('b', False)
 see = Value('b', True)
 
 ENC_DELTA_THETA = 0
