@@ -662,7 +662,7 @@ def smallTest():
 
         # begin visual navigation. This will stop at a red line
         print("CONTROLLER: Starting vNav()")
-        vnav()
+        vNav()
 
         # wait until we see a green light to go again
         print("CONTROLLER: waiting until we see a green light")
