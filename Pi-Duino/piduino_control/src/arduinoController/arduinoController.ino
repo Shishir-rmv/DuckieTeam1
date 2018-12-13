@@ -46,20 +46,20 @@ double distance = 0, distance_R = 0, distance_L = 0, distance_total=0, distance_
 double duration_L, duration_R, prevmillis_L = micros(), prevmillis_R = micros(),turn_micros;
 
 // errors
-double prev_error = 0, error = 0, error_dot = 0, del_v = 0;
+double prev_error = 0, error = 0, error_dot = 0, del_v = 0,act,ref;
 int fourth;
-
+int v_err = 0;
 // rpm's
 double rpm_target_L = 0, rpm_target_R = 0, rpm_R = 0, rpm_L = 0,rpm_R_ref = 0, rpm_L_ref = 0, pwm_L = 0, pwm_R = 0;
 
-int v_err = 0;
+
 
 // BELOW VARIABLES NEED TO BE REMOVED FOR NORMAL OPERATION
 // USED ONLY FOR THE DEMO USING ENCODER ODOMETRY
 int update_rate = 4;//set from 1 to PPR or maybe more
 int third=0;
 int second = 0;
-int turn = 0;
+
 
 str_code hashit (String inString) {
    if (inString == "mtr") return motor;
@@ -73,6 +73,7 @@ str_code hashit (String inString) {
    if (inString == "st1") return state1;
    if (inString == "rtn") return rtn;
    if (inString == "ltn") return ltn;
+   if (inString == "xyt") return xyt;
 }
 
 void setup() {
@@ -183,6 +184,7 @@ void loop() {
    
     case ltn :
     turn_micros = micros();
+    opStrB = "ltn";
     break; 
             
     case rtn :
@@ -197,11 +199,24 @@ void loop() {
     case stopp :
       Stop();
       break;
-
+    case state1 :
+      rpm_R_ref=arg2;//(arg1*60)/(70*3.14);
+      rpm_L_ref=rpm_R_ref;//Vref = 45 C = 0.2  small right turn 0.45 big turn
+      break;
+      
     case irSensor :
       encoder();
       break;
- 
+
+    case xyt :
+      Serial.write('x');
+      Serial.write(lowByte(int(x)));
+      Serial.write('y');
+      Serial.write(lowByte(int(y)));
+      Serial.write('t'); 
+      Serial.write(lowByte(int(theta)));
+      break;
+      
     default:
       break;
   }
@@ -209,9 +224,7 @@ void loop() {
 
     switch(hashit(opStrB)){    
       case rtn :
-
       C = arg1;
-      
       rpm_L_ref=arg2;//C=0.2 V45 C2 22.5
       rpm_R_ref=C*rpm_L_ref;
       pwm_L = (2.2*rpm_L_ref + 85);
@@ -241,7 +254,20 @@ void loop() {
 
       }
       break;
-      
+
+      case state1 :
+      rpm_R_ref=arg2;//(arg1*60)/(70*3.14);
+      rpm_L_ref=rpm_R_ref;//Vref = 45 C = 0.2  small right turn 0.45 big turn
+      ref = 0;
+      act = y;
+      straight();
+      pd();
+      break;
+
+      case state2 :
+      ref = 100;
+      act = pow((x-1000),2) + pow(y,2);
+      turn();
       default :
       opStr = "";
       break; 
@@ -271,10 +297,6 @@ void loop() {
       theta += heading;
       x += delta_x*cos(theta);
       y += delta_x*sin(theta);
-      //Serial.write('x');
-      //Serial.write(lowByte(int(x)));
-      //Serial.write('y' + lowByte(int(y)));
-      //Serial.write('t' + lowByte(int(theta)));
       //String ret = "x "+String(x)+" y "+String(y)+" theta "+String(theta);
       //Serial.println(ret);
       prev_l_enc_count = l_enc_count;
@@ -298,7 +320,25 @@ void encoder() {
   l_enc_count += l_enc;
   r_enc_count += r_enc;
 }
+void pd(){
+      del_v = -(0.3*error) - (0.01*error_dot);
+      del_v = (del_v*60)/(70*3.14);
+      rpm_target_L = rpm_L_ref + del_v;
+      rpm_target_R = rpm_R_ref - del_v;
+      pwm_L = (2.2*rpm_target_L + 85);
+      pwm_R = (2.1*rpm_target_R + 81);
+}
 
+void straight(){
+prev_error = error;
+error = act - ref;
+error_dot = error-prev_error;
+}
+void turn(){
+prev_error = error;
+error = act -ref;
+error_dot = error-prev_error;
+}
 void ping() {
   pinMode(PING_PIN, OUTPUT);
   digitalWrite(PING_PIN, LOW);
@@ -310,9 +350,7 @@ void ping() {
   pinMode(PING_PIN, INPUT);
   ping_duration = pulseIn(PING_PIN, HIGH, 3000);
   
-  
-  //Serial.println(ping_duration);
-  
+ 
   if( (ping_duration >= 100) && (ping_duration <= 800) ){
     ping_slowdown = 0;
   }
