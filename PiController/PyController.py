@@ -222,7 +222,7 @@ def starter():
     # use this to make it start moving when we want it to
     input("\nPress Enter to start\n")
     move = True
-    lastStart = time.now()
+    lastStart = datetime.now()
     print("Starter thread finished")
 
 def serialReader():
@@ -313,7 +313,7 @@ def visionController():
                     # print("inWaiting: %i, outWaiting %i" % (s1.in_waiting, s1.out_waiting))
                     # print("Finished writing update")
 
-                if (stopLine.value and not stopped and (time.now() - lastStart).seconds > 2):
+                if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 2):
                     print("SENDING: stp")
                     write("stp")
                     stopped = True
