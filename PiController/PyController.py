@@ -233,8 +233,8 @@ def starter(vRef):
     lastStart = datetime.now()
 
     # temporary to allow us to test redline detection with enter key
-    time.sleep(3)
-    greenLight.value = False
+    #time.sleep(3)
+    #greenLight.value = False
 
     print("Starter thread finished")
 
@@ -329,12 +329,12 @@ def visionController():
                     move = False
                     sThread.start()
 
-                # elif (stopped and greenLight.value and (datetime.now() - lastStart).seconds > 2):
-                #     stopped = False
-                #     print("Its green, Starting again")
-                #     # print("SENDING: stp")
-                #     write("srt0000%s\n" % str(vRef).zfill(4))
-                #     greenLight.value = False
+                elif (stopped and greenLight.value and (datetime.now() - lastStart).seconds > 2):
+                    stopped = False
+                    print("Its green, Starting again")
+                    print("SENDING: stp")
+                    write("srt0000%s\n" % str(vRef).zfill(4))
+                    greenLight.value = False
 
                 else:
                     print("in else")

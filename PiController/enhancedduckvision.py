@@ -74,15 +74,16 @@ def process(stream, vOffset, stopLine, greenLight):
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
                 if stopLine.value and not greenLight.value:
-                    cropped_for_green = image[400:height, 0:width].copy()
+                    cropped_for_green = image[200:height, 0:width].copy()
                     green_img = select_green(cropped_for_green)
                     # green_px = np.mean(np.where(np.any(green_img != [0, 0, 0], axis=-1)), axis=1)
                     num_of_green_px = np.where(np.any(green_img != [0, 0, 0], axis=-1))[1].size
+                    print("%s\tNumber of Green pixels: %d" % (datetime.datetime.now(), num_of_green_px))
                     if num_of_green_px > 50:
                         greenLight.value = True
                         print("%s\tFOUND Green: Starting Now" % (datetime.datetime.now()))
                 else:
-                    cropped_for_red = image[200:480, 0:width].copy()
+                    cropped_for_red = image[150:480, 0:width].copy()
                     red_image = select_red(cropped_for_red)
                     red_px = np.mean(np.where(np.any(red_image != [0, 0, 0], axis=-1)), axis=1)
                     red_exist = not np.all(np.isnan(red_px))
@@ -113,7 +114,7 @@ def process(stream, vOffset, stopLine, greenLight):
                     diff = expected_center - current_center
                     # Deal with glare:
                     if abs(white_px[1] - yellow_px[1]) < 300:
-                        current_center = int(yellow_px[1]) - 261
+                        current_center = int(yellow_px[1]) - 300
                         diff = expected_center - current_center
                         vOffset.value = int(diff)
                         print("%s\tProbably seeing glare\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
@@ -131,7 +132,7 @@ def process(stream, vOffset, stopLine, greenLight):
                     print("%s\tNo yellow pixel found!\tWhite Pixel: x = %d, y = %d\t diff: %d" % (
                         datetime.datetime.now(), int(white_px[1]), int(white_px[0]), diff))
                 elif yellow_exist and not white_exist:
-                    current_center = 261 - int(yellow_px[1])
+                    current_center = 300 - int(yellow_px[1])
                     diff = current_center - expected_center
                     vOffset.value = int(diff)
                     print("%s\tNo white pixel found!\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
