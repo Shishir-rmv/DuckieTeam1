@@ -6,8 +6,9 @@ if __name__ == '__main__':
         vOffset = Value('i', 0)
         # define boolean to act as an off switch
         see = Value('b', True)
-        vIntersection = Value('b', False)
-        vision_process = Process(target=vision, args=(vOffset, see, vIntersection))
+        stopLine = Value('b', False)
+        greenLight = Value('b', False)
+        vision_process = Process(target=vision, args=(vOffset, see, stopLine, greenLight))
         vision_process.start()
         running = True;
         oldVal = -999

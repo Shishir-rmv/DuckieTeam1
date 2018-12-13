@@ -26,11 +26,12 @@ def convert_hls(image):
 
 
 def select_green(image):
-    lower = np.array([0, 200, 0], dtype="uint8")
-    upper = np.array([200, 255, 200], dtype="uint8")
-    mask = cv2.inRange(image, lower, upper)
-    output = cv2.bitwise_and(image, image, mask=mask)
-    return output
+    converted = convert_hls(image)
+    # yellow color mask
+    lower = np.uint8([60, 230, 230])
+    upper = np.uint8([70, 255, 255])
+    yellow_mask = cv2.inRange(converted, lower, upper)
+    return cv2.bitwise_and(image, image, mask=yellow_mask)
 
 
 def select_red(image):
@@ -74,16 +75,16 @@ def process(stream, vOffset, stopLine, greenLight):
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
                 if stopLine.value and not greenLight.value:
-                    cropped_for_green = image[200:height, 0:width].copy()
+                    cropped_for_green = image[300:height, 0:width].copy()
                     green_img = select_green(cropped_for_green)
                     # green_px = np.mean(np.where(np.any(green_img != [0, 0, 0], axis=-1)), axis=1)
                     num_of_green_px = np.where(np.any(green_img != [0, 0, 0], axis=-1))[1].size
                     print("%s\tNumber of Green pixels: %d" % (datetime.datetime.now(), num_of_green_px))
-                    if num_of_green_px > 50:
+                    if num_of_green_px > 200:
                         greenLight.value = True
                         print("%s\tFOUND Green: Starting Now" % (datetime.datetime.now()))
                 else:
-                    cropped_for_red = image[150:480, 0:width].copy()
+                    cropped_for_red = image[250:480, 0:width].copy()
                     red_image = select_red(cropped_for_red)
                     red_px = np.mean(np.where(np.any(red_image != [0, 0, 0], axis=-1)), axis=1)
                     red_exist = not np.all(np.isnan(red_px))
