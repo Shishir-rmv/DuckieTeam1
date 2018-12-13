@@ -198,6 +198,7 @@ void loop() {
     case stopp :
       Stop();
       break;
+      
     case state1 :
       rpm_R_ref=arg2;//(arg1*60)/(70*3.14);
       rpm_L_ref=rpm_R_ref;//Vref = 45 C = 0.2  small right turn 0.45 big turn
@@ -272,7 +273,7 @@ void loop() {
       opStr = "";
       break; 
   }
-  if (v_err != prev_error && fourth!=1){
+  if (v_err != prev_error){
     error_dot = v_err - prev_error;
     del_v = -(0.3*v_err) - (0.01*error_dot);
     del_v = (del_v*60)/(70*3.14);
@@ -381,7 +382,7 @@ void Stop() {
   md.setM2Speed(pwm_L);    
   md.setM1Speed(pwm_R);
   fourth = 1;
-  opStrB = "";
+  String opStrB = "";
 }
 
 int8_t read_encoderL(int8_t new_val)
