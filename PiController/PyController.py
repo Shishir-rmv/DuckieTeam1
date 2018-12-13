@@ -19,7 +19,8 @@ s1.timeout = 1
 
 goSerial = True
 serial_msg_counter = 0
-lastStart
+
+lastStart = datetime.now()
 DG = nx.DiGraph()
 
 # print("Write Timeout: %d" % s1.write_timeout)
@@ -363,8 +364,8 @@ def visionController():
             # only do this if we have changed state in our state machine?
             # if the starter thread has changed this global variable to allow movement
             if (move):
-                if (greenLight.value and not stopped):
-                    print("LOOPING HERE")
+                #if (greenLight.value and not stopped):
+                #    print("LOOPING HERE")
                 # if(flag):
                 #     # send initial calibration
                 #     write("srt0000%s\n" % str(vRef).zfill(4))
