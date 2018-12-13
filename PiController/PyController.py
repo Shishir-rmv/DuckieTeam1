@@ -15,7 +15,7 @@ s1.timeout = 1
 
 goSerial = True
 serial_msg_counter = 0
-lastStart = 0
+lastStart
 
 #print("Write Timeout: %d" % s1.write_timeout)
 motorL = 0  # motor speeds
