@@ -225,6 +225,7 @@ void loop() {
         break;
 
       case fwd :
+        Serial.println("in fwd");
         blocking = 1;
         local_R_ref=arg2;//V30
         local_L_ref=rpm_R_ref;
@@ -273,7 +274,7 @@ void loop() {
  duration = micros()-prevmillis;
  
  if (duration > 2000000){
-      Serial.write("HEARTBEAT");
+//      Serial.write("HEARTBEAT");
       l_s = (l_enc_count-prev_l_enc_count)*WHEEL_CIRCUMFERENCE*2000000/(PPR*duration);
       r_s = (r_enc_count-prev_r_enc_count)*WHEEL_CIRCUMFERENCE*2000000/(PPR*duration); 
       delta_x = (l_s + r_s)/2;
