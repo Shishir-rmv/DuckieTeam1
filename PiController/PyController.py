@@ -303,8 +303,8 @@ def visionController():
                 now = vOffset.value
                 if (now != oldVal):
                     oldVal = now
-                    # print("Camera:\t vOffset: %d" % (now))
-                    print("SENDING: ver0000%s" % str(now).zfill(4))
+                    print("New vError:\t vOffset: %d" % (now))
+                    # print("SENDING: ver0000%s" % str(now).zfill(4))
                     serial_msg_counter += 1
                     # print("SENT %d Messages to Arduino" % serial_msg_counter)
                     end = time.time()
@@ -314,7 +314,7 @@ def visionController():
                     # print("Finished writing update")
 
                 if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 2):
-                    print("SENDING: stp")
+                    print("Stopper middle: stp")
                     write("stp")
                     stopped = True
 
@@ -327,7 +327,7 @@ def visionController():
                 elif stopped and not stopLine.value:
                     stopped = False
                     print("Its green, Starting again")
-                    print("SENDING: stp")
+                    # print("SENDING: stp")
                     write("srt0000%s\n" % str(vRef).zfill(4))
 
     except KeyboardInterrupt:
@@ -335,7 +335,7 @@ def visionController():
         running = False
 
     #stop vehicle process. Set motor speeds to 0, close down serial port, and kill vision thread.
-    print("SENDING: stp")
+    # print("SENDING: stp")
     write("stp")
     s1.close()
     # once we're all done, send the kill switch to the inner vision loop and join the vision process
