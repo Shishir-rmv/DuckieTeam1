@@ -25,18 +25,17 @@ def convert_hls(image):
     return cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
 
 
-def select_green(image):
-    converted = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    lower = np.uint8([44, 54, 63])
-    upper = np.uint8([71, 255, 255])
+def select_green(image, converted):
+    lower = np.uint8([60, 250, 250])
+    upper = np.uint8([65, 255, 255])
     green_mask = cv2.inRange(converted, lower, upper)
     return cv2.bitwise_and(image, image, mask=green_mask)
 
 
 def select_red(image):
     converted = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    lower = np.uint8([160, 100, 100])
-    upper = np.uint8([179, 255, 255])
+    lower = np.uint8([170, 100, 200])
+    upper = np.uint8([179, 255, 225])
     red_mask = cv2.inRange(converted, lower, upper)
     return cv2.bitwise_and(image, image, mask=red_mask)
 
@@ -90,11 +89,12 @@ def process(stream, vOffset, vIntersection):
 
                 if vIntersection.value:
                     cropped_for_green = image[400:height, 0:width].copy()
-                    green_img = select_green(cropped_for_green)
-                    green_px = np.mean(np.where(np.any(green_img != [0, 0, 0], axis=-1)), axis=1)
-                    green_exist = not np.all(np.isnan(green_px))
-                    if green_exist:
+                    green_img = select_green(cropped_for_green, hls_image)
+                    # green_px = np.mean(np.where(np.any(green_img != [0, 0, 0], axis=-1)), axis=1)
+                    num_of_green_px = np.where(np.any(green_img != [0, 0, 0], axis=-1))[1].size
+                    if num_of_green_px > 50:
                         vIntersection.value = False
+                        print("%s\tFOUND Green: Starting Now" % (datetime.datetime.now()))
                 else:
                     cropped_for_red = image[450:480, 0:width].copy()
                     red_image = select_red(cropped_for_red)
