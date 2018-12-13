@@ -598,7 +598,7 @@ def turn(rTurn, radius):
     if (rTurn):
         write("rtn%s0045" % str(radius).zfill(4))
     else:
-    write("ltn%s0045" % str(radius).zfill(4))
+        write("ltn%s0045" % str(radius).zfill(4))
 
 def smallTest():
     global move
