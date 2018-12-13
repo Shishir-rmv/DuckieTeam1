@@ -85,11 +85,13 @@ def process(stream, vOffset, stopLine, greenLight):
                 else:
                     cropped_for_red = image[350:height, 0:width].copy()
                     red_image = select_red(cropped_for_red)
-                    red_px = np.mean(np.where(np.any(red_image != [0, 0, 0], axis=-1)), axis=1)
-                    red_exist = not np.all(np.isnan(red_px))
-                    stopLine.value = red_exist
-                    if red_exist:
-                        print("%s\tFOUND RED at (%d,%d): Stop Now" % (datetime.datetime.now(), red_px[1], red_px[0]))
+                    # red_px = np.mean(np.where(np.any(red_image != [0, 0, 0], axis=-1)), axis=1)
+                    num_of_red_px = np.where(np.any(red_image != [0, 0, 0], axis=-1))[1].size
+                    print("%s\tNumber of Red pixels: %d" % (datetime.datetime.now(), num_of_red_px))
+                    # red_exist = not np.all(np.isnan(red_px))
+                    if num_of_red_px > 100:
+                        stopLine.value = True
+                        print("%s\tFOUND RED at (%d,%d): Stop Now" % (datetime.datetime.now()))
 
                 cropped_for_white_yellow = image[380:480, 0:640].copy()
                 hls_image = convert_hls(cropped_for_white_yellow)
