@@ -374,7 +374,7 @@ void stopIfFault(){
 }
 
 void Stop() {
-  Serial.write("STOPPING")
+  Serial.write("STOPPING");
   pwm_R = 0;
   pwm_L = 0;
   rpm_target_R = 0;
