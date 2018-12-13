@@ -33,38 +33,20 @@ double theta = 0, x = 0, y = 0, C = 1;
 double delta_x, heading, l_s, r_s; //left & right distance changed
 
 // encoder counts
-int l_enc_count, r_enc_count, prev_l_enc_count = 0, prev_r_enc_count = 0;
-
-// total values can be removed for normal operation
-// used only for demo to segregate distances at different stretches
-double l_enc_count_total = 0, r_enc_count_total = 0;
-
-// distances
-double distance = 0, distance_R = 0, distance_L = 0, distance_total=0, distance_total_R = 0, distance_total_L=0;
+int l_enc_count, r_enc_count, prev_l_enc_count = 0, prev_r_enc_count = 0, turning, v_err = 0;
 
 // durations?
-double duration_L, duration_R, prevmillis_L = micros(), prevmillis_R = micros(),turn_micros;
+double duration, prevmillis, turn_micros;
 
 // errors
 double prev_error = 0, error = 0, error_dot = 0, del_v = 0,act,ref;
-int turning;
-int v_err = 0;
 // rpm's
-double rpm_target_L = 0, rpm_target_R = 0, rpm_R = 0, rpm_L = 0,rpm_R_ref = 0, rpm_L_ref = 0, pwm_L = 0, pwm_R = 0;
+double rpm_target_L = 0, rpm_target_R = 0,rpm_R_ref = 0, rpm_L_ref = 0, pwm_L = 0, pwm_R = 0;
 
-
-
-// BELOW VARIABLES NEED TO BE REMOVED FOR NORMAL OPERATION
-// USED ONLY FOR THE DEMO USING ENCODER ODOMETRY
-int update_rate = 4;//set from 1 to PPR or maybe more
-int third=0;
-int second = 0;
-
+String opStrB;
 
 str_code hashit (String inString) {
    if (inString == "mtr") return motor;
-   if (inString == "irr") return irSensor;
-   if (inString == "png") return png;
    if (inString == "srt") return start;
    if (inString == "ver") return vOffset; 
    if (inString == "stp") return stopp;
@@ -105,16 +87,16 @@ void setup() {
 void loop() {
   static long last_ping = 0, curr_ping = 0;
 //stopIfFault();
-  static String opStr,opStrB;
+  static String opStr;
   static float arg1 = 0;
   static int arg2 = 0;
   static char input[15];
   static char opStrA[4];
   static char arg1A[5];
   static char arg2A[5];
-  static double prevmillis_L = micros();
-  static double prevmillis_R = micros();
-//  Serial.println("HI MOM!");/
+
+  // investigate
+  static double prevmillis = micros();
 
   if(Serial.available()){
     Serial.readBytesUntil('\n', input, 12);
@@ -144,16 +126,6 @@ void loop() {
     opStr = String(opStrA);
     arg1 = atof(arg1A);
     arg2 = atoi(arg2A);
-////  }else if(distance_total>1100 && distance_total<1345){//&& micros()>1000000
-////    //Serial.println(micros());
-////    //
-////     l_enc_count=0;
-////     r_enc_count=0;
-//    
-//  }else if(distance_total>2225){//1870 if(turn != 1)
-//    //Serial.println(distance);
-//    Stop(); 
-//  
   
 
   switch(hashit(opStr)){
@@ -168,10 +140,6 @@ void loop() {
       md.setM1Speed((int)arg1);
       md.setM2Speed((int)arg2);
       break;
-
-    case png :
-      ping();
-      break;
     
     case start :
       rpm_R_ref=arg2;//(arg1*60)/(70*3.14);
@@ -180,18 +148,18 @@ void loop() {
       pwm_R = (2.1*rpm_R_ref + 81);
       break;
     
-   
     case ltn :
-    turn_micros = micros();
-    opStrB = "ltn";
-    break; 
+      turn_micros = micros();
+      opStrB = "ltn";
+      break; 
             
     case rtn :
-    turn_micros = micros();
-    opStrB = "rtn";
-    break;
+      turn_micros = micros();
+      opStrB = "rtn";
+      break;
 
     case vOffset :
+      prev_error = v_err;
       v_err = arg2;
       break;
     
@@ -203,10 +171,6 @@ void loop() {
       rpm_R_ref=arg2;//(arg1*60)/(70*3.14);
       rpm_L_ref=rpm_R_ref;//Vref = 45 C = 0.2  small right turn 0.45 big turn
       opStrB = "st1";
-      break;
-      
-    case irSensor :
-      encoder();
       break;
 
     case xyt :
@@ -225,53 +189,53 @@ void loop() {
 
     switch(hashit(opStrB)){    
       case rtn :
-      turning = 1;
-      C = arg1;
-      rpm_L_ref=arg2;//C=0.2 V45 C2 22.5
-      rpm_R_ref=C*rpm_L_ref;
-      pwm_L = (2.2*rpm_L_ref + 85);
-      pwm_R = (2.1*rpm_R_ref + 81);
-      if (micros()-turn_micros > 4000000){
-      // Serial.print(C);
-      // Serial.write('d');
-      opStrB="";
-      Stop();
-      turning = 0;
-      }
-      break;
+        turning = 1;
+        C = arg1;
+        double local_L_ref=arg2;//C=0.2 V45 C2 22.5
+        double local_R_ref=C*rpm_L_ref;
+        pwm_L = (2.2*local_L_ref + 85);
+        pwm_R = (2.1*local_R_ref + 81);
+        if (micros()-turn_micros > 4000000){
+          // Serial.print(C);
+          Serial.write('tD');
+          opStrB="";
+          rpm_L_ref = 30;
+          rpm_L_ref = 30;
+          turning = 0;
+        }
+        break;
 
       case ltn :
-      turning = 1;
-      C = arg1;
-      rpm_R_ref=arg2;//C=0.2 V45 C2 22.5
-      rpm_L_ref=C*rpm_R_ref;
-      pwm_L = (2.2*rpm_L_ref + 85);
-      pwm_R = (2.1*rpm_R_ref + 81);
-      if (micros()-turn_micros > 5500000){
-      // Serial.write('d');
-      opStrB="";
-      Stop();
-      turning = 0;
-
-      }
-      break;
+        turning = 1;
+        C = arg1;
+        double local_R_ref=arg2;//C=0.2 V45 C2 22.5
+        double local_L_ref=C*rpm_R_ref;
+        pwm_L = (2.2*local_L_ref + 85);
+        pwm_R = (2.1*local_R_ref + 81);
+        if (micros()-turn_micros > 5500000){
+          Serial.write('tD');
+          opStrB="";
+          Stop();
+          turning = 0;
+        }
+        break;
 
       case state1 :
-      ref = 0;
-      act = y;
-      straight();
-      pd();
-      break;
+        ref = 0;
+        act = y;
+        straight();
+        pd();
+        break;
 
       case state2 :
-      ref = 100;
-      act = pow((x-1000),2) + pow(y,2);
-      turn();
-      break;
+        ref = 100;
+        act = pow((x-1000),2) + pow(y,2);
+        turn();
+        break;
       
       default :
-      opStr = "";
-      break; 
+        opStr = "";
+        break; 
   }
   if (v_err != prev_error && turning != 1){
     error_dot = v_err - prev_error;
@@ -287,13 +251,14 @@ void loop() {
 //    }
     pwm_L = (2.2*rpm_target_L + 85);
     pwm_R = (2.1*rpm_target_R + 81);
-    prev_error = v_err;
   }
- duration_L = micros()-prevmillis_L;
- if (duration_L > 2000000){
-      Serial.write("HI MOMMY");
-      l_s = (l_enc_count-prev_l_enc_count)*WHEEL_CIRCUMFERENCE*2000000/(PPR*duration_L);
-      r_s = (r_enc_count-prev_r_enc_count)*WHEEL_CIRCUMFERENCE*2000000/(PPR*duration_L); 
+
+ duration = micros()-prevmillis;
+ 
+ if (duration > 2000000){
+      Serial.write("HEARTBEAT");
+      l_s = (l_enc_count-prev_l_enc_count)*WHEEL_CIRCUMFERENCE*2000000/(PPR*duration);
+      r_s = (r_enc_count-prev_r_enc_count)*WHEEL_CIRCUMFERENCE*2000000/(PPR*duration); 
       delta_x = (l_s + r_s)/2;
       heading = atan2((l_s-r_s)/2, WHEEL_BASE/2);
       theta += heading;
@@ -303,16 +268,18 @@ void loop() {
       //Serial.println(ret);
       prev_l_enc_count = l_enc_count;
       prev_r_enc_count = r_enc_count;
-      prevmillis_L = micros();
+      prevmillis = micros();
   }    
+
   curr_ping = micros();
+
   if( (curr_ping-last_ping) > 1000000){ //test every 2 s
     ping();
     last_ping = curr_ping;   
   }
+
   md.setM2Speed(pwm_L*ping_slowdown);    
   md.setM1Speed(pwm_R*ping_slowdown);
-
 }
 
 
@@ -322,24 +289,25 @@ void encoder() {
   l_enc_count += l_enc;
   r_enc_count += r_enc;
 }
+
 void pd(){
-      del_v = -(0.3*error) - (0.01*error_dot);
-      del_v = (del_v*60)/(70*3.14);
-      rpm_target_L = rpm_L_ref + del_v;
-      rpm_target_R = rpm_R_ref - del_v;
-      pwm_L = (2.2*rpm_target_L + 85);
-      pwm_R = (2.1*rpm_target_R + 81);
+  del_v = -(0.3*error) - (0.01*error_dot);
+  del_v = (del_v*60)/(70*3.14);
+  rpm_target_L = rpm_L_ref + del_v;
+  rpm_target_R = rpm_R_ref - del_v;
+  pwm_L = (2.2*rpm_target_L + 85);
+  pwm_R = (2.1*rpm_target_R + 81);
 }
 
 void straight(){
-prev_error = error;
-error = act - ref;
-error_dot = error-prev_error;
+  prev_error = error;
+  error = act - ref;
+  error_dot = error-prev_error;
 }
 void turn(){
-prev_error = error;
-error = act -ref;
-error_dot = error-prev_error;
+  prev_error = error;
+  error = act -ref;
+  error_dot = error-prev_error;
 }
 void ping() {
   pinMode(PING_PIN, OUTPUT);
@@ -375,15 +343,14 @@ void stopIfFault(){
 }
 
 void Stop() {
-  Serial.write("STOPPING")
+  Serial.write("STOPPING");
   pwm_R = 0;
   pwm_L = 0;
   rpm_target_R = 0;
   rpm_target_L = 0;
-  v_err=0;
   md.setM2Speed(pwm_L);    
   md.setM1Speed(pwm_R);
-  String opStrB = "";
+  opStrB = "";
 }
 
 int8_t read_encoderL(int8_t new_val)
