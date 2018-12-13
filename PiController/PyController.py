@@ -326,7 +326,7 @@ def visionController():
                 #     write("srt0000%s\n" % str(vRef).zfill(4))
                 #     # print("Finished writing start")
                 #     flag = False
-
+                print("stopped: %r \t greenLight: %r \t stopLine: %r" % (stopped, greenLight, stopLine))
                 if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 2):
                     print("Stopper middle: stp")
                     write("stp")
