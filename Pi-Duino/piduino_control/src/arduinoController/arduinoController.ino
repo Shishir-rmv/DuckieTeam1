@@ -36,7 +36,7 @@ double delta_x, heading, l_s, r_s; //left & right distance changed
 int l_enc_count, r_enc_count, prev_l_enc_count = 0, prev_r_enc_count = 0, blocking = 0, v_err = 0;
 
 // durations?
-double duration, prevmillis, turn_micros;
+double duration, prevmillis, blind_micros;
 
 // errors
 double prev_error = 0, error = 0, error_dot = 0, del_v = 0,act,ref;
@@ -55,6 +55,7 @@ str_code hashit (String inString) {
    if (inString == "st1") return state1;
    if (inString == "rtn") return rtn;
    if (inString == "ltn") return ltn;
+   if (inString == "fwd") return fwd;
    if (inString == "xyt") return xyt;
 }
 
@@ -150,13 +151,18 @@ void loop() {
       break;
     
     case ltn :
-      turn_micros = micros();
+      blind_micros = micros();
       opStrB = "ltn";
       break; 
             
     case rtn :
-      turn_micros = micros();
+      blind_micros = micros();
       opStrB = "rtn";
+      break;
+
+    case fwd :
+      blind_micros = micros();
+      opStrB = "fwd";
       break;
 
     case vOffset :
@@ -196,7 +202,7 @@ void loop() {
         local_R_ref=C*rpm_L_ref;
         pwm_L = (2.2*local_L_ref + 85);
         pwm_R = (2.1*local_R_ref + 81);
-        if (micros()-turn_micros > 4000000){
+        if (micros()-blind_micros > 4000000){
           // Serial.print(C);
           Serial.write('D');
           opStrB="";
@@ -211,7 +217,20 @@ void loop() {
         local_L_ref=C*rpm_R_ref;
         pwm_L = (2.2*local_L_ref + 85);
         pwm_R = (2.1*local_R_ref + 81);
-        if (micros()-turn_micros > 5500000){
+        if (micros()-blind_micros > 5500000){
+          Serial.write('D');
+          opStrB="";
+          blocking = 0;
+        }
+        break;
+
+      case fwd :
+        blocking = 1;
+        local_R_ref=arg2;//V30
+        local_L_ref=rpm_R_ref;
+        pwm_L = (2.2*local_L_ref + 85);
+        pwm_R = (2.1*local_R_ref + 81);
+        if (micros()-blind_micros > 4000000){
           Serial.write('D');
           opStrB="";
           blocking = 0;

@@ -12,6 +12,7 @@ enum str_code{
   xyt,
   ltn,
   rtn,
+  fwd,
   visual,
 	update,
 	none
