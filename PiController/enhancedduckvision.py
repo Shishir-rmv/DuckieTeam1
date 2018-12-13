@@ -25,7 +25,8 @@ def convert_hls(image):
     return cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
 
 
-def select_green(image, converted):
+def select_green(image):
+    converted = convert_hls(image)
     lower = np.uint8([60, 250, 250])
     upper = np.uint8([65, 255, 255])
     green_mask = cv2.inRange(converted, lower, upper)
@@ -89,7 +90,7 @@ def process(stream, vOffset, vIntersection):
 
                 if vIntersection.value:
                     cropped_for_green = image[400:height, 0:width].copy()
-                    green_img = select_green(cropped_for_green, hls_image)
+                    green_img = select_green(cropped_for_green)
                     # green_px = np.mean(np.where(np.any(green_img != [0, 0, 0], axis=-1)), axis=1)
                     num_of_green_px = np.where(np.any(green_img != [0, 0, 0], axis=-1))[1].size
                     if num_of_green_px > 50:
