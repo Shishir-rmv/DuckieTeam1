@@ -41,7 +41,7 @@ double duration, prevmillis, turn_micros;
 // errors
 double prev_error = 0, error = 0, error_dot = 0, del_v = 0,act,ref;
 // rpm's
-double rpm_target_L = 0, rpm_target_R = 0,rpm_R_ref = 0, rpm_L_ref = 0, pwm_L = 0, pwm_R = 0;
+double rpm_target_L = 0, rpm_target_R = 0,rpm_R_ref = 0, rpm_L_ref = 0, pwm_L = 0, pwm_R = 0, local_L_ref, local_R_ref;
 
 String opStrB;
 
@@ -191,8 +191,8 @@ void loop() {
       case rtn :
         turning = 1;
         C = arg1;
-        double local_L_ref=arg2;//C=0.2 V45 C2 22.5
-        double local_R_ref=C*rpm_L_ref;
+        local_L_ref=arg2;//C=0.2 V45 C2 22.5
+        local_R_ref=C*rpm_L_ref;
         pwm_L = (2.2*local_L_ref + 85);
         pwm_R = (2.1*local_R_ref + 81);
         if (micros()-turn_micros > 4000000){
@@ -206,8 +206,8 @@ void loop() {
       case ltn :
         turning = 1;
         C = arg1;
-        double local_R_ref=arg2;//C=0.2 V45 C2 22.5
-        double local_L_ref=C*rpm_R_ref;
+        local_R_ref=arg2;//C=0.2 V45 C2 22.5
+        local_L_ref=C*rpm_R_ref;
         pwm_L = (2.2*local_L_ref + 85);
         pwm_R = (2.1*local_R_ref + 81);
         if (micros()-turn_micros > 5500000){
