@@ -332,12 +332,11 @@ def visionController():
                     print("Stopper middle: stp")
                     write("stp")
                     stopped = True
-
                     # spawn off a starter thread to only let the bot move again if we want it to
-                    sThread = threading.Thread(target=starter, args=(vRef,))
-                    starterThreads.append(sThread)
-                    move = False
-                    sThread.start()
+                    # sThread = threading.Thread(target=starter, args=(vRef,))
+                    # starterThreads.append(sThread)
+                    # move = False
+                    # sThread.start()
 
                 elif (stopped and greenLight.value):
                     stopped = False
