@@ -58,7 +58,7 @@ def select_yellow(image, converted):
     return cv2.bitwise_and(image, image, mask=yellow_mask)
 
 
-def process(stream, vOffset, stopLine, greenLight):
+def process(stream, vOffset, vOffsetOld, stopLine, greenLight):
     global expected_center
 
     if (True):
@@ -75,21 +75,23 @@ def process(stream, vOffset, stopLine, greenLight):
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
                 if stopLine.value and not greenLight.value:
-                    cropped_for_green = image[400:height, 0:width].copy()
+                    cropped_for_green = image[200:height, 0:width].copy()
                     green_img = select_green(cropped_for_green)
                     num_of_green_px = np.where(np.any(green_img != [0, 0, 0], axis=-1))[1].size
                     print("%s\tNumber of Green pixels: %d" % (datetime.datetime.now(), num_of_green_px))
-                    if num_of_green_px > 1000:
+                    if num_of_green_px > 100:
                         greenLight.value = True
                         print("%s\tFOUND Green: Starting Now" % (datetime.datetime.now()))
                 else:
-                    cropped_for_red = image[400:height, 0:width].copy()
+                    cropped_for_red = image[350:height, 0:width].copy()
                     red_image = select_red(cropped_for_red)
-                    red_px = np.mean(np.where(np.any(red_image != [0, 0, 0], axis=-1)), axis=1)
-                    red_exist = not np.all(np.isnan(red_px))
-                    stopLine.value = red_exist
-                    if red_exist:
-                        print("%s\tFOUND RED at (%d,%d): Stop Now" % (datetime.datetime.now(), red_px[1], red_px[0]))
+                    # red_px = np.mean(np.where(np.any(red_image != [0, 0, 0], axis=-1)), axis=1)
+                    num_of_red_px = np.where(np.any(red_image != [0, 0, 0], axis=-1))[1].size
+                    print("%s\tNumber of Red pixels: %d" % (datetime.datetime.now(), num_of_red_px))
+                    # red_exist = not np.all(np.isnan(red_px))
+                    if num_of_red_px > 100:
+                        stopLine.value = True
+                        print("%s\tFOUND RED at (%d,%d): Stop Now" % (datetime.datetime.now()))
 
                 cropped_for_white_yellow = image[380:480, 0:640].copy()
                 hls_image = convert_hls(cropped_for_white_yellow)
@@ -138,6 +140,9 @@ def process(stream, vOffset, stopLine, greenLight):
                     vOffset.value = int(diff)
                     print("%s\tNo white pixel found!\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
                         datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
+
+                if vOffset.value != vOffsetOld.value:
+                    vOffsetOld.value = vOffset.value
         except Exception as e:
             traceback.print_exc()
 
@@ -145,17 +150,17 @@ def process(stream, vOffset, stopLine, greenLight):
         stream.truncate()
 
 
-def gen_seq(vOffset, go, stopLine, greenLight):
+def gen_seq(vOffset, vOffsetOld, go, stopLine, greenLight):
     stream = io.BytesIO()
     while go.value:
         # print("VISION going")
         yield stream
-        process(stream, vOffset, stopLine, greenLight)
+        process(stream, vOffset, vOffsetOld, stopLine, greenLight)
 
 
 # this will be the process that we split off for Dmitry to do computer vision work in
 # we use shared memory to make passing information back and fourth
-def vision(vOffset, go, stopLine, greenLight):
+def vision(vOffset, vOffsetOld, go, stopLine, greenLight):
     global WIDTH, HEIGHT
     print("Starting Vision")
     with picamera.PiCamera() as camera:
@@ -165,5 +170,5 @@ def vision(vOffset, go, stopLine, greenLight):
         camera.framerate = 40
         camera.start_preview()
         time.sleep(1)
-        camera.capture_sequence(gen_seq(vOffset, go, stopLine, greenLight), format='jpeg', use_video_port=True)
+        camera.capture_sequence(gen_seq(vOffset, vOffsetOld, go, stopLine, greenLight), format='jpeg', use_video_port=True)
     print("Vision Finished")

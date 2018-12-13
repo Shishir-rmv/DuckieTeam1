@@ -19,7 +19,8 @@ s1.timeout = 1
 
 goSerial = True
 serial_msg_counter = 0
-lastStart
+
+lastStart = datetime.now()
 DG = nx.DiGraph()
 
 # print("Write Timeout: %d" % s1.write_timeout)
@@ -36,6 +37,7 @@ last_time = datetime.now()
 
 # vision variables
 vOffset = Value('i', 0)
+vOffsetOld = Value('i', 0)
 stopLine = Value('b', False)
 greenLight = Value('b', False)
 see = Value('b', True)
@@ -265,30 +267,31 @@ def makeGraph():
     nodes = [1,2,3,4,5,6,7,8,9,10,11,12]
 
     # weights are rough estimates, change to introduce bias later
-    edges = {"1,12," : {"weight": 2, "attrs" : {"fast", False, "map":{"actions": "S"}}},
-            "1,4," : {"weight": 2, "attrs" : {"fast", False, "map":{"actions": "LS"}}}, #to prefer going straight
-            "2,4," : {"weight": 1.5, "attrs" : {"fast", False, "map":{"actions": "RS"}}},
-            "2,8," : {"weight": 2, "attrs" : {"fast", False, "map":{"actions": "S"}}},
-            "3,8," : {"weight": 1.5, "attrs" : {"fast", False, "map":{"actions": "RS"}}},
-            "3,12" : {"weight": 2, "attrs" : {"fast", False, "map":{"actions": "LS"}}},
-            "4,7," : {"weight": 4, "attrs" : {"fast", False, "map":{"actions": "LSLS"}}},
-            "4,11" : {"weight": 3, "attrs" : {"fast", False, "map":{"actions": "RSRS"}}},
-            "5,3," : {"weight": 2, "attrs" : {"fast", False, "map":{"actions": "LS"}}},
-            "5,7," : {"weight": 4, "attrs" : {"fast", False, "map":{"actions": "SLS"}}},
-            "6,3," : {"weight": 1.5, "attrs" : {"fast", False, "map":{"actions": "RS"}}},
-            "6,11" : {"weight": 3.5, "attrs" : {"fast", False, "map":{"actions": "SRS"}}},
-            "7,10" : {"weight": 8, "attrs" : {"fast", True, "map":{"actions": "SLFLS"}}},
-            "7,1," : {"weight": 2, "attrs" : {"fast", False, "map":{"actions": "LS"}}},
-            "8,10" : {"weight": 8, "attrs" : {"fast", True, "map":{"actions": "LSLFLS"}}},
-            "8,6," : {"weight": 3, "attrs" : {"fast", False, "map":{"actions": "RSRS"}}},
-            "9,1," : {"weight": 1.5, "attrs" : {"fast", False, "map":{"actions": "RS"}}},
-            "9,6," : {"weight": 3.5, "attrs" : {"fast", False, "map":{"actions": "SRS"}}},
-            "10,2" : {"weight": 2, "attrs" : {"fast", False, "map":{"actions": "LS"}}},
-            "10,5" : {"weight": 4, "attrs" : {"fast", False, "map":{"actions": "SLS"}}},
-            "11,2" : {"weight": 1.5, "attrs" : {"fast", False, "map":{"actions": "RS"}}},
-            "11,9" : {"weight": 7, "attrs" : {"fast", True, "map":{"actions": "SRFRS"}}},
-            "12,9" : {"weight": 6.5, "attrs" : {"fast", True, "map":{"actions": "RSRFRS"}}},
-            "12,5" : {"weight": 4, "attrs" : {"fast", False, "map":{"actions": "LSLS"}}}}
+    edges = {"1,12,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "S"}}},
+             "1,4,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},  # to prefer going straight
+             "2,4,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "2,8,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "S"}}},
+             "3,8,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "3,12": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
+             "4,7,": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "LSLS"}}},
+             "4,11": {"weight": 3, "attrs": {"fast": False, "map": {"actions": "RSRS"}}},
+             "5,3,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
+             "5,7,": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "SLS"}}},
+             "6,3,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "6,11": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "SRS"}}},
+             "7,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "SLFLS"}}},
+             "7,1,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
+             "8,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "LSLFLS"}}},
+             "8,6,": {"weight": 3, "attrs": {"fast": False, "map": {"actions": "RSRS"}}},
+             "9,1,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "9,6,": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "SRS"}}},
+             "10,2": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
+             "10,5": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "SLS"}}},
+             "11,2": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "11,9": {"weight": 7, "attrs": {"fast": True, "map": {"actions": "SRFRS"}}},
+             "12,9": {"weight": 6.5, "attrs": {"fast": True, "map": {"actions": "RSRFRS"}}},
+             "12,5": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "LSLS"}}}
+             }
 
     wEdges = []
     for edge in edges:
@@ -323,6 +326,7 @@ def visionController():
 
     # vision variables to share between processes
     global vOffset
+    global vOffsetOld
     global stopLine
     global greenLight
     global see
@@ -336,7 +340,7 @@ def visionController():
     stopped = False
 
     # define and start the computer vision process
-    vision_process = Process(target=vision, args=(vOffset, see, stopLine, greenLight))
+    vision_process = Process(target=vision, args=(vOffset, vOffsetOld, see, stopLine, greenLight))
     vision_process.start()
     # _____________________________________________________________________________________
 
@@ -372,8 +376,8 @@ def visionController():
             # only do this if we have changed state in our state machine?
             # if the starter thread has changed this global variable to allow movement
             if (move):
-                if (greenLight.value and not stopped):
-                    print("LOOPING HERE")
+                #if (greenLight.value and not stopped):
+                #    print("LOOPING HERE")
                 # if(flag):
                 #     # send initial calibration
                 #     write("srt0000%s\n" % str(vRef).zfill(4))
