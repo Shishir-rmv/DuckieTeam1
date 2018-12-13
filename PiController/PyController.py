@@ -29,6 +29,11 @@ l_enc = 0
 r_enc = 0
 last_time = datetime.now()
 
+# vision variables
+vOffset = Value('i', 0)
+stopLine = Value('b', False)
+greenLight = Value('b', True)
+see = Value('b', True)
 
 ENC_DELTA_THETA = 0
 ENC_DELTA_X = 0
@@ -245,17 +250,19 @@ def visionController():
     global move
     global goSerial
     global serial_msg_counter
+
+    # vision variables to share between processes
+    global vOffset
+    global stopLine
+    global greenLight
+    global see
+
     starterThreads = []
     start = time.time()
     # Define and split off the computer vision subprocess _________________________________
     # define doubles
-    vOffset = Value('i', 0)
-    stopLine = Value('b', False)
-    greenLight = Value('b', True)
-    stopped = False
 
-    # define boolean to act as an off switch
-    see = Value('b', True)
+    stopped = False
 
     # define and start the computer vision process
     vision_process = Process(target=vision, args=(vOffset, see, stopLine, greenLight))
@@ -378,17 +385,11 @@ def vNav(vOffset, stopLine):
 def runController(mapNum):
     global move
     # Define and split off the computer vision subprocess _________________________________
-    # define doubles
-    vOffset = Value('i', 0)
-
-    
-    # define boolean to act as an off switch
-    see = Value('b', True)
-
-    # to tell us if we're stopped
-    stopLine = Value('b', False)
-    # if we see a green light
-    greenLight = Value('b', False)
+    # vision variables to share between processes
+    global vOffset
+    global stopLine
+    global greenLight
+    global see
 
     # define and start the computer vision process
     vision_process = Process(target=vision, args=(vOffset, see, stopLine, greenLight))
