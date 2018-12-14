@@ -62,7 +62,7 @@ WHEEL_CIRCUMFERENCE = 219.9115
 
 # to prevent the Pi from getting too far ahead of the arduino
 def write(cmd):
-    print("SENDING: %s" % cmd)
+    print("sending: %s" % cmd)
     # print("Write - Before Encoding")
     encoded = cmd.encode()
     # print("Write - Before Writing")
@@ -627,54 +627,54 @@ def smallTest():
     # this is the main logic loop where we put all our controlling equations/code
     try:
         # wait until we want the robot to move
-        print("CONTROLLER: waiting for user to permit movement")
+        print("CONTROLLER 1: waiting for user to permit movement")
         while (not move):
             pass
 
         # begin visual navigation. This will stop at a red line
-        print("CONTROLLER: Starting vNav()")
+        print("CONTROLLER 2: Starting vNav()")
         vNav(False)
 
         # wait until we see a green light to go again
-        print("CONTROLLER: waiting until we see a green light")
+        print("CONTROLLER 3: waiting until we see a green light")
         while (not greenLight.value):
             pass
         lastStart = datetime.now()
 
         # spawn a thread to switch greenLight off 1 second from now
-        print("CONTROLLER: spawning greenLight changer thread")
+        print("CONTROLLER 4: spawning greenLight changer thread")
         greenChangers.append(threading.Thread(target=greenChanger))
         greenChangers[0].start()
 
         # change turn radius here
-        print("CONTROLLER: performing turn")
+        print("CONTROLLER 5: performing turn")
         radius = .2
         # args: [rTurn (boolean, if this is a right turn. False = left turn)], [radius of turn]
         turn(True, radius)
 
         # continue visually navigating afterwards (you'll probably want to kill it gracefully eventually)
-        print("CONTROLLER: Starting vNav()")
+        print("CONTROLLER 6: Starting vNav()")
         vNav(True)
 
         # wait until we see a green light to go again
-        print("CONTROLLER: waiting until we see a green light")
+        print("CONTROLLER 7: waiting until we see a green light")
         while (not greenLight.value):
             pass
         lastStart = datetime.now()
 
         # spawn a thread to switch greenLight off 1 second from now
-        print("CONTROLLER: spawning greenLight changer thread")
+        print("CONTROLLER 8: spawning greenLight changer thread")
         greenChangers.append(threading.Thread(target=greenChanger))
         greenChangers[1].start()
 
         # change turn radius here
-        print("CONTROLLER: performing turn")
+        print("CONTROLLER 9: performing turn")
         radius = .45
         # args: [rTurn (boolean, if this is a right turn. False = left turn)], [radius of turn]
         turn(False, radius)
 
         # continue visually navigating afterwards (you'll probably want to kill it gracefully eventually)
-        print("CONTROLLER: Starting vNav()")
+        print("CONTROLLER 10: Starting vNav()")
         vNav(True)
 
     except KeyboardInterrupt:
