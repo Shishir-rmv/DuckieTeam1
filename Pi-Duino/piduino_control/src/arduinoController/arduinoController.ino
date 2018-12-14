@@ -284,7 +284,7 @@ void loop() {
  
  if (duration > 500000){
   if (blocking == 1){
-    Serial.write("No PD rn");
+    Serial.write("No P rn");
   }
 //      Serial.write("HEARTBEAT");
       l_s = (l_enc_count-prev_l_enc_count)*WHEEL_CIRCUMFERENCE*500000/(PPR*duration);
