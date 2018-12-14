@@ -134,21 +134,21 @@ def process(stream, vOffset, vOffsetOld, stopLine, greenLight):
                     yellow_px = np.array([-1, -1])
 
                 if white_exist and yellow_exist:
-                    current_center = (white_px[1] + yellow_px[1]) / 2
-                    diff = expected_center - current_center
-                    # Deal with glare:
-                    #if abs(white_px[1] - yellow_px[1]) < 300:
-                    #    current_center = int(yellow_px[1]) - 300
-                    #    diff = expected_center - current_center
-                    #    vOffset.value = int(diff)
-                    #    print("%s\tProbably seeing glare\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
-                    #        datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
-                    #else:
-                    logging.debug(
-                        "%s\tWhite Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
-                            datetime.datetime.now(), int(white_px[1]), int(white_px[0]), int(yellow_px[1]),
-                            int(yellow_px[0]), current_center, diff))
-                    vOffset.value = int(diff)
+                    if white_px[1] < yellow_px[1]:
+                        # Probably seeing the white on the other side
+                        current_center = 260 - int(yellow_px[1])
+                        diff = current_center - expected_center
+                        vOffset.value = int(diff)
+                        logging.debug("%s\tNo white pixel found!\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
+                            datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
+                    else:
+                        current_center = (white_px[1] + yellow_px[1]) / 2
+                        diff = expected_center - current_center
+                        logging.debug(
+                            "%s\tWhite Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
+                                datetime.datetime.now(), int(white_px[1]), int(white_px[0]), int(yellow_px[1]),
+                                int(yellow_px[0]), current_center, diff))
+                        vOffset.value = int(diff)
                 elif white_exist and not yellow_exist:
                     current_center = int(white_px[1]) - 320
                     diff = expected_center - current_center
