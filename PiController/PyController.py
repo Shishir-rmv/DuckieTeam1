@@ -206,9 +206,8 @@ def starter(vRef):
     print("Starter thread finished")
 
 
-def serialReader():
+def serialReader(s1):
     global goSerial
-    global s1
 
     print("Starting serial thread")
     while (goSerial):
@@ -538,7 +537,7 @@ def smallTest():
     starterThreads[0].start()
 
     serial_thread = threading.Thread(target=serialReader)
-    serial_thread.start()
+    serial_thread.start(s1)
 
     # rtn00.20045
 
