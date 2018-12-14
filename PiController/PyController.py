@@ -189,7 +189,7 @@ def turn(rTurn, radius, speed):
     if (rTurn):
         write("rtn%s%s" % (str(radius).zfill(4), str(speed).zfill(4)))
     else:
-        write("ltn%s%s" % (str(radius).zfill(4), str(speed).zfill(4))0)
+        write("ltn%s%s" % (str(radius).zfill(4), str(speed).zfill(4)))
 
 
 def calibrate(node):
