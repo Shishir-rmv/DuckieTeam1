@@ -157,7 +157,7 @@ def vNav():
     stopped = False
     
     while (not stopped):
-        if (stopLine.value and not stopped and and serialD and (datetime.now() - lastStart).seconds > 1):
+        if (stopLine.value and not stopped and serialD and (datetime.now() - lastStart).seconds > 1):
             print("Red line detected by vNav()")
             write("stp")
             stopped = True
