@@ -128,7 +128,7 @@ def makeGraph():
             6: {'X': 105.5, 'Y': 251, 'T': 0, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
             7: {'X': 15, 'Y': 186, 'T': 270, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
             8: {'X': 68, 'Y': 156.5, 'T': 180, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
-            9: {'X': 38, 'Y': 103, 'T': 270, 'radiusR': 0, 'speeRd':0, 'radiusL': .2, 'speedL': 45}, 
+            9: {'X': 38, 'Y': 103, 'T': 270, 'radiusR': 0, 'speedR':0, 'radiusL': .2, 'speedL': 45}, 
             10: {'X': 274, 'Y': 103, 'T': 90, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
             11: {'X': 251, 'Y': 186, 'T': 270, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
             12: {'X': 221, 'Y': 1335, 'T': 0, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}}
