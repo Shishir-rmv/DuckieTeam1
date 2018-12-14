@@ -206,7 +206,7 @@ def starter(vRef):
     print("Starter thread finished")
 
 
-def serialReader():
+def serialReader(s1):
     global goSerial
     global s1
 
@@ -505,6 +505,7 @@ def smallTest():
     global goSerial
     global serial_msg_counter
     global lastStart
+    global s1
 
     # vision variables to share between processes
     global vOffset
