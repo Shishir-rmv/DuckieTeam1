@@ -529,9 +529,9 @@ def runController():
                                 print("CONTROLLER %d: Starting vNav() with waitForD"  % controllerCounter)
                                 vNav(True)
 
-                            else:
-                                print("CONTROLLER %d: Starting vNav()"  % controllerCounter)
-                                vNav(False)
+                        else:
+                            print("CONTROLLER %d: Starting vNav()"  % controllerCounter)
+                            vNav(False)
 
                         # wait until we see a green light to go again
                         print("CONTROLLER %d: waiting until we see a green light"  % controllerCounter)
