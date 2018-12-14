@@ -9,7 +9,7 @@ import picamera
 import time
 import logging, sys
 
-logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+logging.basicConfig(stream=sys.stderr, level=logging.ERROR)
 WIDTH = 640
 HEIGHT = 480
 expected_center = 293
