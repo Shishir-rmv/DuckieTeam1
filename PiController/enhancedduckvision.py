@@ -84,7 +84,7 @@ def process(stream, vOffset, vOffsetOld, stopLine, greenLight):
                         greenLight.value = True
                         print("%s\tFOUND GREEN>>>: Starting Now" % (datetime.datetime.now()))
                 else:
-                    cropped_for_red = image[300:height, 280:360].copy()
+                    cropped_for_red = image[250:height, 280:360].copy()
                     red_image = select_red(cropped_for_red)
                     # red_px = np.mean(np.where(np.any(red_image != [0, 0, 0], axis=-1)), axis=1)
                     num_of_red_px = np.where(np.any(red_image != [0, 0, 0], axis=-1))[1].size
