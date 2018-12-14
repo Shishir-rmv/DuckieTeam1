@@ -8,7 +8,8 @@ if __name__ == '__main__':
         see = Value('b', True)
         stopLine = Value('b', False)
         greenLight = Value('b', False)
-        vision_process = Process(target=vision, args=(vOffset, see, stopLine, greenLight))
+        vOffsetOld = Value('i', 0)
+        vision_process = Process(target=vision, args=(vOffset, vOffsetOld, see, stopLine, greenLight))
         vision_process.start()
         running = True;
         oldVal = -999

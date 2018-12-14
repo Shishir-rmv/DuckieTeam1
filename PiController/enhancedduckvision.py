@@ -27,11 +27,11 @@ def convert_hls(image):
 
 def select_green(image):
     converted = convert_hls(image)
-    # yellow color mask
+    # Green color mask
     lower = np.uint8([50, 0, 50])
-    upper = np.uint8([70, 100, 80])
-    yellow_mask = cv2.inRange(converted, lower, upper)
-    return cv2.bitwise_and(image, image, mask=yellow_mask)
+    upper = np.uint8([80, 200, 200])
+    green_mask = cv2.inRange(converted, lower, upper)
+    return cv2.bitwise_and(image, image, mask=green_mask)
 
 
 def select_red(image):
@@ -77,19 +77,20 @@ def process(stream, vOffset, vOffsetOld, stopLine, greenLight):
                 if stopLine.value and not greenLight.value:
                     cropped_for_green = image[200:height, 0:width].copy()
                     green_img = select_green(cropped_for_green)
+                    cv2.imwrite("green.jpg", green_img)
                     num_of_green_px = np.where(np.any(green_img != [0, 0, 0], axis=-1))[1].size
-                    print("%s\tNumber of Green pixels: %d" % (datetime.datetime.now(), num_of_green_px))
-                    if num_of_green_px > 100:
+                    #print("%s\tNumber of Green pixels: %d" % (datetime.datetime.now(), num_of_green_px))
+                    if num_of_green_px > 1000:
                         greenLight.value = True
                         print("%s\tFOUND GREEN>>>: Starting Now" % (datetime.datetime.now()))
                 else:
-                    cropped_for_red = image[350:height, 0:width].copy()
+                    cropped_for_red = image[250:height, 280:360].copy()
                     red_image = select_red(cropped_for_red)
                     # red_px = np.mean(np.where(np.any(red_image != [0, 0, 0], axis=-1)), axis=1)
                     num_of_red_px = np.where(np.any(red_image != [0, 0, 0], axis=-1))[1].size
-                    print("%s\tNumber of Red pixels: %d" % (datetime.datetime.now(), num_of_red_px))
+                    #print("%s\tNumber of Red pixels: %d" % (datetime.datetime.now(), num_of_red_px))
                     # red_exist = not np.all(np.isnan(red_px))
-                    if num_of_red_px > 100:
+                    if num_of_red_px > 1000:
                         stopLine.value = True
                         print("%s\tFOUND RED!!!: Stop Now" % (datetime.datetime.now()))
 
@@ -129,13 +130,13 @@ def process(stream, vOffset, vOffsetOld, stopLine, greenLight):
                             int(yellow_px[0]), current_center, diff))
                     vOffset.value = int(diff)
                 elif white_exist and not yellow_exist:
-                    current_center = int(white_px[1]) - 261
+                    current_center = int(white_px[1]) - 320
                     diff = expected_center - current_center
                     vOffset.value = int(diff)
                     print("%s\tNo yellow pixel found!\tWhite Pixel: x = %d, y = %d\t diff: %d" % (
                         datetime.datetime.now(), int(white_px[1]), int(white_px[0]), diff))
                 elif yellow_exist and not white_exist:
-                    current_center = 261 - int(yellow_px[1])
+                    current_center = 260 - int(yellow_px[1])
                     diff = current_center - expected_center
                     vOffset.value = int(diff)
                     print("%s\tNo white pixel found!\tYellow Pixel: x = %d, y = %d\t diff: %d" % (

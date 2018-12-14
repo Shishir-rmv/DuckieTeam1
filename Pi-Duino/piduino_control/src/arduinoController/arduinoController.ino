@@ -39,7 +39,7 @@ int l_enc_count, r_enc_count, prev_l_enc_count = 0, prev_r_enc_count = 0, blocki
 double duration, prevmillis, blind_micros;
 
 // errors
-double prev_error = 0, error = 0, error_dot = 0, del_v = 0,act,ref;
+double prev_error_v_err = 0, error = 0, error_dot = 0, del_v = 0,act,ref,prev_error = 0;
 // rpm's
 double rpm_target_L = 0, rpm_target_R = 0,rpm_R_ref = 0, rpm_L_ref = 0, pwm_L = 0, pwm_R = 0, local_L_ref, local_R_ref;
 
@@ -50,15 +50,12 @@ str_code hashit (String inString) {
    if (inString == "srt") return start;
    if (inString == "ver") return vOffset; 
    if (inString == "stp") return stopp;
+   if (inString == "upd") return update;
    if (inString == "none") return none;
    if (inString == "st1") return state1;
-   if (inString == "st2") return state2;
    if (inString == "rtn") return rtn;
    if (inString == "ltn") return ltn;
    if (inString == "fwd") return fwd;
-   if (inString == "cax") return cax;
-   if (inString == "cay") return cay;
-   if (inString == "cat") return cat;
    if (inString == "xyt") return xyt;
 }
 
@@ -69,16 +66,16 @@ void setup() {
   pinMode(L_ENC_B, INPUT);
   digitalWrite(L_ENC_B, HIGH);
    
- //enableInterrupt(L_ENC_A, encoder, CHANGE);
- //enableInterrupt(L_ENC_B, encoder, CHANGE);
+   enableInterrupt(L_ENC_A, encoder, CHANGE);
+   enableInterrupt(L_ENC_B, encoder, CHANGE);
 
   pinMode(R_ENC_A, INPUT);
   digitalWrite(R_ENC_A, HIGH);
   pinMode(R_ENC_B, INPUT);
   digitalWrite(R_ENC_B, HIGH);
 
-  //enableInterrupt(R_ENC_A, encoder, CHANGE);
-  //enableInterrupt(R_ENC_B, encoder, CHANGE);
+  enableInterrupt(R_ENC_A, encoder, CHANGE);
+  enableInterrupt(R_ENC_B, encoder, CHANGE);
   
   md.init();
   //md.setM1Speed(pwm_R);
@@ -141,8 +138,10 @@ void loop() {
       Serial.println("motor");
       // Serial.println(arg1);
       // Serial.println(arg2);
-      md.setM1Speed((int)arg1);
-      md.setM2Speed((int)arg2);
+      //md.setM1Speed((int)arg1);
+      //md.setM2Speed((int)arg2);
+      pwm_L = int(arg1);
+      pwm_R = int(arg2);
       break;
     
     case start :
@@ -169,7 +168,7 @@ void loop() {
       break;
 
     case vOffset :
-      prev_error = v_err;
+      prev_error_v_err = v_err;
       v_err = arg2;
       break;
     
@@ -190,18 +189,6 @@ void loop() {
       Serial.write(lowByte(int(y)));
       Serial.write('t'); 
       Serial.write(lowByte(int(theta)));
-      break;
-      
-    case cax :
-      x = arg1;
-      break;
-
-    case cay :
-      y = arg1;
-      break;
-
-    case cat :
-      theta = degToRadians(arg1);
       break;
       
     default:
@@ -261,6 +248,7 @@ void loop() {
       case state1 :
         ref = 0;
         act = y;
+        blocking =1;
         straight();
         pd();
         break;
@@ -275,8 +263,8 @@ void loop() {
         opStr = "";
         break; 
   }
-  if (v_err != prev_error && blocking != 1){
-    error_dot = v_err - prev_error;
+  if (v_err != prev_error_v_err && blocking != 1){
+    error_dot = v_err - prev_error_v_err;
     del_v = -(0.3*v_err) - (0.01*error_dot);
     del_v = (del_v*60)/(70*3.14);
     rpm_target_L = rpm_L_ref + del_v;
@@ -287,16 +275,17 @@ void loop() {
 //        Serial.write('b');
 //        Serial.write(lowByte((int)rpm_target_R));
 //    }
+
     pwm_L = (2.2*rpm_target_L + 85);
     pwm_R = (2.1*rpm_target_R + 81);
   }
 
  duration = micros()-prevmillis;
  
- if (duration > 2000000){
+ if (duration > 500000){
 //      Serial.write("HEARTBEAT");
-      l_s = (l_enc_count-prev_l_enc_count)*WHEEL_CIRCUMFERENCE*2000000/(PPR*duration);
-      r_s = (r_enc_count-prev_r_enc_count)*WHEEL_CIRCUMFERENCE*2000000/(PPR*duration); 
+      l_s = (l_enc_count-prev_l_enc_count)*WHEEL_CIRCUMFERENCE*1000000/(PPR*duration);
+      r_s = (r_enc_count-prev_r_enc_count)*WHEEL_CIRCUMFERENCE*1000000/(PPR*duration); 
       delta_x = (l_s + r_s)/2;
       heading = atan2((l_s-r_s)/2, WHEEL_BASE/2);
       theta += heading;
@@ -304,7 +293,7 @@ void loop() {
       y += delta_x*sin(theta);
       //String ret = "x "+String(x)+" y "+String(y)+" theta "+String(theta);
       //Serial.println(ret);
-      prev_l_enc_count = l_enc_count;
+      prev_l_enc_count = l_enc_count; 
       prev_r_enc_count = r_enc_count;
       prevmillis = micros();
   }    
@@ -320,23 +309,27 @@ void loop() {
   md.setM1Speed(pwm_R*ping_slowdown);
 }
 
-double degToRadians(int degree){
-  return degree*PI/180; 
-}
+
 void encoder() {
   int l_enc = read_encoderL((ENC_PORT2 & 0b110000) >> 4);
   int r_enc = read_encoderR((ENC_PORT & 0b1100000) >> 5);
   l_enc_count += l_enc;
   r_enc_count += r_enc;
+  //Serial.println(r_enc_count);
 }
 
 void pd(){
-  del_v = -(0.3*error) - (0.01*error_dot);
+  Serial.println("pd");
+  
+  del_v = -(0.5*error) - (3*error_dot);
   del_v = (del_v*60)/(70*3.14);
   rpm_target_L = rpm_L_ref + del_v;
   rpm_target_R = rpm_R_ref - del_v;
   pwm_L = (2.2*rpm_target_L + 85);
   pwm_R = (2.1*rpm_target_R + 81);
+  Serial.println(rpm_target_L);
+  Serial.println(rpm_target_R);
+  
 }
 
 void straight(){

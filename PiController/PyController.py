@@ -1,4 +1,4 @@
-import json, math, serial, threading, time
+import json, math, serial, threading, time, pdb
 from datetime import datetime
 from multiprocessing import Process, Value
 import networkx as nx
@@ -39,6 +39,8 @@ see = Value('b', True)
 
 ENC_DELTA_THETA = 0
 ENC_DELTA_X = 0
+
+serialD = False
 
 THETA = 0
 X = 0
@@ -149,6 +151,7 @@ def vNav():
     global vOffset
     global vOffsetOld
     global stopLine
+    global lastStart
     
     stopped = False
     
@@ -175,10 +178,21 @@ def calibrate(node):
 
 
 def turn(rTurn, radius):
+    global serialD
+    global stopLine
+
     if (rTurn):
         write("rtn%s0045" % str(radius).zfill(4))
     else:
         write("ltn%s0045" % str(radius).zfill(4))
+
+    # wait for the blind turn to finish
+    print("CONTROLLER: waiting for the arduino to transmit the D")
+    while (not serialD):
+        pass
+
+    serialD = False
+    stopLine.value = False
 
 
 def greenChanger():
@@ -206,21 +220,22 @@ def starter(vRef):
     print("Starter thread finished")
 
 
-def serialReader():
+def serialReader(s1):
     global goSerial
-    global s1
-    
+    global serialD
+
     print("Starting serial thread")
     while (goSerial):
         if (s1.in_waiting):
-            # read the "label" byte
-            serialIn = s1.read(20)
-            # read the "data" byte
-            # r2 = s1.read(20)
-            # arg2 = int.from_bytes(r2, byteorder = 'little', signed = False)
-            print("From Arduino: " + serialIn.decode('utf-8'))
-            # print("SERIAL: %s" % r1)
-            # this is only for debugging
+            serialIn = str(s1.read(20).decode('utf-8'))
+            print("From Arduino: %s" + serialIn)
+            print("type is: " + str(type(serialIn)))
+            print(serialIn)
+
+            if ("D" in serialIn):
+                print("THERES A D")
+                serialD = True
+
     print("Ending serial thread")
 
 
@@ -373,6 +388,11 @@ def visionController():
 
 def runController():
     global move
+    global goSerial
+    global lastStart
+    global s1
+    global serialD
+
     # Define and split off the computer vision subprocess _________________________________
     # vision variables to share between processes
     global vOffset
@@ -400,6 +420,8 @@ def runController():
     # small right turn
     smallRadius = 0.2
 
+    greenChangers = []
+
     # read in the state machine graph
     with open("../peripherals/graph.json", 'r') as f:
         read = json.load(f)
@@ -411,7 +433,7 @@ def runController():
     starter_thread = threading.Thread(target=starter, args=(vRef))
     starter_thread.start()
 
-    serial_thread = threading.Thread(target=serialReader)
+    serial_thread = threading.Thread(target=serialReader, args=(s1,))
     serial_thread.start()
 
     # open the serial port to the Arduino & initialize
@@ -432,6 +454,7 @@ def runController():
         calibrate(path[0])
 
         # wait until we want the robot to move
+        print("CONTROLLER: waiting for user to permit movement")
         while (not move):
             pass
 
@@ -461,24 +484,49 @@ def runController():
                         # using vision, start moving. Args: initial vRef
                         # only sent srt's for the first action
                         if (action == 0):
+                            print("CONTROLLER: Writing SRT")
                             write("srt0000%s\n" % str(vRef).zfill(4))
 
                         # navigate visually until the stop condition
+                        print("CONTROLLER: Starting vNav()")
                         vNav()
+
+                        # wait until we see a green light to go again
+                        print("CONTROLLER: waiting until we see a green light")
+                        while (not greenLight.value):
+                            pass
+                        lastStart = datetime.now()
+
+                        # spawn a thread to switch greenLight off 1 second from now
+                        print("CONTROLLER: spawning greenLight changer thread")
+                        greenChangers.append(threading.Thread(target=greenChanger))
+                        greenChangers[-1].start()
 
                     elif (actionMap[action] == "R"):
                         # blind turn
                         turn(True, smallRadius)
-                        # wait for arduino to respond?
+
                     elif (actionMap[action] == "L"):
                         # blind turn
                         turn(False, bigRadius)
-                        # wait for arduino to respond?
 
                     elif(actionMap[action] == "B"):
                         # blind straight (can use the turning code with no radius)
                         # since we know this will be the first call after an intersection that we want to go straight through
                         write("ltn0001%s\n" % str(vRef).zfill(4))
+
+                        print("CONTROLLER: Blind Straight. Waiting for the arduino to transmit the D")
+
+                        # wait for the blind turn to finish
+                        while (not serialD):
+                            pass
+
+                        serialD = False
+                        stopLine.value = False
+
+                    print("CONTROLLER: Action is finished")
+                print("CONTROLLER: Segment is finished")
+            print("CONTROLLER: Plan is finished")
 
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
@@ -492,6 +540,9 @@ def runController():
     # once we're all done, send the kill switch to the inner vision loop and join the vision process
     see.value = False
     goSerial = False
+    # join all green light threads
+    for greenChanger in greenChangers:
+        greenChanger.join()
     starter_thread.join()
     print("Starter thread joined")
     serial_thread.join()
@@ -503,8 +554,9 @@ def runController():
 def smallTest():
     global move
     global goSerial
-    global serial_msg_counter
     global lastStart
+    global s1
+    global serialD
 
     # vision variables to share between processes
     global vOffset
@@ -536,7 +588,7 @@ def smallTest():
     starterThreads.append(threading.Thread(target=starter, args=(vRef,)))
     starterThreads[0].start()
 
-    serial_thread = threading.Thread(target=serialReader)
+    serial_thread = threading.Thread(target=serialReader, args=(s1,))
     serial_thread.start()
 
     # rtn00.20045
@@ -574,13 +626,48 @@ def smallTest():
         # spawn a thread to switch greenLight off 1 second from now
         print("CONTROLLER: spawning greenLight changer thread")
         greenChangers.append(threading.Thread(target=greenChanger))
-        greenChanger.start()
+        greenChangers[0].start()
 
         # change turn radius here
         print("CONTROLLER: performing turn")
-        radius = .3
+        radius = .2
         # args: [rTurn (boolean, if this is a right turn. False = left turn)], [radius of turn]
         turn(True, radius)
+    
+        # wait for the blind turn to finish
+        while (not serialD):
+            pass
+
+        serialD = False
+        stopLine.value = False
+
+        # continue visually navigating afterwards (you'll probably want to kill it gracefully eventually)
+        print("CONTROLLER: Starting vNav()")
+        vNav()
+
+        # wait until we see a green light to go again
+        print("CONTROLLER: waiting until we see a green light")
+        while (not greenLight.value):
+            pass
+        lastStart = datetime.now()
+
+        # spawn a thread to switch greenLight off 1 second from now
+        print("CONTROLLER: spawning greenLight changer thread")
+        greenChangers.append(threading.Thread(target=greenChanger))
+        greenChangers[1].start()
+
+        # change turn radius here
+        print("CONTROLLER: performing turn")
+        radius = .45
+        # args: [rTurn (boolean, if this is a right turn. False = left turn)], [radius of turn]
+        turn(False, radius)
+    
+        # wait for the blind turn to finish
+        while (not serialD):
+            pass
+
+        serialD = False
+        stopLine.value = False
 
         # continue visually navigating afterwards (you'll probably want to kill it gracefully eventually)
         print("CONTROLLER: Starting vNav()")
@@ -604,7 +691,7 @@ def smallTest():
     goSerial = False
     serial_thread.join()
     print("Serial thread joined")
-    greenChanger.join()
+    greenChangers[0].join()
     print("Green thread joined")
     vision_process.terminate()
     print("Vision process terminated")
