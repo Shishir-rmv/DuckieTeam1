@@ -212,7 +212,7 @@ def serialReader():
     
     print("Starting serial thread")
     while (goSerial):
-        if (s1.in_waiting):
+        if (s1.in_waiting()):
             # read the "label" byte
             serialIn = s1.read(20)
             # read the "data" byte
@@ -315,7 +315,7 @@ def visionController():
                 #     # print("Finished writing start")
                 #     flag = False
 
-                if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 3):
+                if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 2):
                     print("Stopper middle: stp")
                     write("stp")
                     stopped = True
@@ -574,11 +574,11 @@ def smallTest():
         # spawn a thread to switch greenLight off 1 second from now
         print("CONTROLLER: spawning greenLight changer thread")
         greenChangers.append(threading.Thread(target=greenChanger))
-        greenChanger.start()
+        greenChangers[0].start()
 
         # change turn radius here
         print("CONTROLLER: performing turn")
-        radius = .2
+        radius = .5
         # args: [rTurn (boolean, if this is a right turn. False = left turn)], [radius of turn]
         turn(True, radius)
 
@@ -604,7 +604,7 @@ def smallTest():
     goSerial = False
     serial_thread.join()
     print("Serial thread joined")
-    greenChanger.join()
+    greenChangers[0].join()
     print("Green thread joined")
     vision_process.terminate()
     print("Vision process terminated")

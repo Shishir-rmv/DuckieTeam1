@@ -50,15 +50,12 @@ str_code hashit (String inString) {
    if (inString == "srt") return start;
    if (inString == "ver") return vOffset; 
    if (inString == "stp") return stopp;
+   if (inString == "upd") return update;
    if (inString == "none") return none;
    if (inString == "st1") return state1;
-   if (inString == "st2") return state2;
    if (inString == "rtn") return rtn;
    if (inString == "ltn") return ltn;
    if (inString == "fwd") return fwd;
-   if (inString == "cax") return cax;
-   if (inString == "cay") return cay;
-   if (inString == "cat") return cat;
    if (inString == "xyt") return xyt;
 }
 
@@ -194,18 +191,6 @@ void loop() {
       Serial.write(lowByte(int(theta)));
       break;
       
-    case cax :
-      x = arg1;
-      break;
-
-    case cay :
-      y = arg1;
-      break;
-
-    case cat :
-      theta = degToRadians(arg1);
-      break;
-      
     default:
       break;
   }
@@ -224,7 +209,8 @@ void loop() {
           Serial.write('D');
           opStrB="";
           blocking = 0;
-
+          rpm_target_L = rpm_L_ref;
+          rpm_target_R = rpm_R_ref;
  
         }
         break;
@@ -292,14 +278,13 @@ void loop() {
 //        Serial.write(lowByte((int)rpm_target_R));
 //    }
 
-  
     pwm_L = (2.2*rpm_target_L + 85);
     pwm_R = (2.1*rpm_target_R + 81);
   }
 
  duration = micros()-prevmillis;
  
- if (duration > 1000000){
+ if (duration > 500000){
 //      Serial.write("HEARTBEAT");
       l_s = (l_enc_count-prev_l_enc_count)*WHEEL_CIRCUMFERENCE*1000000/(PPR*duration);
       r_s = (r_enc_count-prev_r_enc_count)*WHEEL_CIRCUMFERENCE*1000000/(PPR*duration); 
@@ -308,8 +293,8 @@ void loop() {
       theta += heading;
       x += delta_x*cos(theta);
       y += delta_x*sin(theta);
-      String ret = "x "+String(x)+" y "+String(y)+" theta "+String(theta);
-      Serial.println(ret);
+      //String ret = "x "+String(x)+" y "+String(y)+" theta "+String(theta);
+      //Serial.println(ret);
       prev_l_enc_count = l_enc_count; 
       prev_r_enc_count = r_enc_count;
       prevmillis = micros();
@@ -326,9 +311,7 @@ void loop() {
   md.setM1Speed(pwm_R*ping_slowdown);
 }
 
-double degToRadians(int degree){
-  return degree*PI/180; 
-}
+
 void encoder() {
   int l_enc = read_encoderL((ENC_PORT2 & 0b110000) >> 4);
   int r_enc = read_encoderR((ENC_PORT & 0b1100000) >> 5);
