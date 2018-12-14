@@ -539,13 +539,13 @@ def runController():
                         print("CONTROLLER %d: performing blind right turn"  % controllerCounter)
                         controllerCounter += 1
                         # blind turn
-                        turn(True, DG.nodes[currentState]['radiusR'], DG.nodes[currentState]['speedR'])
+                        turn(True, DG.nodes[route[currentState]]['radiusR'], DG.nodes[route[currentState]]['speedR'])
 
                     elif (actionMap[action] == "L"):
                         print("CONTROLLER %d: performing blind left turn"  % controllerCounter)
                         controllerCounter += 1
                         # blind turn
-                        turn(False, DG.nodes[currentState]['radiusL'], DG.nodes[currentState]['speedL'])
+                        turn(False, DG.nodes[route[currentState]]['radiusL'], DG.nodes[route[currentState]]['speedL'])
 
                     elif(actionMap[action] == "B"):
                         # blind straight (can use the turning code with no radius)
