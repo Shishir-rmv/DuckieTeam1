@@ -578,7 +578,7 @@ def smallTest():
 
         # change turn radius here
         print("CONTROLLER: performing turn")
-        radius = .5
+        radius = .2
         # args: [rTurn (boolean, if this is a right turn. False = left turn)], [radius of turn]
         turn(True, radius)
 
