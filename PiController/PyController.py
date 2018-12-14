@@ -517,11 +517,6 @@ def runController():
                     print("CONTROLLER %d: current action is: %s" % (controllerCounter, str(actionMap[action])))
                     controllerCounter += 1
 
-                    if (action == 0):
-                        print("CONTROLLER %d: Writing SRT"  % controllerCounter)
-                        controllerCounter += 1
-                        write("srt0000%s\n" % str(vRef).zfill(4))
-                            
                     # go straight
                     if (actionMap[action] == "S" or actionMap[action] == "F"):
                         # using vision, start moving. Args: initial vRef
@@ -550,6 +545,11 @@ def runController():
                         greenChangers[-1].start()
 
                     elif (actionMap[action] == "R"):
+                        # if (action == 0):
+                        print("CONTROLLER %d: Writing SRT"  % controllerCounter)
+                        controllerCounter += 1
+                        write("srt0000%s\n" % str(vRef).zfill(4))
+
                         print("CONTROLLER %d: performing blind right turn"  % controllerCounter)
                         controllerCounter += 1
                         # blind turn
@@ -557,12 +557,20 @@ def runController():
                         turn(True, xyts[route[currentState]]['radiusR'], xyts[route[currentState]]['speedR'])
 
                     elif (actionMap[action] == "L"):
+                        # if (action == 0):
+                        print("CONTROLLER %d: Writing SRT"  % controllerCounter)
+                        controllerCounter += 1
+                        write("srt0000%s\n" % str(vRef).zfill(4))
                         print("CONTROLLER %d: performing blind left turn"  % controllerCounter)
                         controllerCounter += 1
                         # blind turn
                         turn(False, xyts[route[currentState]]['radiusL'], xyts[route[currentState]]['speedL'])
 
                     elif(actionMap[action] == "B"):
+                        # if (action == 0):
+                        print("CONTROLLER %d: Writing SRT"  % controllerCounter)
+                        controllerCounter += 1
+                        write("srt0000%s\n" % str(vRef).zfill(4))
                         # blind straight (can use the turning code with no radius)
                         # since we know this will be the first call after an intersection that we want to go straight through
                         write("ltn0001%s\n" % str(vRef).zfill(4))
