@@ -9,7 +9,7 @@ import picamera
 import time
 import logging, sys
 
-logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 WIDTH = 640
 HEIGHT = 480
 expected_center = 293
@@ -73,7 +73,7 @@ def is_green_light_on(image):
 
 def is_at_red_line(image):
     height, width, temp = image.shape
-    cropped_for_red = image[250:height, 280:360].copy()
+    cropped_for_red = image[200:height, 280:360].copy()
     red_image = select_red(cropped_for_red)
     num_of_red_px = np.where(np.any(red_image != [0, 0, 0], axis=-1))[1].size
     if num_of_red_px > 1000:
