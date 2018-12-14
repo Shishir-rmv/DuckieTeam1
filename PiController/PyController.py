@@ -206,7 +206,7 @@ def calibrate(node):
     write("cat%s0000\n" % str(DG.nodes['T']).zfill(4))
 
 
-def greenChanger():
+def greenThread():
     global greenLight
 
     time.sleep(1)
@@ -507,6 +507,12 @@ def runController():
                 while (not greenLight.value):
                     pass
 
+                # spawn a thread to switch greenLight off 1 second from now
+                print("CONTROLLER %d: spawning greenLight changer thread"  % controllerCounter)
+                controllerCounter += 1
+                greenChangers.append(threading.Thread(target=greenThread))
+                greenChangers[-1].start()
+
                 for action in range(len(actionMap)):
                     # debugging
                     print("CONTROLLER %d: current action is: %s" % (controllerCounter, str(actionMap[action])))
@@ -535,7 +541,7 @@ def runController():
                         # spawn a thread to switch greenLight off 1 second from now
                         print("CONTROLLER %d: spawning greenLight changer thread"  % controllerCounter)
                         controllerCounter += 1
-                        greenChangers.append(threading.Thread(target=greenChanger))
+                        greenChangers.append(threading.Thread(target=greenThread))
                         greenChangers[-1].start()
 
                     elif (actionMap[action] == "R"):
@@ -586,8 +592,8 @@ def runController():
     see.value = False
     goSerial = False
     # join all green light threads
-    for greenChanger in greenChangers:
-        greenChanger.join()
+    for greenie in greenChangers:
+        greenie.join()
     starter_thread.join()
     print("Starter thread joined")
     serial_thread.join()
@@ -670,8 +676,8 @@ def smallTest():
 
         # spawn a thread to switch greenLight off 1 second from now
         print("CONTROLLER 4: spawning greenLight changer thread")
-        greenChangers.append(threading.Thread(target=greenChanger))
-        greenChangers[0].start()
+        greenChangers.append(threading.Thread(target=greenThread))
+        greenChangers[-1].start()
 
         # change turn radius here
         print("CONTROLLER 5: performing turn")
@@ -692,7 +698,7 @@ def smallTest():
 
         # spawn a thread to switch greenLight off 1 second from now
         print("CONTROLLER 8: spawning greenLight changer thread")
-        greenChangers.append(threading.Thread(target=greenChanger))
+        greenChangers.append(threading.Thread(target=greenThread))
         greenChangers[-1].start()
 
         # change turn radius here
