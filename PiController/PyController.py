@@ -483,7 +483,7 @@ def runController():
             for currentState in range(len(route) - 1):
                 # by performing all of the actions in the route
                 # when the last action is completed, the next state will happen in the parent for loop
-                actionMap = edges[str(route[currentState]) + "," + str(route[currentState+1])]["attrs"]["map"]
+                actionMap = edges[str(route[currentState]) + "," + str(route[currentState+1])]["attrs"]["map"]['actions']
 
                 # debugging
                 print("CONTROLLER %d: Action map: %s" % (controllerCounter, str(route)))
