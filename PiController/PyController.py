@@ -40,6 +40,8 @@ see = Value('b', True)
 ENC_DELTA_THETA = 0
 ENC_DELTA_X = 0
 
+edges = {}
+
 serialD = False
 
 THETA = 0
@@ -78,30 +80,31 @@ def read():
 
 def makeGraph():
     global DG
+    global edges
     # initialize graph
     DG = nx.DiGraph()
 
     nodes = [1,2,3,4,5,6,7,8,9,10,11,12]
 
     # weights are rough estimates, change to introduce bias later
-    edges = {"1,12,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "BS"}}},
-             "1,4,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},  # to prefer going straight
-             "2,4,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
-             "2,8,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "BS"}}},
-             "3,8,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+    edges = {"1,12": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "BS"}}},
+             "1,4": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},  # to prefer going straight
+             "2,4": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "2,8": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "BS"}}},
+             "3,8": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
              "3,12": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
-             "4,7,": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "LSLS"}}},
+             "4,7": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "LSLS"}}},
              "4,11": {"weight": 3, "attrs": {"fast": False, "map": {"actions": "RSRS"}}},
-             "5,3,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
-             "5,7,": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "BSLS"}}},
-             "6,3,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "5,3": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
+             "5,7": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "BSLS"}}},
+             "6,3": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
              "6,11": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "BRS"}}},
              "7,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "SLFLS"}}},
-             "7,1,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
+             "7,1": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
              "8,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "LSLFLS"}}},
-             "8,6,": {"weight": 3, "attrs": {"fast": False, "map": {"actions": "RSRS"}}},
-             "9,1,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
-             "9,6,": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "SRS"}}},
+             "8,6": {"weight": 3, "attrs": {"fast": False, "map": {"actions": "RSRS"}}},
+             "9,1": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "9,6": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "SRS"}}},
              "10,2": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
              "10,5": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "BSLS"}}},
              "11,2": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
@@ -397,16 +400,19 @@ def runController():
     global lastStart
     global s1
     global serialD
+    global DG
+    global edges
 
     # Define and split off the computer vision subprocess _________________________________
     # vision variables to share between processes
     global vOffset
+    global vOffsetOld
     global stopLine
     global greenLight
     global see
 
     # define and start the computer vision process
-    vision_process = Process(target=vision, args=(vOffset, see, stopLine, greenLight))
+    vision_process = Process(target=vision, args=(vOffset, vOffsetOld, see, stopLine, greenLight))
     vision_process.start()
     # _____________________________________________________________________________________
     print("PyController starting")
@@ -427,14 +433,15 @@ def runController():
     greenChangers = []
 
     # read in the state machine graph
-    with open("../peripherals/graph.json", 'r') as f:
-        read = json.load(f)
+    # with open("../peripherals/graph.json", 'r') as f:
+    #     read = json.load(f)
 
-    # re-convert to graph
-    DG = nx.node_link_graph(read, directed=True, multigraph=False, attrs=None)
+    # initialize the graph
+    makeGraph()
+
 
     # split off the starter thread so the machine can passively calibrate itself before we start
-    starter_thread = threading.Thread(target=starter, args=(vRef))
+    starter_thread = threading.Thread(target=starter, args=(vRef,))
     starter_thread.start()
 
     serial_thread = threading.Thread(target=serialReader, args=(s1,))
@@ -449,35 +456,34 @@ def runController():
     if s1.isOpen():
         s1.flush()
 
-    # open state machine data for reading
-    with open("StateMachine/map%s.json" % mapNum, 'r') as f:
-        machine = json.load(f)
-
     # this is the main logic loop where we put all our controlling equations/code
     try:
         # calibrate the robot
         # calibrate(path[0])
 
         # wait until we want the robot to move
-        print("CONTROLLER: waiting for user to permit movement")
+        print("CONTROLLER %d: waiting for user to permit movement" % controllerCounter)
+        controllerCounter += 1
         while (not move):
             pass
 
         # loop overall segments in our given route
         for segment in range(len(path) - 1):
             # debugging
-            print("CONTROLLER: About to navigate %s to %s" % (path[segment], path[segment + 1]))
+            print("CONTROLLER %d: About to navigate %s to %s" % (controllerCounter, path[segment], path[segment + 1]))
+            controllerCounter += 1
 
             # compute the path from the segment start state to its finish state
             route = nx.dijkstra_path(DG, path[segment], path[segment + 1])
             # navigate the current segment's route
 
             # debugging
-            print("CONTROLLER: Path plan is: %s" % str(route))
+            print("CONTROLLER %d: Path plan is: %s" % (controllerCounter, str(route)))
+            controllerCounter += 1
             for currentState in range(len(route) - 1):
                 # by performing all of the actions in the route
                 # when the last action is completed, the next state will happen in the parent for loop
-                actionMap = edges[str(currentState) + "," + str(currentState + 1)]["attrs"]["map"]
+                actionMap = edges[str(route[currentState]) + "," + str(route[currentState+1])]["attrs"]["map"]
 
                 # wait until we see a green light to begin our action sequence
                 while (not greenLight.value):
@@ -489,29 +495,36 @@ def runController():
                         # using vision, start moving. Args: initial vRef
                         # only sent srt's for the first action
                         if (action == 0):
-                            print("CONTROLLER: Writing SRT")
+                            print("CONTROLLER %d: Writing SRT"  % controllerCounter)
+                            controllerCounter += 1
                             write("srt0000%s\n" % str(vRef).zfill(4))
 
                         # navigate visually until the stop condition
-                        print("CONTROLLER: Starting vNav()")
+                        print("CONTROLLER %d: Starting vNav()"  % controllerCounter)
                         vNav(False)
 
                         # wait until we see a green light to go again
-                        print("CONTROLLER: waiting until we see a green light")
+                        print("CONTROLLER %d: waiting until we see a green light"  % controllerCounter)
+                        controllerCounter += 1
                         while (not greenLight.value):
                             pass
                         lastStart = datetime.now()
 
                         # spawn a thread to switch greenLight off 1 second from now
-                        print("CONTROLLER: spawning greenLight changer thread")
+                        print("CONTROLLER %d: spawning greenLight changer thread"  % controllerCounter)
+                        controllerCounter += 1
                         greenChangers.append(threading.Thread(target=greenChanger))
                         greenChangers[-1].start()
 
                     elif (actionMap[action] == "R"):
+                        print("CONTROLLER %d: performing blind right turn"  % controllerCounter)
+                        controllerCounter += 1
                         # blind turn
                         turn(True, DG.nodes[currentState]['radiusR'], DG.nodes[currentState]['speedR'])
 
                     elif (actionMap[action] == "L"):
+                        print("CONTROLLER %d: performing blind left turn"  % controllerCounter)
+                        controllerCounter += 1
                         # blind turn
                         turn(False, DG.nodes[currentState]['radiusL'], DG.nodes[currentState]['speedL'])
 
@@ -520,7 +533,8 @@ def runController():
                         # since we know this will be the first call after an intersection that we want to go straight through
                         write("ltn0001%s\n" % str(vRef).zfill(4))
 
-                        print("CONTROLLER: Blind Straight. Waiting for the arduino to transmit the D")
+                        print("CONTROLLER %d: Blind Straight. Waiting for the arduino to transmit the D"  % controllerCounter)
+                        controllerCounter += 1
 
                         # wait for the blind turn to finish
                         while (not serialD):
@@ -529,9 +543,12 @@ def runController():
                         serialD = False
                         stopLine.value = False
 
-                    print("CONTROLLER: Action is finished")
-                print("CONTROLLER: Segment is finished")
-            print("CONTROLLER: Plan is finished")
+                    print("CONTROLLER %d: Action is finished"  % controllerCounter)
+                    controllerCounter += 1
+                print("CONTROLLER %d: Segment is finished"  % controllerCounter)
+                controllerCounter += 1
+            print("CONTROLLER %d: Plan is finished"  % controllerCounter)
+            controllerCounter += 1
 
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
