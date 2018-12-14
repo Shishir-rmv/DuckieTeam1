@@ -451,10 +451,6 @@ def runController():
     if s1.isOpen():
         s1.flush()
 
-    # open state machine data for reading
-    with open("StateMachine/map%s.json" % mapNum, 'r') as f:
-        machine = json.load(f)
-
     # this is the main logic loop where we put all our controlling equations/code
     try:
         # calibrate the robot
