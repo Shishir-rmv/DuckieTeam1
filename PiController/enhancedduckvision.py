@@ -73,7 +73,7 @@ def is_green_light_on(image):
 
 def is_at_red_line(image):
     height, width, temp = image.shape
-    cropped_for_red = image[200:height, 280:360].copy()
+    cropped_for_red = image[300:height, 280:360].copy()
     red_image = select_red(cropped_for_red)
     num_of_red_px = np.where(np.any(red_image != [0, 0, 0], axis=-1))[1].size
     if num_of_red_px > 1000:
