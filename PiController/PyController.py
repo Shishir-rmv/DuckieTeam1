@@ -431,7 +431,8 @@ def runController():
     # to be given to us by instructors before the demo
     # path = [1, 5, 7, 2, 9, 3, 12, 6, 8, 10, 1]
     # a test path
-    path = [9,4]
+    # path = [9,4]
+    path = [7,10]
 
     vRef = 30
     fastVRef = 60
