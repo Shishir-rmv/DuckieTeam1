@@ -485,7 +485,13 @@ def runController():
                 # when the last action is completed, the next state will happen in the parent for loop
                 actionMap = edges[str(route[currentState]) + "," + str(route[currentState+1])]["attrs"]["map"]
 
+                # debugging
+                print("CONTROLLER %d: Action map: %s" % (controllerCounter, str(route)))
+                controllerCounter += 1
+
                 # wait until we see a green light to begin our action sequence
+                print("CONTROLLER %d: waiting until we see a green light"  % controllerCounter)
+                controllerCounter += 1
                 while (not greenLight.value):
                     pass
 
