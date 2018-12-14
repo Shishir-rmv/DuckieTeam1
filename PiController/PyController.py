@@ -210,7 +210,7 @@ def starter(vRef):
 
 def serialReader(s1):
     global goSerial
-    global serialD
+    # global serialD
 
     print("Starting serial thread")
     while (goSerial):
