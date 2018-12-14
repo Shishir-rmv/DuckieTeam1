@@ -161,6 +161,7 @@ def vNav(lookingForD):
     global lastStart
     global serialD
     
+    lastStart = datetime.now()
     
     stopped = False
     
