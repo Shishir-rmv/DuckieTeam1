@@ -1,4 +1,4 @@
-import json, math, serial, threading, time
+import json, math, serial, threading, time, pdb
 from datetime import datetime
 from multiprocessing import Process, Value
 import networkx as nx
@@ -209,9 +209,10 @@ def starter(vRef):
 def serialReader():
     global goSerial
     global s1
-    
+
     print("Starting serial thread")
     while (goSerial):
+        pdb.set_trace()
         if (s1.in_waiting):
             # read the "label" byte
             serialIn = s1.read(20)
