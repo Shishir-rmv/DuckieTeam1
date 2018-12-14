@@ -165,7 +165,7 @@ def vNav(lookingForD):
         
         # print("vNav() not looking for D, loop is: " + str(stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1))
         else:
-            if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1):
+            if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 3):
                 # print("vNav() not looking for D should stop")
                 print("Red line detected by vNav()")
                 write("stp")
@@ -189,7 +189,7 @@ def turn(rTurn, radius):
     if (rTurn):
         write("rtn%s0045" % str(radius).zfill(4))
     else:
-        write("ltn%s0045" % str(radius).zfill(4))
+        write("ltn%s0060" % str(radius).zfill(4))
 
 
 def calibrate(node):

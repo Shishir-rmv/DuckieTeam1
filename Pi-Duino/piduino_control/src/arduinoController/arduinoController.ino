@@ -155,7 +155,7 @@ void loop() {
     case ltn :
       C = arg1;
       local_R_ref = arg2;//C=0.2 V45 C2 22.5
-      local_L_ref = local_R_ref;
+      local_L_ref = C*local_R_ref;
       blind_micros = micros();
       opStrB = "ltn";
       break; 
@@ -218,11 +218,10 @@ void loop() {
 
       case ltn :
         blocking = 1;
-        pwm_L = (2.2*local_L_ref + 85);
+        pwm_L = (2.2*local_R_ref + 85);
         pwm_R = (2.1*local_R_ref + 81);
         if (((micros()-blind_micros) > 500000) && ((micros()-blind_micros) <= 5500000)){
-          local_R_ref = arg2;//C=0.2 V45 C2 22.5
-          local_L_ref = C*local_R_ref;
+          blocking = 1;
           pwm_L = (2.2*local_L_ref + 85);
           pwm_R = (2.1*local_R_ref + 81);
         }
@@ -296,7 +295,7 @@ void loop() {
       x += delta_x*cos(theta);
       y += delta_x*sin(theta);
       String ret = "x "+String(x)+" y "+String(y)+" theta "+String(theta);
-      //Serial.println(ret);
+      Serial.println(ret);
       prev_l_enc_count = l_enc_count; 
       prev_r_enc_count = r_enc_count;
       prevmillis = micros();
