@@ -158,6 +158,9 @@ void loop() {
       break; 
             
     case rtn :
+      C = arg1;
+      local_L_ref = arg2;//C=0.2 V45 C2 22.5
+      local_R_ref = C*local_L_ref;
       blind_micros = micros();
       opStrB = "rtn";
       break;
@@ -199,11 +202,9 @@ void loop() {
     switch(hashit(opStrB)){    
       case rtn :
         blocking = 1;
-        C = arg1;
-        local_L_ref = arg2;//C=0.2 V45 C2 22.5
-        local_R_ref = C*local_L_ref;
         pwm_L = (2.2*local_L_ref + 85);
         pwm_R = (2.1*local_R_ref + 81);
+        Serial.println(C);
         if (micros()-blind_micros > 4000000){
           // Serial.print(C);
           Serial.write('D');
