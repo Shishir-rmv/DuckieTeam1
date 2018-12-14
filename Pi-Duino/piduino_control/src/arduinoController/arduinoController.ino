@@ -284,14 +284,14 @@ void loop() {
  
  if (duration > 500000){
 //      Serial.write("HEARTBEAT");
-      l_s = (l_enc_count-prev_l_enc_count)*WHEEL_CIRCUMFERENCE*1000000/(PPR*duration);
-      r_s = (r_enc_count-prev_r_enc_count)*WHEEL_CIRCUMFERENCE*1000000/(PPR*duration); 
+      l_s = (l_enc_count-prev_l_enc_count)*WHEEL_CIRCUMFERENCE*500000/(PPR*duration);
+      r_s = (r_enc_count-prev_r_enc_count)*WHEEL_CIRCUMFERENCE*500000/(PPR*duration); 
       delta_x = (l_s + r_s)/2;
       heading = atan2((l_s-r_s)/2, WHEEL_BASE/2);
       theta += heading;
       x += delta_x*cos(theta);
       y += delta_x*sin(theta);
-      //String ret = "x "+String(x)+" y "+String(y)+" theta "+String(theta);
+      String ret = "x "+String(x)+" y "+String(y)+" theta "+String(theta);
       //Serial.println(ret);
       prev_l_enc_count = l_enc_count; 
       prev_r_enc_count = r_enc_count;
@@ -319,16 +319,16 @@ void encoder() {
 }
 
 void pd(){
-  Serial.println("pd");
+  //Serial.println("pd");
   
-  del_v = -(0.5*error) - (3*error_dot);
+  del_v = -(1*error) - (2*error_dot);
   del_v = (del_v*60)/(70*3.14);
   rpm_target_L = rpm_L_ref + del_v;
   rpm_target_R = rpm_R_ref - del_v;
   pwm_L = (2.2*rpm_target_L + 85);
   pwm_R = (2.1*rpm_target_R + 81);
-  Serial.println(rpm_target_L);
-  Serial.println(rpm_target_R);
+  //Serial.println(rpm_target_L);
+  //Serial.println(rpm_target_R);
   
 }
 
