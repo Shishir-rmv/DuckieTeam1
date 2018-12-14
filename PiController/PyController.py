@@ -496,6 +496,10 @@ def runController():
                     pass
 
                 for action in range(len(actionMap)):
+                    # debugging
+                    print("CONTROLLER %d: current action is: %s" % (controllerCounter, str(actionmap[action])))
+                    controllerCounter += 1
+
                     # go straight
                     if (actionMap[action] == "S" or actionMap[action] == "F"):
                         # using vision, start moving. Args: initial vRef
