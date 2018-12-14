@@ -140,13 +140,15 @@ def makeGraph():
 
 # set motor speed
 def setMotors(motorSpeedL, motorSpeedR):
-    send = 'mtr' + "0" + str(motorSpeedL) + "0" + str(motorSpeedR) + "\n"
-    write(send)
-    # print(send)
+    # send = 'mtr' + "0" + str(motorSpeedL) + "0" + str(motorSpeedR) + "\n"
+    # write(send)
+    # # print(send)
 
-    # update the global variables once they're written to serial
-    motorL = motorSpeedL
-    motorR = motorSpeedR
+    # # update the global variables once they're written to serial
+    # motorL = motorSpeedL
+    # motorR = motorSpeedR
+
+    pass
 
 
 # this will visually navigate until the stop condition is reached
