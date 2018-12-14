@@ -167,11 +167,11 @@ def vNav(lookingForD):
 
             else:
                 # check for visual error changes
-                print("stopline.value: %s, stopped: %s, serialD: %s, timing: %s" % (stopLine.value, stopped, serialD, (datetime.now() - lastStart).seconds > 1))
                 old = vOffsetOld.value
                 now = vOffset.value
 
                 if (now != old):
+                    print("stopline.value: %s, stopped: %s, serialD: %s, timing: %s" % (stopLine.value, stopped, serialD, (datetime.now() - lastStart).seconds > 1))
                     old = now
                     write("ver0000%s\n" % str(now).zfill(4))
         
