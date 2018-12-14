@@ -664,6 +664,12 @@ def smallTest():
         print("CONTROLLER 10: Starting vNav()")
         vNav(True)
 
+        # wait until we see a green light to go again
+        print("CONTROLLER 7: waiting until we see a green light")
+        while (not greenLight.value):
+            pass
+        lastStart = datetime.now()
+
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
         running = False
