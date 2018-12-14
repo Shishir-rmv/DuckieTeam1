@@ -204,7 +204,7 @@ void loop() {
         blocking = 1;
         pwm_L = (2.2*local_L_ref + 85);
         pwm_R = (2.1*local_R_ref + 81);
-        Serial.println(C);
+        // Serial.println(C);
         if (micros()-blind_micros > 4000000){
           // Serial.print(C);
           Serial.write('D');
@@ -284,9 +284,9 @@ void loop() {
  duration = micros()-prevmillis;
  
  if (duration > 500000){
-  if (blocking == 1){
-    Serial.write("No P rn");
-  }
+  // if (blocking == 1){
+  //   Serial.write("No P rn");
+  // }
 //      Serial.write("HEARTBEAT");
       l_s = (l_enc_count-prev_l_enc_count)*WHEEL_CIRCUMFERENCE*500000/(PPR*duration);
       r_s = (r_enc_count-prev_r_enc_count)*WHEEL_CIRCUMFERENCE*500000/(PPR*duration); 
