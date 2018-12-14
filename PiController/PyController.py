@@ -173,53 +173,6 @@ def runManual():
     setMotors(0, 0)
     s1.close()
 
-
-def runTracker():
-    global X
-    global Y
-    global ENC_DELTA_THETA
-    global SPEED
-    global L_ENC_DIST
-    global R_ENC_DIST
-    global l_enc
-    global r_enc
-    print("PyTracer starting")
-    # open the serial port to the Arduino
-    s1.flushInput()
-
-    # Do controller stuff
-    response = ""
-
-    count = 0
-    running = True
-    stopAt = 120
-    records = {}
-
-    if s1.isOpen():
-        start = datetime.now()
-        setMotors(200, 200)
-
-        # while we're still within our window of execution
-        while (((datetime.now() - start).total_seconds() < stopAt) and (X < 1200)):
-            # get data from arduino
-            getEncoder()
-            speed()
-
-            # store it in the array
-            records[float((datetime.now() - start).total_seconds())] = {"L_ENC_DIST": L_ENC_DIST,
-                                                                        "R_ENC_DIST": R_ENC_DIST, "SPEED": SPEED,
-                                                                        "ENC_DELTA_THETA": ENC_DELTA_THETA, "x": int(X),
-                                                                        "Y": Y, "l_enc": l_enc, "r_enc": r_enc}
-
-        # dump data to file
-        print("dumping (%d) records to a JSON in the Logs folder" % len(records))
-        with open('../Logs/tracer_%s.json' % str(datetime.now()).replace(" ", "_").replace(":", "."), 'w') as fp:
-            json.dump(records, fp, indent=4)
-
-    # once finished
-    stop()
-    s1.close()
-
 def greenChanger():
     global greenLight
 
@@ -267,18 +220,18 @@ def makeGraph():
     nodes = [1,2,3,4,5,6,7,8,9,10,11,12]
 
     # weights are rough estimates, change to introduce bias later
-    edges = {"1,12,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "S"}}},
+    edges = {"1,12,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "BS"}}},
              "1,4,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},  # to prefer going straight
              "2,4,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
-             "2,8,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "S"}}},
+             "2,8,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "BS"}}},
              "3,8,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
              "3,12": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
              "4,7,": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "LSLS"}}},
              "4,11": {"weight": 3, "attrs": {"fast": False, "map": {"actions": "RSRS"}}},
              "5,3,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
-             "5,7,": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "SLS"}}},
+             "5,7,": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "BSLS"}}},
              "6,3,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
-             "6,11": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "SRS"}}},
+             "6,11": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "BRS"}}},
              "7,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "SLFLS"}}},
              "7,1,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
              "8,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "LSLFLS"}}},
@@ -286,9 +239,9 @@ def makeGraph():
              "9,1,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
              "9,6,": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "SRS"}}},
              "10,2": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
-             "10,5": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "SLS"}}},
+             "10,5": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "BSLS"}}},
              "11,2": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
-             "11,9": {"weight": 7, "attrs": {"fast": True, "map": {"actions": "SRFRS"}}},
+             "11,9": {"weight": 7, "attrs": {"fast": True, "map": {"actions": "BSRFRS"}}},
              "12,9": {"weight": 6.5, "attrs": {"fast": True, "map": {"actions": "RSRFRS"}}},
              "12,5": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "LSLS"}}}
              }
@@ -297,20 +250,20 @@ def makeGraph():
     for edge in edges:
         wEdges.append((edge[0], edge[1], edge[2]))
 
-    xyts = {0: {'X': 0, 'Y': 0, 'T': 0}, 
-            1: {'X': 0, 'Y': 0, 'T': 0}, 
-            2: {'X': 0, 'Y': 0, 'T': 0}, 
-            3: {'X': 0, 'Y': 0, 'T': 0}, 
-            4: {'X': 0, 'Y': 0, 'T': 0}, 
-            5: {'X': 0, 'Y': 0, 'T': 0}, 
-            6: {'X': 0, 'Y': 0, 'T': 0}, 
-            7: {'X': 0, 'Y': 0, 'T': 0}, 
-            8: {'X': 0, 'Y': 0, 'T': 0}, 
-            9: {'X': 0, 'Y': 0, 'T': 0}, 
-            10: {'X': 0, 'Y': 0, 'T': 0}, 
-            11: {'X': 0, 'Y': 0, 'T': 0}, 
-            12: {'X': 0, 'Y': 0, 'T': 0}}
-    # nx.set_node_attributes(G, attrs)
+    # TODO: assign radii based upon the constants that Johnathan and Bhavesh give me
+    xyts = {1: {'X': 105.5, 'Y': 133.5, 'T': 0, 'radius': 0}, 
+            2: {'X': 185, 'Y': 156.5, 'T': 180, 'radius': 0}, 
+            3: {'X': 133, 'Y': 186, 'T': 270, 'radius': 0}, 
+            4: {'X': 156, 'Y': 221, 'T': 90, 'radius': 0}, 
+            5: {'X': 185, 'Y': 274, 'T': 180, 'radius': 0}, 
+            6: {'X': 105.5, 'Y': 251, 'T': 0, 'radius': 0}, 
+            7: {'X': 15, 'Y': 186, 'T': 270, 'radius': 0}, 
+            8: {'X': 68, 'Y': 156.5, 'T': 180, 'radius': 0}, 
+            9: {'X': 38, 'Y': 103, 'T': 270, 'radius': 0}, 
+            10: {'X': 274, 'Y': 103, 'T': 90, 'radius': 0}, 
+            11: {'X': 251, 'Y': 186, 'T': 270, 'radius': 0}, 
+            12: {'X': 221, 'Y': 1335, 'T': 0, 'radius': 0}}
+    nx.set_node_attributes(DG, xyts)
 
 
     # construct graph
@@ -463,6 +416,12 @@ def vNav():
                 old = now
                 write("ver0000%s\n" % str(now).zfill(4))
 
+def calibrate(node):
+    global DG
+    write("cal%s0000\n" % str(DG.nodes['X']).zfill(4))
+    write("car%s0000\n" % str(DG.nodes['Y']).zfill(4))
+    write("cat%s0000\n" % str(DG.nodes['T']).zfill(4))
+
 
 def runController():
     global move
@@ -527,7 +486,7 @@ def runController():
     # this is the main logic loop where we put all our controlling equations/code
     try:
         # calibrate the robot
-        write("cal%s%s\n" % str(vRef).zfill(4), str(vRef).zfill(4))
+        calibrate(path[0])
 
         # wait until we want the robot to move
         while (not move):
@@ -556,24 +515,27 @@ def runController():
                 for action in range(len(actionMap)):
                     # go straight
                     if (actionMap[action] == "S" or actionMap[action] == "F"):
-                        # using vision, start moving. Args: dist, initial vRef
-                        write("srt0000%s\n" % str(vRef).zfill(4))
+                        # using vision, start moving. Args: initial vRef
+                        # only sent srt's for the first action
+                        if (action == 0):
+                            write("srt0000%s\n" % str(vRef).zfill(4))
 
                         # navigate visually until the stop condition
                         vNav()
 
-                        # if we're on the last action
-                        if (action == len(actionMap) - 1):
-                            vNav(vOffset, stopLine)
-
                     elif (actionMap[action] == "R"):
                         # blind turn
-                        write("rtn%s0045" % str(smallRadius).zfill(4))
+                        turn(True, smallRadius)
                         # wait for arduino to respond?
                     elif (actionMap[action] == "L"):
                         # blind turn
-                        write("ltn%s0045" % str(bigRadius).zfill(4))
+                        turn(False, bigRadius)
                         # wait for arduino to respond?
+
+                    elif(actionMap[action] == "B"):
+                        # blind straight (can use the turning code with no radius)
+                        # since we know this will be the first call after an intersection that we want to go straight through
+                        write("ltn0001%s\n" % str(vRef).zfill(4))
 
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
