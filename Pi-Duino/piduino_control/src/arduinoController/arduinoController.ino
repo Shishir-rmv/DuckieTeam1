@@ -222,7 +222,6 @@ void loop() {
           Serial.write('D');
           opStrB="";
           blocking = 0;
- 
         }
         break;
 
@@ -234,11 +233,12 @@ void loop() {
         pwm_L = (2.2*local_L_ref + 85);
         pwm_R = (2.1*local_R_ref + 81);
         if (((micros()-blind_micros) > 500000) && ((micros()-blind_micros) <= 5500000)){
-        local_R_ref = arg2;//C=0.2 V45 C2 22.5
-        local_L_ref = C*local_R_ref;
-        pwm_L = (2.2*local_L_ref + 85);
-        pwm_R = (2.1*local_R_ref + 81);
-        }else if(micros()-blind_micros > 5500000){
+          local_R_ref = arg2;//C=0.2 V45 C2 22.5
+          local_L_ref = C*local_R_ref;
+          pwm_L = (2.2*local_L_ref + 85);
+          pwm_R = (2.1*local_R_ref + 81);
+        }
+        else if(micros()-blind_micros > 5500000){
           Serial.write('D');
           opStrB="";
           blocking = 0;
@@ -264,12 +264,12 @@ void loop() {
         straight();
         pd();
         break;
-
-      case state2 :
-        ref = 100;
-        act = pow((x-1000),2) + pow(y,2);
-        turn();
-        break;
+//
+//      case state2 :
+//        ref = 100;
+//        act = pow((x-1000),2) + pow(y,2);
+//        turn();
+//        break;
       
       default :
         opStr = "";
@@ -346,8 +346,8 @@ void straight(){
 }
 void turn(){
   prev_error = error;
-  error = act -ref;
-  error_dot = error-prev_error;
+  error = act - ref;
+  error_dot = error - prev_error;
 }
 void ping() {
   pinMode(PING_PIN, OUTPUT);
