@@ -7,7 +7,9 @@ import io
 import numpy as np
 import picamera
 import time
+import logging, sys
 
+logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 WIDTH = 640
 HEIGHT = 480
 expected_center = 293
@@ -58,6 +60,28 @@ def select_yellow(image, converted):
     return cv2.bitwise_and(image, image, mask=yellow_mask)
 
 
+def is_green_light_on(image):
+    height, width, temp = image.shape
+    cropped_for_green = image[200:height, 0:width].copy()
+    green_img = select_green(cropped_for_green)
+    num_of_green_px = np.where(np.any(green_img != [0, 0, 0], axis=-1))[1].size
+    if num_of_green_px > 1000:
+        return True
+    else:
+        return False
+
+
+def is_at_red_line(image):
+    height, width, temp = image.shape
+    cropped_for_red = image[250:height, 280:360].copy()
+    red_image = select_red(cropped_for_red)
+    num_of_red_px = np.where(np.any(red_image != [0, 0, 0], axis=-1))[1].size
+    if num_of_red_px > 1000:
+        return True
+    else:
+        return False
+
+
 def process(stream, vOffset, vOffsetOld, stopLine, greenLight):
     global expected_center
 
@@ -74,25 +98,16 @@ def process(stream, vOffset, vOffsetOld, stopLine, greenLight):
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
+                # Check if green light is ON
                 if stopLine.value and not greenLight.value:
-                    cropped_for_green = image[200:height, 0:width].copy()
-                    green_img = select_green(cropped_for_green)
-                    cv2.imwrite("green.jpg", green_img)
-                    num_of_green_px = np.where(np.any(green_img != [0, 0, 0], axis=-1))[1].size
-                    #print("%s\tNumber of Green pixels: %d" % (datetime.datetime.now(), num_of_green_px))
-                    if num_of_green_px > 1000:
+                    if is_green_light_on(image=image):
                         greenLight.value = True
-                        print("%s\tFOUND GREEN>>>: Starting Now" % (datetime.datetime.now()))
-                else:
-                    cropped_for_red = image[250:height, 280:360].copy()
-                    red_image = select_red(cropped_for_red)
-                    # red_px = np.mean(np.where(np.any(red_image != [0, 0, 0], axis=-1)), axis=1)
-                    num_of_red_px = np.where(np.any(red_image != [0, 0, 0], axis=-1))[1].size
-                    #print("%s\tNumber of Red pixels: %d" % (datetime.datetime.now(), num_of_red_px))
-                    # red_exist = not np.all(np.isnan(red_px))
-                    if num_of_red_px > 1000:
+                        logging.info("%s\tFOUND GREEN>>>: Starting Now" % (datetime.datetime.now()))
+                else: # Check if it is at a Red line
+                    if is_at_red_line(image=image):
+                        # Check if the Green light is already ON
                         stopLine.value = True
-                        print("%s\tFOUND RED!!!: Stop Now" % (datetime.datetime.now()))
+                        logging.info("%s\tFOUND RED!!!: Stop Now" % (datetime.datetime.now()))
 
                 cropped_for_white_yellow = image[360:480, 0:640].copy()
                 hls_image = convert_hls(cropped_for_white_yellow)
@@ -124,7 +139,7 @@ def process(stream, vOffset, vOffsetOld, stopLine, greenLight):
                     #    print("%s\tProbably seeing glare\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
                     #        datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
                     #else:
-                    print(
+                    logging.debug(
                         "%s\tWhite Pixel: x = %d, y = %d\t Yellow Pixel: x = %d, y = %d\t center: %d\t, diff: %d" % (
                             datetime.datetime.now(), int(white_px[1]), int(white_px[0]), int(yellow_px[1]),
                             int(yellow_px[0]), current_center, diff))
@@ -133,13 +148,13 @@ def process(stream, vOffset, vOffsetOld, stopLine, greenLight):
                     current_center = int(white_px[1]) - 320
                     diff = expected_center - current_center
                     vOffset.value = int(diff)
-                    print("%s\tNo yellow pixel found!\tWhite Pixel: x = %d, y = %d\t diff: %d" % (
+                    logging.debug("%s\tNo yellow pixel found!\tWhite Pixel: x = %d, y = %d\t diff: %d" % (
                         datetime.datetime.now(), int(white_px[1]), int(white_px[0]), diff))
                 elif yellow_exist and not white_exist:
                     current_center = 260 - int(yellow_px[1])
                     diff = current_center - expected_center
                     vOffset.value = int(diff)
-                    print("%s\tNo white pixel found!\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
+                    logging.debug("%s\tNo white pixel found!\tYellow Pixel: x = %d, y = %d\t diff: %d" % (
                         datetime.datetime.now(), int(yellow_px[1]), int(yellow_px[0]), diff))
 
                 if vOffset.value != vOffsetOld.value:
