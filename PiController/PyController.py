@@ -152,11 +152,12 @@ def vNav():
     global vOffsetOld
     global stopLine
     global lastStart
+    global serialD
     
     stopped = False
     
     while (not stopped):
-        if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1):
+        if (stopLine.value and not stopped and and serialD and (datetime.now() - lastStart).seconds > 1):
             print("Red line detected by vNav()")
             write("stp")
             stopped = True
@@ -633,13 +634,6 @@ def smallTest():
         radius = .2
         # args: [rTurn (boolean, if this is a right turn. False = left turn)], [radius of turn]
         turn(True, radius)
-    
-        # wait for the blind turn to finish
-        while (not serialD):
-            pass
-
-        serialD = False
-        stopLine.value = False
 
         # continue visually navigating afterwards (you'll probably want to kill it gracefully eventually)
         print("CONTROLLER: Starting vNav()")
