@@ -40,6 +40,8 @@ see = Value('b', True)
 ENC_DELTA_THETA = 0
 ENC_DELTA_X = 0
 
+serialD = False
+
 THETA = 0
 X = 0
 last_X = 0
@@ -208,18 +210,17 @@ def starter(vRef):
 
 def serialReader(s1):
     global goSerial
+    global serialD
 
     print("Starting serial thread")
     while (goSerial):
         if (s1.in_waiting):
-            # read the "label" byte
             serialIn = s1.read(20)
-            # read the "data" byte
-            # r2 = s1.read(20)
-            # arg2 = int.from_bytes(r2, byteorder = 'little', signed = False)
             print("From Arduino: " + serialIn.decode('utf-8'))
-            # print("SERIAL: %s" % r1)
-            # this is only for debugging
+
+            if ("D" in serialIn):
+                serialD = True
+
     print("Ending serial thread")
 
 
@@ -505,6 +506,7 @@ def smallTest():
     global serial_msg_counter
     global lastStart
     global s1
+    global serialD
 
     # vision variables to share between processes
     global vOffset
@@ -581,6 +583,12 @@ def smallTest():
         radius = .2
         # args: [rTurn (boolean, if this is a right turn. False = left turn)], [radius of turn]
         turn(True, radius)
+    
+        # wait for the blind turn to finish
+        while (not serialD):
+            pass
+
+        serialD = False
 
         # continue visually navigating afterwards (you'll probably want to kill it gracefully eventually)
         print("CONTROLLER: Starting vNav()")
