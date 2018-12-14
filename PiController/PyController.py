@@ -402,12 +402,13 @@ def runController():
     # Define and split off the computer vision subprocess _________________________________
     # vision variables to share between processes
     global vOffset
+    global vOffsetOld
     global stopLine
     global greenLight
     global see
 
     # define and start the computer vision process
-    vision_process = Process(target=vision, args=(vOffset, see, stopLine, greenLight))
+    vision_process = Process(target=vision, args=(vOffset, vOffsetOld, see, stopLine, greenLight))
     vision_process.start()
     # _____________________________________________________________________________________
     print("PyController starting")
