@@ -437,7 +437,7 @@ def runController():
 
 
     # split off the starter thread so the machine can passively calibrate itself before we start
-    starter_thread = threading.Thread(target=starter, args=(vRef))
+    starter_thread = threading.Thread(target=starter, args=(vRef,))
     starter_thread.start()
 
     serial_thread = threading.Thread(target=serialReader, args=(s1,))
