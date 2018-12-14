@@ -182,14 +182,14 @@ def vNav(lookingForD):
                 write("ver0000%s\n" % str(now).zfill(4))
 
 
-def turn(rTurn, radius):
+def turn(rTurn, radius, speed):
     global serialD
     global stopLine
 
     if (rTurn):
-        write("rtn%s0045" % str(radius).zfill(4))
+        write("rtn%s%s" % (str(radius).zfill(4), str(speed).zfill(4)))
     else:
-        write("ltn%s0060" % str(radius).zfill(4))
+        write("ltn%s%s" % (str(radius).zfill(4), str(speed).zfill(4))0)
 
 
 def calibrate(node):
@@ -636,8 +636,9 @@ def smallTest():
         # change turn radius here
         print("CONTROLLER 5: performing turn")
         radius = .2
+        speed = 45
         # args: [rTurn (boolean, if this is a right turn. False = left turn)], [radius of turn]
-        turn(True, radius)
+        turn(True, radius, speed)
 
         # continue visually navigating afterwards (you'll probably want to kill it gracefully eventually)
         print("CONTROLLER 6: Starting vNav()")
@@ -657,12 +658,19 @@ def smallTest():
         # change turn radius here
         print("CONTROLLER 9: performing turn")
         radius = .45
+        speed = 55
         # args: [rTurn (boolean, if this is a right turn. False = left turn)], [radius of turn]
-        turn(False, radius)
+        turn(False, radius, speed)
 
         # continue visually navigating afterwards (you'll probably want to kill it gracefully eventually)
         print("CONTROLLER 10: Starting vNav()")
         vNav(True)
+
+        # wait until we see a green light to go again
+        print("CONTROLLER 7: waiting until we see a green light")
+        while (not greenLight.value):
+            pass
+        lastStart = datetime.now()
 
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
