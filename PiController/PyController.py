@@ -158,40 +158,28 @@ def vNav(lookingForD):
     
     while (not stopped):
         if (lookingForD):
-            # print("vNav() LOOKING D, loop is: " + str(stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1))
-            if (stopLine.value and not stopped and serialD and (datetime.now() - lastStart).seconds > 1):
-                print("vNav() looking for D should stop")
-                print("Red line detected by vNav()")
-                write("stp")
-                stopped = True
-
-            else:
-                # check for visual error changes
-                old = vOffsetOld.value
-                now = vOffset.value
-
-                if (now != old):
-                    print("stopline.value: %s, stopped: %s, serialD: %s, timing: %s" % (stopLine.value, stopped, serialD, (datetime.now() - lastStart).seconds > 1))
-                    old = now
-                    write("ver0000%s\n" % str(now).zfill(4))
+            if (serialD):
+                serialD = False
+                lookingForD = False
+                stopLine.value = False
         
+        # print("vNav() not looking for D, loop is: " + str(stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1))
         else:
-            # print("vNav() not looking for D, loop is: " + str(stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1))
             if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1):
                 print("vNav() not looking for D should stop")
                 print("Red line detected by vNav()")
                 write("stp")
                 stopped = True
 
-            else:
-                # check for visual error changes
-                print("stopline.value: %s, stopped: %s, timing: %s" % (stopLine.value, stopped, (datetime.now() - lastStart).seconds > 1))
-                old = vOffsetOld.value
-                now = vOffset.value
+        if (not stopped):
+            # check for visual error changes
+            print("stopline.value: %s, stopped: %s, timing: %s" % (stopLine.value, stopped, (datetime.now() - lastStart).seconds > 1))
+            old = vOffsetOld.value
+            now = vOffset.value
 
-                if (now != old):
-                    old = now
-                    write("ver0000%s\n" % str(now).zfill(4))
+            if (now != old):
+                old = now
+                write("ver0000%s\n" % str(now).zfill(4))
 
 
 def turn(rTurn, radius):
@@ -202,14 +190,6 @@ def turn(rTurn, radius):
         write("rtn%s0045" % str(radius).zfill(4))
     else:
         write("ltn%s0045" % str(radius).zfill(4))
-
-    # wait for the blind turn to finish
-    print("CONTROLLER: waiting for the arduino to transmit the D")
-    while (not serialD):
-        pass
-
-    serialD = False
-    stopLine.value = False
 
 
 def calibrate(node):
