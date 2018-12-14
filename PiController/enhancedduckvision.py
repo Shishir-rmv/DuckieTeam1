@@ -65,7 +65,7 @@ def is_green_light_on(image):
     cropped_for_green = image[200:height, 0:width].copy()
     green_img = select_green(cropped_for_green)
     num_of_green_px = np.where(np.any(green_img != [0, 0, 0], axis=-1))[1].size
-    if num_of_green_px > 1000:
+    if num_of_green_px > 100:
         return True
     else:
         return False
