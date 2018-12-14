@@ -215,8 +215,8 @@ def serialReader(s1):
     print("Starting serial thread")
     while (goSerial):
         if (s1.in_waiting):
-            serialIn = s1.read(20)
-            print("From Arduino: " + serialIn.decode('utf-8'))
+            serialIn = s1.read(20).decode('utf-8')
+            print("From Arduino: %s" + serialIn)
 
             if ("D" in serialIn):
                 serialD = True
