@@ -115,18 +115,18 @@ def makeGraph():
         wEdges.append((int(edge.split(',')[0]), int(edge.split(',')[1]), val["weight"]))
 
     # TODO: assign radii based upon the constants that Johnathan and Bhavesh give me
-    xyts = {1: {'X': 105.5, 'Y': 133.5, 'T': 0, 'radius': 0}, 
-            2: {'X': 185, 'Y': 156.5, 'T': 180, 'radius': 0}, 
-            3: {'X': 133, 'Y': 186, 'T': 270, 'radius': 0}, 
-            4: {'X': 156, 'Y': 221, 'T': 90, 'radius': 0}, 
-            5: {'X': 185, 'Y': 274, 'T': 180, 'radius': 0}, 
-            6: {'X': 105.5, 'Y': 251, 'T': 0, 'radius': 0}, 
-            7: {'X': 15, 'Y': 186, 'T': 270, 'radius': 0}, 
-            8: {'X': 68, 'Y': 156.5, 'T': 180, 'radius': 0}, 
-            9: {'X': 38, 'Y': 103, 'T': 270, 'radius': 0}, 
-            10: {'X': 274, 'Y': 103, 'T': 90, 'radius': 0}, 
-            11: {'X': 251, 'Y': 186, 'T': 270, 'radius': 0}, 
-            12: {'X': 221, 'Y': 1335, 'T': 0, 'radius': 0}}
+    xyts = {1: {'X': 105.5, 'Y': 133.5, 'T': 0, 'radiusR': 0, 'speed': 0, 'radiusL': .45, 'speedL': 55}, 
+            2: {'X': 185, 'Y': 156.5, 'T': 180, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
+            3: {'X': 133, 'Y': 186, 'T': 270, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
+            4: {'X': 156, 'Y': 221, 'T': 90, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
+            5: {'X': 185, 'Y': 274, 'T': 180, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
+            6: {'X': 105.5, 'Y': 251, 'T': 0, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
+            7: {'X': 15, 'Y': 186, 'T': 270, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
+            8: {'X': 68, 'Y': 156.5, 'T': 180, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
+            9: {'X': 38, 'Y': 103, 'T': 270, 'radiusR': 0, 'speeRd':0, 'radiusL': .2, 'speedL': 45}, 
+            10: {'X': 274, 'Y': 103, 'T': 90, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
+            11: {'X': 251, 'Y': 186, 'T': 270, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
+            12: {'X': 221, 'Y': 1335, 'T': 0, 'radiusR': 0, 'speedR0': 0, 'radiusL': .45, 'speedL': 55}}
     nx.set_node_attributes(DG, xyts)
 
 
@@ -414,8 +414,7 @@ def runController():
     # to be given to us by instructors before the demo
     # path = [1, 5, 7, 2, 9, 3, 12, 6, 8, 10, 1]
     # a test path
-    path = [10,7]
-    pathCounter = 0
+    path = [9,4]
 
     vRef = 30
     fastVRef = 60
@@ -445,6 +444,7 @@ def runController():
     s1.flushInput()
 
     running = True
+    controllerCounter = 0
 
     if s1.isOpen():
         s1.flush()
@@ -456,7 +456,7 @@ def runController():
     # this is the main logic loop where we put all our controlling equations/code
     try:
         # calibrate the robot
-        calibrate(path[0])
+        # calibrate(path[0])
 
         # wait until we want the robot to move
         print("CONTROLLER: waiting for user to permit movement")
@@ -466,14 +466,14 @@ def runController():
         # loop overall segments in our given route
         for segment in range(len(path) - 1):
             # debugging
-            print("About to navigate %s to %s" % (path[segment], path[segment + 1]))
+            print("CONTROLLER: About to navigate %s to %s" % (path[segment], path[segment + 1]))
 
             # compute the path from the segment start state to its finish state
             route = nx.dijkstra_path(DG, path[segment], path[segment + 1])
             # navigate the current segment's route
 
             # debugging
-            print("Path plan is: %s" % str(route))
+            print("CONTROLLER: Path plan is: %s" % str(route))
             for currentState in range(len(route) - 1):
                 # by performing all of the actions in the route
                 # when the last action is completed, the next state will happen in the parent for loop
@@ -481,7 +481,7 @@ def runController():
 
                 # wait until we see a green light to begin our action sequence
                 while (not greenLight.value):
-                    time.sleep(.2)
+                    pass
 
                 for action in range(len(actionMap)):
                     # go straight
@@ -494,7 +494,7 @@ def runController():
 
                         # navigate visually until the stop condition
                         print("CONTROLLER: Starting vNav()")
-                        vNav()
+                        vNav(False)
 
                         # wait until we see a green light to go again
                         print("CONTROLLER: waiting until we see a green light")
@@ -509,11 +509,11 @@ def runController():
 
                     elif (actionMap[action] == "R"):
                         # blind turn
-                        turn(True, smallRadius)
+                        turn(True, DG.nodes[currentState]['radiusR'], DG.nodes[currentState]['speedR'])
 
                     elif (actionMap[action] == "L"):
                         # blind turn
-                        turn(False, bigRadius)
+                        turn(False, DG.nodes[currentState]['radiusL'], DG.nodes[currentState]['speedL'])
 
                     elif(actionMap[action] == "B"):
                         # blind straight (can use the turning code with no radius)
