@@ -213,7 +213,7 @@ def serialReader():
     print("Starting serial thread")
     while (goSerial):
         if (s1.in_waiting):
-        pdb.set_trace()
+            pdb.set_trace()
             # read the "label" byte
             serialIn = s1.read(20)
             # read the "data" byte
