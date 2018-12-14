@@ -101,7 +101,7 @@ def makeGraph():
              "5,7": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "BSLS"}}},
              "6,3": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
              "6,11": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "BRS"}}},
-             "7,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "SLFLS"}}},
+             "7,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "S"}}},
              "7,1": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
              "8,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "LSLFLS"}}},
              "8,6": {"weight": 3, "attrs": {"fast": False, "map": {"actions": "RSRS"}}},
@@ -160,6 +160,7 @@ def vNav(lookingForD):
     global stopLine
     global lastStart
     global serialD
+    
     
     stopped = False
     
