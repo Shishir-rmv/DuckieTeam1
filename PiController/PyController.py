@@ -513,6 +513,7 @@ def smallTest():
 
     lastStart = datetime.now()
     starterThreads = []
+    greenChangers = []
     start = time.time()
     # Define and split off the computer vision subprocess _________________________________
     # define doubles
@@ -570,7 +571,7 @@ def smallTest():
 
         # spawn a thread to switch greenLight off 1 second from now
         print("CONTROLLER: spawning greenLight changer thread")
-        greenChanger.append(threading.Thread(target=greenChanger))
+        greenChangers.append(threading.Thread(target=greenChanger))
         greenChanger.start()
 
         # change turn radius here
