@@ -536,8 +536,8 @@ def smallTest():
     starterThreads.append(threading.Thread(target=starter, args=(vRef,)))
     starterThreads[0].start()
 
-    serial_thread = threading.Thread(target=serialReader)
-    serial_thread.start(s1)
+    serial_thread = threading.Thread(target=serialReader, args=(s1,))
+    serial_thread.start()
 
     # rtn00.20045
 
