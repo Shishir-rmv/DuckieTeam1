@@ -221,6 +221,7 @@ def serialReader(s1):
             print(serialIn)
 
             if ("D" in serialIn):
+                print("THERES A D MOTHERFUCKER")
                 serialD = True
 
     print("Ending serial thread")
