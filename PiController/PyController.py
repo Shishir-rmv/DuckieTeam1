@@ -542,6 +542,7 @@ def runController():
                         print("CONTROLLER %d: performing blind right turn"  % controllerCounter)
                         controllerCounter += 1
                         # blind turn
+                        pdb.set_trace()
                         turn(True, xyts[route[currentState]]['radiusR'], xyts[route[currentState]]['speedR'])
 
                     elif (actionMap[action] == "L"):
