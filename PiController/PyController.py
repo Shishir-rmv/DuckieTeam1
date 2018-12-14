@@ -109,10 +109,10 @@ def makeGraph():
              "12,9": {"weight": 6.5, "attrs": {"fast": True, "map": {"actions": "RSRFRS"}}},
              "12,5": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "LSLS"}}}
              }
-
+    
     wEdges = []
-for edge, val in edges.items():
-    wEdges.append((int(edge.split(',')[0]), int(edge.split(',')[1]), val["weight"]))
+    for edge, val in edges.items():
+        wEdges.append((int(edge.split(',')[0]), int(edge.split(',')[1]), val["weight"]))
 
     # TODO: assign radii based upon the constants that Johnathan and Bhavesh give me
     xyts = {1: {'X': 105.5, 'Y': 133.5, 'T': 0, 'radius': 0}, 
