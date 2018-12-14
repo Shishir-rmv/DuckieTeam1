@@ -470,7 +470,7 @@ def runController():
         # loop overall segments in our given route
         for segment in range(len(path) - 1):
             # debugging
-            print("CONTROLLER %d: About to navigate %s to %s" % (path[segment], path[segment + 1], controllerCounter))
+            print("CONTROLLER %d: About to navigate %s to %s" % (controllerCounter, path[segment], path[segment + 1]))
             controllerCounter += 1
 
             # compute the path from the segment start state to its finish state
@@ -478,7 +478,7 @@ def runController():
             # navigate the current segment's route
 
             # debugging
-            print("CONTROLLER %d: Path plan is: %s" % (str(route), controllerCounter))
+            print("CONTROLLER %d: Path plan is: %s" % (controllerCounter, str(route)))
             controllerCounter += 1
             for currentState in range(len(route) - 1):
                 # by performing all of the actions in the route
