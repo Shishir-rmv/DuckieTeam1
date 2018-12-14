@@ -218,7 +218,7 @@ def starter(vRef):
 
     # use this to make it start moving when we want it to
     input("\nPress Enter to start\n")
-    write("srt0000%s\n" % str(vRef).zfill(4))
+    # write("srt0000%s\n" % str(vRef).zfill(4))
     move = True
     lastStart = datetime.now()
 
@@ -328,6 +328,12 @@ def visionController():
     # this is the main logic loop where we put all our controlling equations/code
     try:
         # if(True):
+
+        while (not move):
+            pass
+
+        write("srt0000%s\n" % str(vRef).zfill(4))
+
         while (running):
             # only do this if we have changed state in our state machine?
             # if the starter thread has changed this global variable to allow movement
