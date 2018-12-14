@@ -608,7 +608,7 @@ def smallTest():
         # spawn a thread to switch greenLight off 1 second from now
         print("CONTROLLER: spawning greenLight changer thread")
         greenChangers.append(threading.Thread(target=greenChanger))
-        greenChangers[0].start()
+        greenChangers[1].start()
 
         # change turn radius here
         print("CONTROLLER: performing turn")
