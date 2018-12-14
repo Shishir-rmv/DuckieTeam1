@@ -599,6 +599,34 @@ def smallTest():
         print("CONTROLLER: Starting vNav()")
         vNav()
 
+        # wait until we see a green light to go again
+        print("CONTROLLER: waiting until we see a green light")
+        while (not greenLight.value):
+            pass
+        lastStart = datetime.now()
+
+        # spawn a thread to switch greenLight off 1 second from now
+        print("CONTROLLER: spawning greenLight changer thread")
+        greenChangers.append(threading.Thread(target=greenChanger))
+        greenChangers[0].start()
+
+        # change turn radius here
+        print("CONTROLLER: performing turn")
+        radius = .45
+        # args: [rTurn (boolean, if this is a right turn. False = left turn)], [radius of turn]
+        turn(False, radius)
+    
+        # wait for the blind turn to finish
+        while (not serialD):
+            pass
+
+        serialD = False
+        stopLine.value = False
+
+        # continue visually navigating afterwards (you'll probably want to kill it gracefully eventually)
+        print("CONTROLLER: Starting vNav()")
+        vNav()
+
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
         running = False
