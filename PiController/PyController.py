@@ -478,6 +478,17 @@ def runController():
         while (not move):
             pass
 
+        # wait until we see a green light to begin our action sequence
+        print("CONTROLLER %d: waiting until we see a green light"  % controllerCounter)
+        while (not greenLight.value):
+            pass
+
+        # spawn a thread to switch greenLight off 1 second from now
+        print("CONTROLLER %d: spawning greenLight changer thread"  % controllerCounter)
+        controllerCounter += 1
+        greenChangers.append(threading.Thread(target=greenThread))
+        greenChangers[-1].start()
+
         # loop overall segments in our given route
         for segment in range(len(path) - 1):
             # debugging
@@ -501,18 +512,6 @@ def runController():
                 print("CONTROLLER %d: Action map: %s" % (controllerCounter, str(actionMap)))
                 controllerCounter += 1
 
-                # wait until we see a green light to begin our action sequence
-                print("CONTROLLER %d: waiting until we see a green light"  % controllerCounter)
-                controllerCounter += 1
-                while (not greenLight.value):
-                    pass
-
-                # spawn a thread to switch greenLight off 1 second from now
-                print("CONTROLLER %d: spawning greenLight changer thread"  % controllerCounter)
-                controllerCounter += 1
-                greenChangers.append(threading.Thread(target=greenThread))
-                greenChangers[-1].start()
-
                 for action in range(len(actionMap)):
                     # debugging
                     print("CONTROLLER %d: current action is: %s" % (controllerCounter, str(actionMap[action])))
@@ -529,10 +528,14 @@ def runController():
                             print("CONTROLLER %d: Starting vNav()"  % controllerCounter)
                             vNav(False)
                         else:
-                            if (actionMap[action] == 'R' or actionMap[action] == 'L' or actionMap[action] == 'B'):
+                            if (actionMap[action-1] == 'R' or actionMap[action-1] == 'L' or actionMap[action-1] == 'B'):
                                 # navigate visually until the stop condition
                                 print("CONTROLLER %d: Starting vNav() with waitForD"  % controllerCounter)
                                 vNav(True)
+
+                            else:
+                                print("CONTROLLER %d: Starting vNav()"  % controllerCounter)
+                                vNav(False)
 
                         # wait until we see a green light to go again
                         print("CONTROLLER %d: waiting until we see a green light"  % controllerCounter)
