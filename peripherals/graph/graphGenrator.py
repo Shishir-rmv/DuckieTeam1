@@ -41,7 +41,6 @@ edges = {"1,12,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "BS"
 
 wEdges = []
 for edge, val in edges.items():
-    # print(str(edge.split(',')[0]),  str(edge.split(',')[0]), str(val["weight"]))
     wEdges.append((int(edge.split(',')[0]), int(edge.split(',')[1]), val["weight"]))
 
 # print(wEdges)
