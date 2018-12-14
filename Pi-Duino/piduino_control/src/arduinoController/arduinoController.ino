@@ -295,7 +295,7 @@ void loop() {
       x += delta_x*cos(theta);
       y += delta_x*sin(theta);
       String ret = "x "+String(x)+" y "+String(y)+" theta "+String(theta);
-      Serial.println(ret);
+      // Serial.println(ret);
       prev_l_enc_count = l_enc_count; 
       prev_r_enc_count = r_enc_count;
       prevmillis = micros();
