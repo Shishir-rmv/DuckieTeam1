@@ -158,8 +158,9 @@ def vNav(lookingForD):
     
     while (not stopped):
         if (lookingForD):
-            print("vNav() LOOKING D, loop is: " + str(stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1))
+            # print("vNav() LOOKING D, loop is: " + str(stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1))
             if (stopLine.value and not stopped and serialD and (datetime.now() - lastStart).seconds > 1):
+                print("vNav() looking for D should stop")
                 print("Red line detected by vNav()")
                 write("stp")
                 stopped = True
@@ -174,8 +175,9 @@ def vNav(lookingForD):
                     write("ver0000%s\n" % str(now).zfill(4))
         
         else:
-            print("vNav() not looking for D, loop is: " + str(stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1))
+            # print("vNav() not looking for D, loop is: " + str(stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1))
             if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1):
+                print("vNav() not looking for D should stop")
                 print("Red line detected by vNav()")
                 write("stp")
                 stopped = True
