@@ -517,17 +517,16 @@ def runController():
                     print("CONTROLLER %d: current action is: %s" % (controllerCounter, str(actionMap[action])))
                     controllerCounter += 1
 
+                    if (action == 0):
+                        print("CONTROLLER %d: Writing SRT"  % controllerCounter)
+                        controllerCounter += 1
+                        write("srt0000%s\n" % str(vRef).zfill(4))
+                            
                     # go straight
                     if (actionMap[action] == "S" or actionMap[action] == "F"):
                         # using vision, start moving. Args: initial vRef
                         # only sent srt's for the first action
-                        if (action == 0):
-                            print("CONTROLLER %d: Writing SRT"  % controllerCounter)
-                            controllerCounter += 1
-                            write("srt0000%s\n" % str(vRef).zfill(4))
-                            print("CONTROLLER %d: Starting vNav()"  % controllerCounter)
-                            vNav(False)
-                        else:
+                        if (action != 0):
                             if (actionMap[action-1] == 'R' or actionMap[action-1] == 'L' or actionMap[action-1] == 'B'):
                                 # navigate visually until the stop condition
                                 print("CONTROLLER %d: Starting vNav() with waitForD"  % controllerCounter)
