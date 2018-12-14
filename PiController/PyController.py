@@ -164,13 +164,13 @@ def vNav(lookingForD):
                 stopped = True
 
             else:
-            # check for visual error changes
-            old = vOffsetOld.value
-            now = vOffset.value
+                # check for visual error changes
+                old = vOffsetOld.value
+                now = vOffset.value
 
-            if (now != old):
-                old = now
-                write("ver0000%s\n" % str(now).zfill(4))
+                if (now != old):
+                    old = now
+                    write("ver0000%s\n" % str(now).zfill(4))
         
         else:
             if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1):
@@ -179,13 +179,13 @@ def vNav(lookingForD):
                 stopped = True
 
             else:
-            # check for visual error changes
-            old = vOffsetOld.value
-            now = vOffset.value
+                # check for visual error changes
+                old = vOffsetOld.value
+                now = vOffset.value
 
-            if (now != old):
-                old = now
-                write("ver0000%s\n" % str(now).zfill(4))
+                if (now != old):
+                    old = now
+                    write("ver0000%s\n" % str(now).zfill(4))
 
 
 def turn(rTurn, radius):
