@@ -147,7 +147,7 @@ def setMotors(motorSpeedL, motorSpeedR):
 
 
 # this will visually navigate until the stop condition is reached
-def vNav():
+def vNav(lookingForD):
     global vOffset
     global vOffsetOld
     global stopLine
@@ -157,10 +157,16 @@ def vNav():
     stopped = False
     
     while (not stopped):
-        if (stopLine.value and not stopped and serialD and (datetime.now() - lastStart).seconds > 1):
-            print("Red line detected by vNav()")
-            write("stp")
-            stopped = True
+        if (lookingForD):
+            if (stopLine.value and not stopped and serialD and (datetime.now() - lastStart).seconds > 1):
+                print("Red line detected by vNav()")
+                write("stp")
+                stopped = True
+        else:
+            if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1):
+                print("Red line detected by vNav()")
+                write("stp")
+                stopped = True
 
         else:
             # check for visual error changes
@@ -170,12 +176,6 @@ def vNav():
             if (now != old):
                 old = now
                 write("ver0000%s\n" % str(now).zfill(4))
-
-def calibrate(node):
-    global DG
-    write("cal%s0000\n" % str(DG.nodes['X']).zfill(4))
-    write("car%s0000\n" % str(DG.nodes['Y']).zfill(4))
-    write("cat%s0000\n" % str(DG.nodes['T']).zfill(4))
 
 
 def turn(rTurn, radius):
@@ -194,6 +194,13 @@ def turn(rTurn, radius):
 
     serialD = False
     stopLine.value = False
+
+
+def calibrate(node):
+    global DG
+    write("cal%s0000\n" % str(DG.nodes['X']).zfill(4))
+    write("car%s0000\n" % str(DG.nodes['Y']).zfill(4))
+    write("cat%s0000\n" % str(DG.nodes['T']).zfill(4))
 
 
 def greenChanger():
@@ -616,7 +623,7 @@ def smallTest():
 
         # begin visual navigation. This will stop at a red line
         print("CONTROLLER: Starting vNav()")
-        vNav()
+        vNav(False)
 
         # wait until we see a green light to go again
         print("CONTROLLER: waiting until we see a green light")
@@ -637,7 +644,7 @@ def smallTest():
 
         # continue visually navigating afterwards (you'll probably want to kill it gracefully eventually)
         print("CONTROLLER: Starting vNav()")
-        vNav()
+        vNav(True)
 
         # wait until we see a green light to go again
         print("CONTROLLER: waiting until we see a green light")
@@ -655,17 +662,10 @@ def smallTest():
         radius = .45
         # args: [rTurn (boolean, if this is a right turn. False = left turn)], [radius of turn]
         turn(False, radius)
-    
-        # wait for the blind turn to finish
-        while (not serialD):
-            pass
-
-        serialD = False
-        stopLine.value = False
 
         # continue visually navigating afterwards (you'll probably want to kill it gracefully eventually)
         print("CONTROLLER: Starting vNav()")
-        vNav()
+        vNav(True)
 
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
