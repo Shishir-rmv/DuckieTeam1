@@ -593,6 +593,7 @@ def smallTest():
             pass
 
         serialD = False
+        stopLine.value = True
 
         # continue visually navigating afterwards (you'll probably want to kill it gracefully eventually)
         print("CONTROLLER: Starting vNav()")
