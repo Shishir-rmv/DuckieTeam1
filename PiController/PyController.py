@@ -162,13 +162,23 @@ def vNav(lookingForD):
                 print("Red line detected by vNav()")
                 write("stp")
                 stopped = True
+
+            else:
+            # check for visual error changes
+            old = vOffsetOld.value
+            now = vOffset.value
+
+            if (now != old):
+                old = now
+                write("ver0000%s\n" % str(now).zfill(4))
+        
         else:
             if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1):
                 print("Red line detected by vNav()")
                 write("stp")
                 stopped = True
 
-        else:
+            else:
             # check for visual error changes
             old = vOffsetOld.value
             now = vOffset.value
