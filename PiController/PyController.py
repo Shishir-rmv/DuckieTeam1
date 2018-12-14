@@ -79,64 +79,63 @@ def read():
     bytesToRead = s1.inWaiting()
     s1.read(bytesToRead)
 
+def makeGraph():
+    global DG
+    # initialize graph
+    DG = nx.DiGraph()
 
-# function to grab encoder data
-# have to decide if the arduino will return just increments or already calculate the distance per wheel and theta itself
+    nodes = [1,2,3,4,5,6,7,8,9,10,11,12]
 
-def getEncoder():
-    global THETA
-    global X
-    global Y
-    global WHEEL_BASE
-    global WHEEL_CIRCUMFERENCE
-    global PPR
-    global L_ENC_DIST
-    global R_ENC_DIST
-    global l_enc
-    global r_enc
-    write('irr\n')
-    r1 = s1.read(1)
-    r2 = s1.read(1)
-    l_enc = int.from_bytes(r1, byteorder='little', signed=False)
-    r_enc = int.from_bytes(r2, byteorder='little', signed=False)
+    # weights are rough estimates, change to introduce bias later
+    edges = {"1,12,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "BS"}}},
+             "1,4,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},  # to prefer going straight
+             "2,4,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "2,8,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "BS"}}},
+             "3,8,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "3,12": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
+             "4,7,": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "LSLS"}}},
+             "4,11": {"weight": 3, "attrs": {"fast": False, "map": {"actions": "RSRS"}}},
+             "5,3,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
+             "5,7,": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "BSLS"}}},
+             "6,3,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "6,11": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "BRS"}}},
+             "7,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "SLFLS"}}},
+             "7,1,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
+             "8,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "LSLFLS"}}},
+             "8,6,": {"weight": 3, "attrs": {"fast": False, "map": {"actions": "RSRS"}}},
+             "9,1,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "9,6,": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "SRS"}}},
+             "10,2": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
+             "10,5": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "BSLS"}}},
+             "11,2": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "11,9": {"weight": 7, "attrs": {"fast": True, "map": {"actions": "BSRFRS"}}},
+             "12,9": {"weight": 6.5, "attrs": {"fast": True, "map": {"actions": "RSRFRS"}}},
+             "12,5": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "LSLS"}}}
+             }
 
-    # for debugging
-    print("from encoder call: %d %d" % (l_enc, r_enc))
+    wEdges = []
+    for edge in edges:
+        wEdges.append((edge[0], edge[1], edge[2]))
 
-    L_ENC_DIST = l_enc * WHEEL_CIRCUMFERENCE / PPR
-    R_ENC_DIST = r_enc * WHEEL_CIRCUMFERENCE / PPR
-
-    # update the change in avg position and current heading
-    ENC_DELTA_X = (L_ENC_DIST + R_ENC_DIST) / 2
-    ENC_DELTA_THETA = math.atan2((R_ENC_DIST - L_ENC_DIST) / 2, WHEEL_BASE / 2)
-
-    # update overall global positioning
-    THETA += ENC_DELTA_THETA
-    X += ENC_DELTA_X
-    Y += ENC_DELTA_X * math.sin(THETA)
-
-
-def speed():
-    global X
-    global last_time
-    global last_X
-    time = datetime.now()
-
-    SPEED = (X - last_X) / ((time - last_time).total_seconds())
-
-    last_time = time
-    last_X = X
+    # TODO: assign radii based upon the constants that Johnathan and Bhavesh give me
+    xyts = {1: {'X': 105.5, 'Y': 133.5, 'T': 0, 'radius': 0}, 
+            2: {'X': 185, 'Y': 156.5, 'T': 180, 'radius': 0}, 
+            3: {'X': 133, 'Y': 186, 'T': 270, 'radius': 0}, 
+            4: {'X': 156, 'Y': 221, 'T': 90, 'radius': 0}, 
+            5: {'X': 185, 'Y': 274, 'T': 180, 'radius': 0}, 
+            6: {'X': 105.5, 'Y': 251, 'T': 0, 'radius': 0}, 
+            7: {'X': 15, 'Y': 186, 'T': 270, 'radius': 0}, 
+            8: {'X': 68, 'Y': 156.5, 'T': 180, 'radius': 0}, 
+            9: {'X': 38, 'Y': 103, 'T': 270, 'radius': 0}, 
+            10: {'X': 274, 'Y': 103, 'T': 90, 'radius': 0}, 
+            11: {'X': 251, 'Y': 186, 'T': 270, 'radius': 0}, 
+            12: {'X': 221, 'Y': 1335, 'T': 0, 'radius': 0}}
+    nx.set_node_attributes(DG, xyts)
 
 
-# get ping distance
-def getPing():
-    write('png\n')
-    response = s1.read(1)
-
-    if (not response):
-        print("No result received from Arduino on getPing call")
-    else:
-        pingD = response
+    # construct graph
+    DG.add_nodes_from(nodes)
+    DG.add_weighted_edges_from(wEdges)
 
 
 # set motor speed
@@ -211,64 +210,6 @@ def serialReader():
             # print("SERIAL: %s" % r1)
             # this is only for debugging
     print("Ending serial thread")
-
-def makeGraph():
-    global DG
-    # initialize graph
-    DG = nx.DiGraph()
-
-    nodes = [1,2,3,4,5,6,7,8,9,10,11,12]
-
-    # weights are rough estimates, change to introduce bias later
-    edges = {"1,12,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "BS"}}},
-             "1,4,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},  # to prefer going straight
-             "2,4,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
-             "2,8,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "BS"}}},
-             "3,8,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
-             "3,12": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
-             "4,7,": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "LSLS"}}},
-             "4,11": {"weight": 3, "attrs": {"fast": False, "map": {"actions": "RSRS"}}},
-             "5,3,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
-             "5,7,": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "BSLS"}}},
-             "6,3,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
-             "6,11": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "BRS"}}},
-             "7,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "SLFLS"}}},
-             "7,1,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
-             "8,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "LSLFLS"}}},
-             "8,6,": {"weight": 3, "attrs": {"fast": False, "map": {"actions": "RSRS"}}},
-             "9,1,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
-             "9,6,": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "SRS"}}},
-             "10,2": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
-             "10,5": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "BSLS"}}},
-             "11,2": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
-             "11,9": {"weight": 7, "attrs": {"fast": True, "map": {"actions": "BSRFRS"}}},
-             "12,9": {"weight": 6.5, "attrs": {"fast": True, "map": {"actions": "RSRFRS"}}},
-             "12,5": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "LSLS"}}}
-             }
-
-    wEdges = []
-    for edge in edges:
-        wEdges.append((edge[0], edge[1], edge[2]))
-
-    # TODO: assign radii based upon the constants that Johnathan and Bhavesh give me
-    xyts = {1: {'X': 105.5, 'Y': 133.5, 'T': 0, 'radius': 0}, 
-            2: {'X': 185, 'Y': 156.5, 'T': 180, 'radius': 0}, 
-            3: {'X': 133, 'Y': 186, 'T': 270, 'radius': 0}, 
-            4: {'X': 156, 'Y': 221, 'T': 90, 'radius': 0}, 
-            5: {'X': 185, 'Y': 274, 'T': 180, 'radius': 0}, 
-            6: {'X': 105.5, 'Y': 251, 'T': 0, 'radius': 0}, 
-            7: {'X': 15, 'Y': 186, 'T': 270, 'radius': 0}, 
-            8: {'X': 68, 'Y': 156.5, 'T': 180, 'radius': 0}, 
-            9: {'X': 38, 'Y': 103, 'T': 270, 'radius': 0}, 
-            10: {'X': 274, 'Y': 103, 'T': 90, 'radius': 0}, 
-            11: {'X': 251, 'Y': 186, 'T': 270, 'radius': 0}, 
-            12: {'X': 221, 'Y': 1335, 'T': 0, 'radius': 0}}
-    nx.set_node_attributes(DG, xyts)
-
-
-    # construct graph
-    DG.add_nodes_from(nodes)
-    DG.add_weighted_edges_from(wEdges)
 
 
 def visionController():
