@@ -116,7 +116,7 @@ def makeGraph():
 
     # TODO: assign radii based upon the constants that Johnathan and Bhavesh give me
     xyts = {1: {'X': 105.5, 'Y': 133.5, 'T': 0, 'radiusR': 0, 'speed': 0, 'radiusL': .45, 'speedL': 55}, 
-            2: {'X': 185, 'Y': 156.5, 'T': 180, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
+            2: {'X': 185, 'Y': 156.5, 'T': 180, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 60}, 
             3: {'X': 133, 'Y': 186, 'T': 270, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
             4: {'X': 156, 'Y': 221, 'T': 90, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
             5: {'X': 185, 'Y': 274, 'T': 180, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
