@@ -1,12 +1,8 @@
 from datetime import datetime
 from multiprocessing import Process, Value
 
-import json
-import math
+import json, math, serial, threading, time
 import networkx as nx
-import serial
-import threading
-import time
 from enhancedduckvision import vision
 
 # global variables
@@ -149,34 +145,49 @@ def setMotors(motorSpeedL, motorSpeedR):
     motorR = motorSpeedR
 
 
-def runManual():
-    print("Manual controller starting")
-    print("beware, no error checking involved")
-    # open the serial port to the Arduino
-    s1.flushInput()
+# this will visually navigate until the stop condition is reached
+def vNav():
+    global vOffset
+    global vOffsetOld
+    global stopLine
+    
+    stopped = False
+    
+    while (not stopped):
+        if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1):
+            print("Red line detected by vNav()")
+            write("stp")
+            stopped = True
 
-    if s1.isOpen():
-        cmd = ""
+        else:
+            # check for visual error changes
+            old = vOffsetOld.value
+            now = vOffset.value
 
-        # while we're still within our window of execution
-        while (cmd != "999"):
-            cmd = input('Enter Pi cmd (\'999\' to quit):')
+            if (now != old):
+                old = now
+                write("ver0000%s\n" % str(now).zfill(4))
 
-            # encode and send the command
-            write(cmd + '\n')
+def calibrate(node):
+    global DG
+    write("cal%s0000\n" % str(DG.nodes['X']).zfill(4))
+    write("car%s0000\n" % str(DG.nodes['Y']).zfill(4))
+    write("cat%s0000\n" % str(DG.nodes['T']).zfill(4))
 
-            # receive and print the response
-            response = s1.read(1)
 
-    # once finished
-    setMotors(0, 0)
-    s1.close()
+def turn(rTurn, radius):
+    if (rTurn):
+        write("rtn%s0045" % str(radius).zfill(4))
+    else:
+        write("ltn%s0045" % str(radius).zfill(4))
+
 
 def greenChanger():
     global greenLight
 
     time.sleep(1)
     greenLight.value = False
+
 
 def starter(vRef):
     global move
@@ -210,6 +221,30 @@ def serialReader():
             # print("SERIAL: %s" % r1)
             # this is only for debugging
     print("Ending serial thread")
+
+
+def runManual():
+    print("Manual controller starting")
+    print("beware, no error checking involved")
+    # open the serial port to the Arduino
+    s1.flushInput()
+
+    if s1.isOpen():
+        cmd = ""
+
+        # while we're still within our window of execution
+        while (cmd != "999"):
+            cmd = input('Enter Pi cmd (\'999\' to quit):')
+
+            # encode and send the command
+            write(cmd + '\n')
+
+            # receive and print the response
+            response = s1.read(1)
+
+    # once finished
+    setMotors(0, 0)
+    s1.close()
 
 
 def visionController():
@@ -334,36 +369,6 @@ def visionController():
     print("Vision process terminated")
 
 
-# this will visually navigate until the stop condition is reached
-def vNav():
-    global vOffset
-    global vOffsetOld
-    global stopLine
-    
-    stopped = False
-    
-    while (not stopped):
-        if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1):
-            print("Red line detected by vNav()")
-            write("stp")
-            stopped = True
-
-        else:
-            # check for visual error changes
-            old = vOffsetOld.value
-            now = vOffset.value
-
-            if (now != old):
-                old = now
-                write("ver0000%s\n" % str(now).zfill(4))
-
-def calibrate(node):
-    global DG
-    write("cal%s0000\n" % str(DG.nodes['X']).zfill(4))
-    write("car%s0000\n" % str(DG.nodes['Y']).zfill(4))
-    write("cat%s0000\n" % str(DG.nodes['T']).zfill(4))
-
-
 def runController():
     global move
     # Define and split off the computer vision subprocess _________________________________
@@ -418,11 +423,6 @@ def runController():
     # open state machine data for reading
     with open("StateMachine/map%s.json" % mapNum, 'r') as f:
         machine = json.load(f)
-
-    # TODO: Calibrating
-    # calibrate what X and Y we are at according to our initial state
-    # print("calibrating position now")
-    # write("cal%s%s" % (stateX, stateY))
 
     # this is the main logic loop where we put all our controlling equations/code
     try:
@@ -497,11 +497,6 @@ def runController():
     vision_process.join()
     print("Vision Process joined")
 
-def turn(rTurn, radius):
-    if (rTurn):
-        write("rtn%s0045" % str(radius).zfill(4))
-    else:
-        write("ltn%s0045" % str(radius).zfill(4))
 
 def smallTest():
     global move
@@ -622,6 +617,7 @@ if __name__ == '__main__':
                      "\n 2: Vision Controller " +
                      "\n 3: Manual Mode " +
                      "\n 4: Test Mode\n"))
+
     # run lane navigation
     if (mode == 1):
         runController()
