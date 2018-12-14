@@ -530,9 +530,9 @@ def runController():
                             vNav(False)
                         else:
                             if (actionMap[action] == 'R' or actionMap[action] == 'L' or actionMap[action] == 'B'):
-                            # navigate visually until the stop condition
-                            print("CONTROLLER %d: Starting vNav()"  % controllerCounter)
-                            vNav(True)
+                                # navigate visually until the stop condition
+                                print("CONTROLLER %d: Starting vNav()"  % controllerCounter)
+                                vNav(True)
 
                         # wait until we see a green light to go again
                         print("CONTROLLER %d: waiting until we see a green light"  % controllerCounter)
