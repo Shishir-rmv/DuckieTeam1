@@ -523,7 +523,8 @@ def runController():
                     # go straight
                     if (actionMap[action] == "S" or actionMap[action] == "F"):
                         write("srt0000%s\n" % str(vRef).zfill(4))
-                        
+                        lastStart = datetime.now()
+
                         # using vision, start moving. Args: initial vRef
                         # only sent srt's for the first action
                         if (action != 0):
