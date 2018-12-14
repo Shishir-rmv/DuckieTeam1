@@ -384,7 +384,7 @@ def visionController():
                 #     # print("Finished writing start")
                 #     flag = False
 
-                if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 2):
+                if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 3):
                     print("Stopper middle: stp")
                     write("stp")
                     stopped = True
@@ -677,7 +677,7 @@ def smallTest():
 
         # change turn radius here
         print("CONTROLLER: performing turn")
-        radius = .3
+        radius = .2
         # args: [rTurn (boolean, if this is a right turn. False = left turn)], [radius of turn]
         turn(True, radius)
 

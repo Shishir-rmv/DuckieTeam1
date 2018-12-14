@@ -323,7 +323,7 @@ void encoder() {
 void pd(){
   Serial.println("pd");
   
-  del_v = -(0.5*error) - (2*error_dot);
+  del_v = -(0.5*error) - (3*error_dot);
   del_v = (del_v*60)/(70*3.14);
   rpm_target_L = rpm_L_ref + del_v;
   rpm_target_R = rpm_R_ref - del_v;
