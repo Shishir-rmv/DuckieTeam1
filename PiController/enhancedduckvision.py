@@ -107,6 +107,7 @@ def process(stream, vOffset, vOffsetOld, stopLine, greenLight):
                     if is_at_red_line(image=image):
                         # Check if the Green light is already ON
                         if is_green_light_on(image=image):
+                            stopLine.value = True
                             greenLight.value = True
                             logging.info("%s\tFOUND GREEN>>>: Starting Now" % (datetime.datetime.now()))
                         else:
