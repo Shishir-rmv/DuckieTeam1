@@ -397,6 +397,7 @@ def runController():
     global lastStart
     global s1
     global serialD
+    global DG
 
     # Define and split off the computer vision subprocess _________________________________
     # vision variables to share between processes
@@ -427,11 +428,12 @@ def runController():
     greenChangers = []
 
     # read in the state machine graph
-    with open("../peripherals/graph.json", 'r') as f:
-        read = json.load(f)
+    # with open("../peripherals/graph.json", 'r') as f:
+    #     read = json.load(f)
 
-    # re-convert to graph
-    DG = nx.node_link_graph(read, directed=True, multigraph=False, attrs=None)
+    # initialize the graph
+    makeGraph()
+
 
     # split off the starter thread so the machine can passively calibrate itself before we start
     starter_thread = threading.Thread(target=starter, args=(vRef))
