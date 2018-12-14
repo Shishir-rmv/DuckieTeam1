@@ -151,6 +151,7 @@ def vNav():
     global vOffset
     global vOffsetOld
     global stopLine
+    global lastStart
     
     stopped = False
     
