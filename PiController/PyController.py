@@ -1,7 +1,6 @@
+import json, math, serial, threading, time
 from datetime import datetime
 from multiprocessing import Process, Value
-
-import json, math, serial, threading, time
 import networkx as nx
 from enhancedduckvision import vision
 
