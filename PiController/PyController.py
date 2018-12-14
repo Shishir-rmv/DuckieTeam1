@@ -238,6 +238,7 @@ def runManual():
             # encode and send the command
             write(cmd + '\n')
 
+
             # receive and print the response
             response = s1.read(1)
 
