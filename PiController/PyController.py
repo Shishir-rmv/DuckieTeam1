@@ -462,21 +462,24 @@ def runController():
         # calibrate(path[0])
 
         # wait until we want the robot to move
-        print("CONTROLLER: waiting for user to permit movement")
+        print("CONTROLLER %d: waiting for user to permit movement" % controllerCounter)
+        controllerCounter += 1
         while (not move):
             pass
 
         # loop overall segments in our given route
         for segment in range(len(path) - 1):
             # debugging
-            print("CONTROLLER: About to navigate %s to %s" % (path[segment], path[segment + 1]))
+            print("CONTROLLER %d: About to navigate %s to %s" % (path[segment], path[segment + 1], controllerCounter))
+            controllerCounter += 1
 
             # compute the path from the segment start state to its finish state
             route = nx.dijkstra_path(DG, path[segment], path[segment + 1])
             # navigate the current segment's route
 
             # debugging
-            print("CONTROLLER: Path plan is: %s" % str(route))
+            print("CONTROLLER %d: Path plan is: %s" % (str(route), controllerCounter))
+            controllerCounter += 1
             for currentState in range(len(route) - 1):
                 # by performing all of the actions in the route
                 # when the last action is completed, the next state will happen in the parent for loop
@@ -492,21 +495,24 @@ def runController():
                         # using vision, start moving. Args: initial vRef
                         # only sent srt's for the first action
                         if (action == 0):
-                            print("CONTROLLER: Writing SRT")
+                            print("CONTROLLER %d: Writing SRT"  % controllerCounter)
+                            controllerCounter += 1
                             write("srt0000%s\n" % str(vRef).zfill(4))
 
                         # navigate visually until the stop condition
-                        print("CONTROLLER: Starting vNav()")
+                        print("CONTROLLER %d: Starting vNav()"  % controllerCounter)
                         vNav(False)
 
                         # wait until we see a green light to go again
-                        print("CONTROLLER: waiting until we see a green light")
+                        print("CONTROLLER %d: waiting until we see a green light"  % controllerCounter)
+                        controllerCounter += 1
                         while (not greenLight.value):
                             pass
                         lastStart = datetime.now()
 
                         # spawn a thread to switch greenLight off 1 second from now
-                        print("CONTROLLER: spawning greenLight changer thread")
+                        print("CONTROLLER %d: spawning greenLight changer thread"  % controllerCounter)
+                        controllerCounter += 1
                         greenChangers.append(threading.Thread(target=greenChanger))
                         greenChangers[-1].start()
 
@@ -523,7 +529,8 @@ def runController():
                         # since we know this will be the first call after an intersection that we want to go straight through
                         write("ltn0001%s\n" % str(vRef).zfill(4))
 
-                        print("CONTROLLER: Blind Straight. Waiting for the arduino to transmit the D")
+                        print("CONTROLLER %d: Blind Straight. Waiting for the arduino to transmit the D"  % controllerCounter)
+                        controllerCounter += 1
 
                         # wait for the blind turn to finish
                         while (not serialD):
@@ -532,9 +539,12 @@ def runController():
                         serialD = False
                         stopLine.value = False
 
-                    print("CONTROLLER: Action is finished")
-                print("CONTROLLER: Segment is finished")
-            print("CONTROLLER: Plan is finished")
+                    print("CONTROLLER %d: Action is finished"  % controllerCounter)
+                    controllerCounter += 1
+                print("CONTROLLER %d: Segment is finished"  % controllerCounter)
+                controllerCounter += 1
+            print("CONTROLLER %d: Plan is finished"  % controllerCounter)
+            controllerCounter += 1
 
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
