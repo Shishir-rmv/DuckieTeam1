@@ -487,7 +487,7 @@ def runController():
                 actionMap = edges[str(route[currentState]) + "," + str(route[currentState+1])]["attrs"]["map"]['actions']
 
                 # debugging
-                print("CONTROLLER %d: Action map: %s" % (controllerCounter, str(route)))
+                print("CONTROLLER %d: Action map: %s" % (controllerCounter, str(actionMap)))
                 controllerCounter += 1
 
                 # wait until we see a green light to begin our action sequence
@@ -498,7 +498,7 @@ def runController():
 
                 for action in range(len(actionMap)):
                     # debugging
-                    print("CONTROLLER %d: current action is: %s" % (controllerCounter, str(actionmap[action])))
+                    print("CONTROLLER %d: current action is: %s" % (controllerCounter, str(actionMap[action])))
                     controllerCounter += 1
 
                     # go straight
