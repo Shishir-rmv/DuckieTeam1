@@ -111,8 +111,8 @@ def makeGraph():
              }
 
     wEdges = []
-    for edge in edges:
-        wEdges.append((edge[0], edge[1], edge[2]))
+for edge, val in edges.items():
+    wEdges.append((int(edge.split(',')[0]), int(edge.split(',')[1]), val["weight"]))
 
     # TODO: assign radii based upon the constants that Johnathan and Bhavesh give me
     xyts = {1: {'X': 105.5, 'Y': 133.5, 'T': 0, 'radius': 0}, 
@@ -178,10 +178,21 @@ def calibrate(node):
 
 
 def turn(rTurn, radius):
+    global serialD
+    global stopLine
+
     if (rTurn):
         write("rtn%s0045" % str(radius).zfill(4))
     else:
         write("ltn%s0045" % str(radius).zfill(4))
+
+    # wait for the blind turn to finish
+    print("CONTROLLER: waiting for the arduino to transmit the D")
+    while (not serialD):
+        pass
+
+    serialD = False
+    stopLine.value = False
 
 
 def greenChanger():
@@ -222,7 +233,7 @@ def serialReader(s1):
             print(serialIn)
 
             if ("D" in serialIn):
-                print("THERES A D MOTHERFUCKER")
+                print("THERES A D")
                 serialD = True
 
     print("Ending serial thread")
@@ -377,6 +388,11 @@ def visionController():
 
 def runController():
     global move
+    global goSerial
+    global lastStart
+    global s1
+    global serialD
+
     # Define and split off the computer vision subprocess _________________________________
     # vision variables to share between processes
     global vOffset
@@ -404,6 +420,8 @@ def runController():
     # small right turn
     smallRadius = 0.2
 
+    greenChangers = []
+
     # read in the state machine graph
     with open("../peripherals/graph.json", 'r') as f:
         read = json.load(f)
@@ -415,7 +433,7 @@ def runController():
     starter_thread = threading.Thread(target=starter, args=(vRef))
     starter_thread.start()
 
-    serial_thread = threading.Thread(target=serialReader)
+    serial_thread = threading.Thread(target=serialReader, args=(s1,))
     serial_thread.start()
 
     # open the serial port to the Arduino & initialize
@@ -436,6 +454,7 @@ def runController():
         calibrate(path[0])
 
         # wait until we want the robot to move
+        print("CONTROLLER: waiting for user to permit movement")
         while (not move):
             pass
 
@@ -465,24 +484,49 @@ def runController():
                         # using vision, start moving. Args: initial vRef
                         # only sent srt's for the first action
                         if (action == 0):
+                            print("CONTROLLER: Writing SRT")
                             write("srt0000%s\n" % str(vRef).zfill(4))
 
                         # navigate visually until the stop condition
+                        print("CONTROLLER: Starting vNav()")
                         vNav()
+
+                        # wait until we see a green light to go again
+                        print("CONTROLLER: waiting until we see a green light")
+                        while (not greenLight.value):
+                            pass
+                        lastStart = datetime.now()
+
+                        # spawn a thread to switch greenLight off 1 second from now
+                        print("CONTROLLER: spawning greenLight changer thread")
+                        greenChangers.append(threading.Thread(target=greenChanger))
+                        greenChangers[-1].start()
 
                     elif (actionMap[action] == "R"):
                         # blind turn
                         turn(True, smallRadius)
-                        # wait for arduino to respond?
+
                     elif (actionMap[action] == "L"):
                         # blind turn
                         turn(False, bigRadius)
-                        # wait for arduino to respond?
 
                     elif(actionMap[action] == "B"):
                         # blind straight (can use the turning code with no radius)
                         # since we know this will be the first call after an intersection that we want to go straight through
                         write("ltn0001%s\n" % str(vRef).zfill(4))
+
+                        print("CONTROLLER: Blind Straight. Waiting for the arduino to transmit the D")
+
+                        # wait for the blind turn to finish
+                        while (not serialD):
+                            pass
+
+                        serialD = False
+                        stopLine.value = False
+
+                    print("CONTROLLER: Action is finished")
+                print("CONTROLLER: Segment is finished")
+            print("CONTROLLER: Plan is finished")
 
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
@@ -496,6 +540,9 @@ def runController():
     # once we're all done, send the kill switch to the inner vision loop and join the vision process
     see.value = False
     goSerial = False
+    # join all green light threads
+    for greenChanger in greenChangers:
+        greenChanger.join()
     starter_thread.join()
     print("Starter thread joined")
     serial_thread.join()
@@ -507,7 +554,6 @@ def runController():
 def smallTest():
     global move
     global goSerial
-    global serial_msg_counter
     global lastStart
     global s1
     global serialD
