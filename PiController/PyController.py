@@ -206,7 +206,7 @@ def starter(vRef):
     print("Starter thread finished")
 
 
-def serialReader(s1):
+def serialReader():
     global goSerial
     global s1
 
