@@ -41,6 +41,7 @@ ENC_DELTA_THETA = 0
 ENC_DELTA_X = 0
 
 edges = {}
+xyts = {}
 
 serialD = False
 
@@ -81,6 +82,7 @@ def read():
 def makeGraph():
     global DG
     global edges
+    global xyts
     # initialize graph
     DG = nx.DiGraph()
 
@@ -410,6 +412,7 @@ def runController():
     global serialD
     global DG
     global edges
+    global xyts
 
     # Define and split off the computer vision subprocess _________________________________
     # vision variables to share between processes
@@ -539,13 +542,13 @@ def runController():
                         print("CONTROLLER %d: performing blind right turn"  % controllerCounter)
                         controllerCounter += 1
                         # blind turn
-                        turn(True, DG.nodes[route[currentState]]['radiusR'], DG.nodes[route[currentState]]['speedR'])
+                        turn(True, xyts[route[currentState]]['radiusR'], xyts[route[currentState]]['speedR'])
 
                     elif (actionMap[action] == "L"):
                         print("CONTROLLER %d: performing blind left turn"  % controllerCounter)
                         controllerCounter += 1
                         # blind turn
-                        turn(False, DG.nodes[route[currentState]]['radiusL'], DG.nodes[route[currentState]]['speedL'])
+                        turn(False, xyts[route[currentState]]['radiusL'], xyts[route[currentState]]['speedL'])
 
                     elif(actionMap[action] == "B"):
                         # blind straight (can use the turning code with no radius)
