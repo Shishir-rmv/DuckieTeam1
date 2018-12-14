@@ -208,6 +208,8 @@ def starter(vRef):
 
 def serialReader():
     global goSerial
+    global s1
+    
     print("Starting serial thread")
     while (goSerial):
         if (s1.in_waiting):
