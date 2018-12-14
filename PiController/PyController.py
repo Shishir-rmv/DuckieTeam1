@@ -529,7 +529,7 @@ def runController():
                             print("CONTROLLER %d: Starting vNav()"  % controllerCounter)
                             vNav(False)
                         else:
-                            if (actionMap[action] == 'R' or actionMap[action] == 'L' or actionMap[action] == 'B' or):
+                            if (actionMap[action] == 'R' or actionMap[action] == 'L' or actionMap[action] == 'B'):
                             # navigate visually until the stop condition
                             print("CONTROLLER %d: Starting vNav()"  % controllerCounter)
                             vNav(True)
