@@ -40,6 +40,8 @@ see = Value('b', True)
 ENC_DELTA_THETA = 0
 ENC_DELTA_X = 0
 
+edges = {}
+
 serialD = False
 
 THETA = 0
@@ -78,6 +80,7 @@ def read():
 
 def makeGraph():
     global DG
+    global edges
     # initialize graph
     DG = nx.DiGraph()
 
@@ -398,6 +401,7 @@ def runController():
     global s1
     global serialD
     global DG
+    global edges
 
     # Define and split off the computer vision subprocess _________________________________
     # vision variables to share between processes
