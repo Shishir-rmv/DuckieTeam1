@@ -166,14 +166,14 @@ def vNav(lookingForD):
         # print("vNav() not looking for D, loop is: " + str(stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1))
         else:
             if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1):
-                print("vNav() not looking for D should stop")
+                # print("vNav() not looking for D should stop")
                 print("Red line detected by vNav()")
                 write("stp")
                 stopped = True
 
         if (not stopped):
             # check for visual error changes
-            print("stopline.value: %s, stopped: %s, timing: %s" % (stopLine.value, stopped, (datetime.now() - lastStart).seconds > 1))
+            # print("stopline.value: %s, stopped: %s, timing: %s" % (stopLine.value, stopped, (datetime.now() - lastStart).seconds > 1))
             old = vOffsetOld.value
             now = vOffset.value
 
