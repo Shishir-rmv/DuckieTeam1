@@ -273,6 +273,7 @@ def visionController():
     global goSerial
     global serial_msg_counter
     global lastStart
+    global s1
 
     # vision variables to share between processes
     global vOffset
@@ -303,7 +304,7 @@ def visionController():
     starterThreads.append(threading.Thread(target=starter, args=(vRef,)))
     starterThreads[0].start()
 
-    serial_thread = threading.Thread(target=serialReader)
+    serial_thread = threading.Thread(target=serialReader, args=(s1,))
     serial_thread.start()
 
     # open the serial port to the Arduino & initialize
