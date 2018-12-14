@@ -526,10 +526,13 @@ def runController():
                             print("CONTROLLER %d: Writing SRT"  % controllerCounter)
                             controllerCounter += 1
                             write("srt0000%s\n" % str(vRef).zfill(4))
-
-                        # navigate visually until the stop condition
-                        print("CONTROLLER %d: Starting vNav()"  % controllerCounter)
-                        vNav(False)
+                            print("CONTROLLER %d: Starting vNav()"  % controllerCounter)
+                            vNav(False)
+                        else:
+                            if (actionMap[action] == 'R' or actionMap[action] == 'L' or actionMap[action] == 'B' or):
+                            # navigate visually until the stop condition
+                            print("CONTROLLER %d: Starting vNav()"  % controllerCounter)
+                            vNav(True)
 
                         # wait until we see a green light to go again
                         print("CONTROLLER %d: waiting until we see a green light"  % controllerCounter)
