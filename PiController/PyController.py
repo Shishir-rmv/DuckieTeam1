@@ -217,6 +217,8 @@ def serialReader(s1):
         if (s1.in_waiting):
             serialIn = str(s1.read(20).decode('utf-8'))
             print("From Arduino: %s" + serialIn)
+            print("type is: " + type(serialIn))
+            print(serialIn)
 
             if ("D" in serialIn):
                 serialD = True
