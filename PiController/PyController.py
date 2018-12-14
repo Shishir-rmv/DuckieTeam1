@@ -1,12 +1,7 @@
+import json, math, serial, threading, time
 from datetime import datetime
 from multiprocessing import Process, Value
-
-import json
-import math
 import networkx as nx
-import serial
-import threading
-import time
 from enhancedduckvision import vision
 
 # global variables
@@ -79,64 +74,63 @@ def read():
     bytesToRead = s1.inWaiting()
     s1.read(bytesToRead)
 
+def makeGraph():
+    global DG
+    # initialize graph
+    DG = nx.DiGraph()
 
-# function to grab encoder data
-# have to decide if the arduino will return just increments or already calculate the distance per wheel and theta itself
+    nodes = [1,2,3,4,5,6,7,8,9,10,11,12]
 
-def getEncoder():
-    global THETA
-    global X
-    global Y
-    global WHEEL_BASE
-    global WHEEL_CIRCUMFERENCE
-    global PPR
-    global L_ENC_DIST
-    global R_ENC_DIST
-    global l_enc
-    global r_enc
-    write('irr\n')
-    r1 = s1.read(1)
-    r2 = s1.read(1)
-    l_enc = int.from_bytes(r1, byteorder='little', signed=False)
-    r_enc = int.from_bytes(r2, byteorder='little', signed=False)
+    # weights are rough estimates, change to introduce bias later
+    edges = {"1,12,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "BS"}}},
+             "1,4,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},  # to prefer going straight
+             "2,4,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "2,8,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "BS"}}},
+             "3,8,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "3,12": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
+             "4,7,": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "LSLS"}}},
+             "4,11": {"weight": 3, "attrs": {"fast": False, "map": {"actions": "RSRS"}}},
+             "5,3,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
+             "5,7,": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "BSLS"}}},
+             "6,3,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "6,11": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "BRS"}}},
+             "7,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "SLFLS"}}},
+             "7,1,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
+             "8,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "LSLFLS"}}},
+             "8,6,": {"weight": 3, "attrs": {"fast": False, "map": {"actions": "RSRS"}}},
+             "9,1,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "9,6,": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "SRS"}}},
+             "10,2": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
+             "10,5": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "BSLS"}}},
+             "11,2": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
+             "11,9": {"weight": 7, "attrs": {"fast": True, "map": {"actions": "BSRFRS"}}},
+             "12,9": {"weight": 6.5, "attrs": {"fast": True, "map": {"actions": "RSRFRS"}}},
+             "12,5": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "LSLS"}}}
+             }
 
-    # for debugging
-    print("from encoder call: %d %d" % (l_enc, r_enc))
+    wEdges = []
+    for edge in edges:
+        wEdges.append((edge[0], edge[1], edge[2]))
 
-    L_ENC_DIST = l_enc * WHEEL_CIRCUMFERENCE / PPR
-    R_ENC_DIST = r_enc * WHEEL_CIRCUMFERENCE / PPR
-
-    # update the change in avg position and current heading
-    ENC_DELTA_X = (L_ENC_DIST + R_ENC_DIST) / 2
-    ENC_DELTA_THETA = math.atan2((R_ENC_DIST - L_ENC_DIST) / 2, WHEEL_BASE / 2)
-
-    # update overall global positioning
-    THETA += ENC_DELTA_THETA
-    X += ENC_DELTA_X
-    Y += ENC_DELTA_X * math.sin(THETA)
-
-
-def speed():
-    global X
-    global last_time
-    global last_X
-    time = datetime.now()
-
-    SPEED = (X - last_X) / ((time - last_time).total_seconds())
-
-    last_time = time
-    last_X = X
+    # TODO: assign radii based upon the constants that Johnathan and Bhavesh give me
+    xyts = {1: {'X': 105.5, 'Y': 133.5, 'T': 0, 'radius': 0}, 
+            2: {'X': 185, 'Y': 156.5, 'T': 180, 'radius': 0}, 
+            3: {'X': 133, 'Y': 186, 'T': 270, 'radius': 0}, 
+            4: {'X': 156, 'Y': 221, 'T': 90, 'radius': 0}, 
+            5: {'X': 185, 'Y': 274, 'T': 180, 'radius': 0}, 
+            6: {'X': 105.5, 'Y': 251, 'T': 0, 'radius': 0}, 
+            7: {'X': 15, 'Y': 186, 'T': 270, 'radius': 0}, 
+            8: {'X': 68, 'Y': 156.5, 'T': 180, 'radius': 0}, 
+            9: {'X': 38, 'Y': 103, 'T': 270, 'radius': 0}, 
+            10: {'X': 274, 'Y': 103, 'T': 90, 'radius': 0}, 
+            11: {'X': 251, 'Y': 186, 'T': 270, 'radius': 0}, 
+            12: {'X': 221, 'Y': 1335, 'T': 0, 'radius': 0}}
+    nx.set_node_attributes(DG, xyts)
 
 
-# get ping distance
-def getPing():
-    write('png\n')
-    response = s1.read(1)
-
-    if (not response):
-        print("No result received from Arduino on getPing call")
-    else:
-        pingD = response
+    # construct graph
+    DG.add_nodes_from(nodes)
+    DG.add_weighted_edges_from(wEdges)
 
 
 # set motor speed
@@ -150,81 +144,49 @@ def setMotors(motorSpeedL, motorSpeedR):
     motorR = motorSpeedR
 
 
-def runManual():
-    print("Manual controller starting")
-    print("beware, no error checking involved")
-    # open the serial port to the Arduino
-    s1.flushInput()
+# this will visually navigate until the stop condition is reached
+def vNav():
+    global vOffset
+    global vOffsetOld
+    global stopLine
+    
+    stopped = False
+    
+    while (not stopped):
+        if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1):
+            print("Red line detected by vNav()")
+            write("stp")
+            stopped = True
 
-    if s1.isOpen():
-        cmd = ""
+        else:
+            # check for visual error changes
+            old = vOffsetOld.value
+            now = vOffset.value
 
-        # while we're still within our window of execution
-        while (cmd != "999"):
-            cmd = input('Enter Pi cmd (\'999\' to quit):')
+            if (now != old):
+                old = now
+                write("ver0000%s\n" % str(now).zfill(4))
 
-            # encode and send the command
-            write(cmd + '\n')
-
-            # receive and print the response
-            response = s1.read(1)
-
-    # once finished
-    setMotors(0, 0)
-    s1.close()
+def calibrate(node):
+    global DG
+    write("cal%s0000\n" % str(DG.nodes['X']).zfill(4))
+    write("car%s0000\n" % str(DG.nodes['Y']).zfill(4))
+    write("cat%s0000\n" % str(DG.nodes['T']).zfill(4))
 
 
-def runTracker():
-    global X
-    global Y
-    global ENC_DELTA_THETA
-    global SPEED
-    global L_ENC_DIST
-    global R_ENC_DIST
-    global l_enc
-    global r_enc
-    print("PyTracer starting")
-    # open the serial port to the Arduino
-    s1.flushInput()
+def turn(rTurn, radius):
+    if (rTurn):
+        write("rtn%s0045" % str(radius).zfill(4))
+    else:
+        write("ltn%s0045" % str(radius).zfill(4))
 
-    # Do controller stuff
-    response = ""
-
-    count = 0
-    running = True
-    stopAt = 120
-    records = {}
-
-    if s1.isOpen():
-        start = datetime.now()
-        setMotors(200, 200)
-
-        # while we're still within our window of execution
-        while (((datetime.now() - start).total_seconds() < stopAt) and (X < 1200)):
-            # get data from arduino
-            getEncoder()
-            speed()
-
-            # store it in the array
-            records[float((datetime.now() - start).total_seconds())] = {"L_ENC_DIST": L_ENC_DIST,
-                                                                        "R_ENC_DIST": R_ENC_DIST, "SPEED": SPEED,
-                                                                        "ENC_DELTA_THETA": ENC_DELTA_THETA, "x": int(X),
-                                                                        "Y": Y, "l_enc": l_enc, "r_enc": r_enc}
-
-        # dump data to file
-        print("dumping (%d) records to a JSON in the Logs folder" % len(records))
-        with open('../Logs/tracer_%s.json' % str(datetime.now()).replace(" ", "_").replace(":", "."), 'w') as fp:
-            json.dump(records, fp, indent=4)
-
-    # once finished
-    stop()
-    s1.close()
 
 def greenChanger():
     global greenLight
 
     time.sleep(1)
     greenLight.value = False
+
 
 def starter(vRef):
     global move
@@ -259,63 +221,30 @@ def serialReader():
             # this is only for debugging
     print("Ending serial thread")
 
-def makeGraph():
-    global DG
-    # initialize graph
-    DG = nx.DiGraph()
 
-    nodes = [1,2,3,4,5,6,7,8,9,10,11,12]
+def runManual():
+    print("Manual controller starting")
+    print("beware, no error checking involved")
+    # open the serial port to the Arduino
+    s1.flushInput()
 
-    # weights are rough estimates, change to introduce bias later
-    edges = {"1,12,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "S"}}},
-             "1,4,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},  # to prefer going straight
-             "2,4,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
-             "2,8,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "S"}}},
-             "3,8,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
-             "3,12": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
-             "4,7,": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "LSLS"}}},
-             "4,11": {"weight": 3, "attrs": {"fast": False, "map": {"actions": "RSRS"}}},
-             "5,3,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
-             "5,7,": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "SLS"}}},
-             "6,3,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
-             "6,11": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "SRS"}}},
-             "7,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "SLFLS"}}},
-             "7,1,": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
-             "8,10": {"weight": 8, "attrs": {"fast": True, "map": {"actions": "LSLFLS"}}},
-             "8,6,": {"weight": 3, "attrs": {"fast": False, "map": {"actions": "RSRS"}}},
-             "9,1,": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
-             "9,6,": {"weight": 3.5, "attrs": {"fast": False, "map": {"actions": "SRS"}}},
-             "10,2": {"weight": 2, "attrs": {"fast": False, "map": {"actions": "LS"}}},
-             "10,5": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "SLS"}}},
-             "11,2": {"weight": 1.5, "attrs": {"fast": False, "map": {"actions": "RS"}}},
-             "11,9": {"weight": 7, "attrs": {"fast": True, "map": {"actions": "SRFRS"}}},
-             "12,9": {"weight": 6.5, "attrs": {"fast": True, "map": {"actions": "RSRFRS"}}},
-             "12,5": {"weight": 4, "attrs": {"fast": False, "map": {"actions": "LSLS"}}}
-             }
+    if s1.isOpen():
+        cmd = ""
 
-    wEdges = []
-    for edge in edges:
-        wEdges.append((edge[0], edge[1], edge[2]))
+        # while we're still within our window of execution
+        while (cmd != "999"):
+            cmd = input('Enter Pi cmd (\'999\' to quit):')
 
-    xyts = {0: {'X': 0, 'Y': 0, 'T': 0}, 
-            1: {'X': 0, 'Y': 0, 'T': 0}, 
-            2: {'X': 0, 'Y': 0, 'T': 0}, 
-            3: {'X': 0, 'Y': 0, 'T': 0}, 
-            4: {'X': 0, 'Y': 0, 'T': 0}, 
-            5: {'X': 0, 'Y': 0, 'T': 0}, 
-            6: {'X': 0, 'Y': 0, 'T': 0}, 
-            7: {'X': 0, 'Y': 0, 'T': 0}, 
-            8: {'X': 0, 'Y': 0, 'T': 0}, 
-            9: {'X': 0, 'Y': 0, 'T': 0}, 
-            10: {'X': 0, 'Y': 0, 'T': 0}, 
-            11: {'X': 0, 'Y': 0, 'T': 0}, 
-            12: {'X': 0, 'Y': 0, 'T': 0}}
-    # nx.set_node_attributes(G, attrs)
+            # encode and send the command
+            write(cmd + '\n')
 
 
-    # construct graph
-    DG.add_nodes_from(nodes)
-    DG.add_weighted_edges_from(wEdges)
+            # receive and print the response
+            response = s1.read(1)
+
+    # once finished
+    setMotors(0, 0)
+    s1.close()
 
 
 def visionController():
@@ -440,30 +369,6 @@ def visionController():
     print("Vision process terminated")
 
 
-# this will visually navigate until the stop condition is reached
-def vNav():
-    global vOffset
-    global vOffsetOld
-    global stopLine
-    
-    stopped = False
-    
-    while (not stopped):
-        if (stopLine.value and not stopped and (datetime.now() - lastStart).seconds > 1):
-            print("Red line detected by vNav()")
-            write("stp")
-            stopped = True
-
-        else:
-            # check for visual error changes
-            old = vOffsetOld.value
-            now = vOffset.value
-
-            if (now != old):
-                old = now
-                write("ver0000%s\n" % str(now).zfill(4))
-
-
 def runController():
     global move
     # Define and split off the computer vision subprocess _________________________________
@@ -519,15 +424,10 @@ def runController():
     with open("StateMachine/map%s.json" % mapNum, 'r') as f:
         machine = json.load(f)
 
-    # TODO: Calibrating
-    # calibrate what X and Y we are at according to our initial state
-    # print("calibrating position now")
-    # write("cal%s%s" % (stateX, stateY))
-
     # this is the main logic loop where we put all our controlling equations/code
     try:
         # calibrate the robot
-        write("cal%s%s\n" % str(vRef).zfill(4), str(vRef).zfill(4))
+        calibrate(path[0])
 
         # wait until we want the robot to move
         while (not move):
@@ -556,24 +456,27 @@ def runController():
                 for action in range(len(actionMap)):
                     # go straight
                     if (actionMap[action] == "S" or actionMap[action] == "F"):
-                        # using vision, start moving. Args: dist, initial vRef
-                        write("srt0000%s\n" % str(vRef).zfill(4))
+                        # using vision, start moving. Args: initial vRef
+                        # only sent srt's for the first action
+                        if (action == 0):
+                            write("srt0000%s\n" % str(vRef).zfill(4))
 
                         # navigate visually until the stop condition
                         vNav()
 
-                        # if we're on the last action
-                        if (action == len(actionMap) - 1):
-                            vNav(vOffset, stopLine)
-
                     elif (actionMap[action] == "R"):
                         # blind turn
-                        write("rtn%s0045" % str(smallRadius).zfill(4))
+                        turn(True, smallRadius)
                         # wait for arduino to respond?
                     elif (actionMap[action] == "L"):
                         # blind turn
-                        write("ltn%s0045" % str(bigRadius).zfill(4))
+                        turn(False, bigRadius)
                         # wait for arduino to respond?
+
+                    elif(actionMap[action] == "B"):
+                        # blind straight (can use the turning code with no radius)
+                        # since we know this will be the first call after an intersection that we want to go straight through
+                        write("ltn0001%s\n" % str(vRef).zfill(4))
 
     except KeyboardInterrupt:
         print("Keyboard interrupt detected, gracefully exiting...")
@@ -594,11 +497,6 @@ def runController():
     vision_process.join()
     print("Vision Process joined")
 
-def turn(rTurn, radius):
-    if (rTurn):
-        write("rtn%s0045" % str(radius).zfill(4))
-    else:
-        write("ltn%s0045" % str(radius).zfill(4))
 
 def smallTest():
     global move
@@ -719,6 +617,7 @@ if __name__ == '__main__':
                      "\n 2: Vision Controller " +
                      "\n 3: Manual Mode " +
                      "\n 4: Test Mode\n"))
+
     # run lane navigation
     if (mode == 1):
         runController()

@@ -1,12 +1,9 @@
 enum str_code{
 	motor,
-	irSensor,
 	png,
 	stopp,
   start,
   vOffset,
-  odometry,
-  calibrat,
   state1,
   state2,
   xyt,
@@ -14,6 +11,8 @@ enum str_code{
   rtn,
   fwd,
   visual,
-	update,
+	cax,
+  cay,
+  cat,
 	none
 };
