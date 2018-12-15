@@ -434,7 +434,7 @@ def runController():
     # path = [1, 5, 7, 2, 9, 3, 12, 6, 8, 10, 1]
     # a test path
     # path = [9,4]
-    path = [7,10]
+    path = [7,10, 2, 6, 8]
 
     vRef = 30
     fastVRef = 60
