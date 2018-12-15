@@ -307,7 +307,7 @@ def visionController():
     print("PyController starting")
 
     # in mm/sec
-    vRef = 30
+    vRef = 65
 
     # split off the starter thread & serial reader threads so the machine can passively calibrate itself before we start
     starterThreads.append(threading.Thread(target=starter, args=(vRef,)))
