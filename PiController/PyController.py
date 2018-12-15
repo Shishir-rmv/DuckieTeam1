@@ -120,18 +120,18 @@ def makeGraph():
         wEdges.append((int(edge.split(',')[0]), int(edge.split(',')[1]), val["weight"]))
 
     # TODO: assign radii based upon the constants that Johnathan and Bhavesh give me
-    xyts = {1: {'X': 105.5, 'Y': 133.5, 'T': 0, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
-            2: {'X': 185, 'Y': 156.5, 'T': 180, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 60}, 
-            3: {'X': 133, 'Y': 186, 'T': 270, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
-            4: {'X': 156, 'Y': 221, 'T': 90, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
-            5: {'X': 185, 'Y': 274, 'T': 180, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
-            6: {'X': 105.5, 'Y': 251, 'T': 0, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
-            7: {'X': 15, 'Y': 186, 'T': 270, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
-            8: {'X': 68, 'Y': 156.5, 'T': 180, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
-            9: {'X': 38, 'Y': 103, 'T': 270, 'radiusR': .2, 'speedR': 45, 'radiusL': 0, 'speedL': 0}, 
-            10: {'X': 274, 'Y': 103, 'T': 90, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
-            11: {'X': 251, 'Y': 186, 'T': 270, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}, 
-            12: {'X': 221, 'Y': 1335, 'T': 0, 'radiusR': 0, 'speedR': 0, 'radiusL': .45, 'speedL': 55}}
+    xyts = {1: {'X': 105.5, 'Y': 133.5, 'T': 0, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
+            2: {'X': 185, 'Y': 156.5, 'T': 180, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 60}, 
+            3: {'X': 133, 'Y': 186, 'T': 270, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
+            4: {'X': 156, 'Y': 221, 'T': 90, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
+            5: {'X': 185, 'Y': 274, 'T': 180, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
+            6: {'X': 105.5, 'Y': 251, 'T': 0, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
+            7: {'X': 15, 'Y': 186, 'T': 270, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
+            8: {'X': 68, 'Y': 156.5, 'T': 180, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
+            9: {'X': 38, 'Y': 103, 'T': 270, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
+            10: {'X': 274, 'Y': 103, 'T': 90, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
+            11: {'X': 251, 'Y': 186, 'T': 270, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
+            12: {'X': 221, 'Y': 1335, 'T': 0, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}}
     nx.set_node_attributes(DG, xyts)
 
 
