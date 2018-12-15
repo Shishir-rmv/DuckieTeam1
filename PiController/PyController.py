@@ -128,7 +128,7 @@ def makeGraph():
             6: {'X': 105.5, 'Y': 251, 'T': 0, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
             7: {'X': 15, 'Y': 186, 'T': 270, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
             8: {'X': 68, 'Y': 156.5, 'T': 180, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
-            9: {'X': 38, 'Y': 103, 'T': 270, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
+            9: {'X': 38, 'Y': 103, 'T': 270, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': }, 
             10: {'X': 274, 'Y': 103, 'T': 90, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
             11: {'X': 251, 'Y': 186, 'T': 270, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}, 
             12: {'X': 221, 'Y': 1335, 'T': 0, 'radiusR': .2, 'speedR': 45, 'radiusL': .45, 'speedL': 55}}
@@ -434,7 +434,7 @@ def runController():
     # path = [1, 5, 7, 2, 9, 3, 12, 6, 8, 10, 1]
     # a test path
     # path = [9,4]
-    path = [7,10, 2, 6, 8]
+    path = [8, 6, 3]
 
     vRef = 30
     fastVRef = 60
