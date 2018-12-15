@@ -482,15 +482,15 @@ def runController():
             pass
 
         # wait until we see a green light to begin our action sequence
-        print("CONTROLLER %d: waiting until we see a green light"  % controllerCounter)
-        while (not greenLight.value):
-            pass
+        # print("CONTROLLER %d: waiting until we see a green light"  % controllerCounter)
+        # while (not greenLight.value):
+        #     pass
 
         # spawn a thread to switch greenLight off 1 second from now
-        print("CONTROLLER %d: spawning greenLight changer thread"  % controllerCounter)
-        controllerCounter += 1
-        greenChangers.append(threading.Thread(target=greenThread))
-        greenChangers[-1].start()
+        # print("CONTROLLER %d: spawning greenLight changer thread"  % controllerCounter)
+        # controllerCounter += 1
+        # greenChangers.append(threading.Thread(target=greenThread))
+        # greenChangers[-1].start()
 
         # loop overall segments in our given route
         for segment in range(len(path) - 1):
